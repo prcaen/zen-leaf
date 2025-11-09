@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Animated,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -68,6 +69,28 @@ export default function PlantDetail() {
     content: string;
     value: string;
   } | null>(null);
+
+  // Scroll state for sticky header
+  const [showHeaderTitle, setShowHeaderTitle] = useState(false);
+  const headerTitleOpacity = useRef(new Animated.Value(0)).current;
+
+  const handleScroll = (event: any) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    // Show title when scrolled past the plant header (around 250px)
+    const shouldShow = offsetY > 250;
+    
+    if (shouldShow !== showHeaderTitle) {
+      setShowHeaderTitle(shouldShow);
+    }
+  };
+
+  useEffect(() => {
+    Animated.timing(headerTitleOpacity, {
+      toValue: showHeaderTitle ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [showHeaderTitle]);
 
   if (!plant || !location) {
     return (
@@ -177,6 +200,17 @@ export default function PlantDetail() {
         <TouchableOpacity style={styles.headerButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
+        <Animated.View 
+          style={[
+            styles.headerTitleContainer,
+            { opacity: headerTitleOpacity }
+          ]}
+          pointerEvents={showHeaderTitle ? 'auto' : 'none'}
+        >
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {plant.name}
+          </Text>
+        </Animated.View>
         <TouchableOpacity style={styles.headerButton}>
           <Ionicons name="settings-outline" size={24} color={theme.colors.text} />
         </TouchableOpacity>
@@ -186,6 +220,8 @@ export default function PlantDetail() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
       >
         {/* Plant Header */}
         <PlantHeader
@@ -423,6 +459,16 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     padding: theme.spacing.sm,
+  },
+  headerTitleContainer: {
+    flex: 1,
+    marginHorizontal: theme.spacing.md,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: theme.colors.text,
   },
   scrollView: {
     flex: 1,
