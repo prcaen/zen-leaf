@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '../theme';
@@ -16,9 +17,24 @@ export const PlantCard: React.FC<PlantCardProps> = ({
   onToggleSelect,
 }) => {
   const { plant, location, daysOverdue, isOverdue } = task;
+  const router = useRouter();
+
+  const handleCardPress = () => {
+    router.push(`/plant/${plant.id}`);
+  };
+
+  const handleCheckboxPress = (e: any) => {
+    // Stop event propagation to prevent card press
+    e.stopPropagation();
+    onToggleSelect(plant.id);
+  };
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handleCardPress}
+      activeOpacity={0.7}
+    >
       <View style={styles.content}>
         {/* Plant Image */}
         <View style={styles.imageContainer}>
@@ -45,7 +61,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({
         {/* Checkbox */}
         <TouchableOpacity
           style={[styles.checkbox, isSelected && styles.checkboxSelected]}
-          onPress={() => onToggleSelect(plant.id)}
+          onPress={handleCheckboxPress}
           activeOpacity={0.7}
         >
           {isSelected && (
@@ -53,7 +69,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({
           )}
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

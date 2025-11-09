@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, Location } from '../types';
+import { Plant, Location, CareTask, CareHistory } from '../types';
 
 const PLANTS_KEY = '@zen_leaf_plants';
 const LOCATIONS_KEY = '@zen_leaf_locations';
+const CARE_TASKS_KEY = '@zen_leaf_care_tasks';
+const CARE_HISTORY_KEY = '@zen_leaf_care_history';
 
 export const storage = {
   // Plants
@@ -85,10 +87,88 @@ export const storage = {
     await this.saveLocations(filtered);
   },
 
+  // Care Tasks
+  async getCareTasks(plantId?: string): Promise<CareTask[]> {
+    try {
+      const data = await AsyncStorage.getItem(CARE_TASKS_KEY);
+      const allTasks = data ? JSON.parse(data) : [];
+      return plantId ? allTasks.filter((t: CareTask) => t.plantId === plantId) : allTasks;
+    } catch (error) {
+      console.error('Error loading care tasks:', error);
+      return [];
+    }
+  },
+
+  async saveCareTasks(tasks: CareTask[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(CARE_TASKS_KEY, JSON.stringify(tasks));
+    } catch (error) {
+      console.error('Error saving care tasks:', error);
+    }
+  },
+
+  async addCareTask(task: CareTask): Promise<void> {
+    const tasks = await this.getCareTasks();
+    tasks.push(task);
+    await this.saveCareTasks(tasks);
+  },
+
+  async updateCareTask(taskId: string, updates: Partial<CareTask>): Promise<void> {
+    const tasks = await this.getCareTasks();
+    const index = tasks.findIndex(t => t.id === taskId);
+    if (index !== -1) {
+      tasks[index] = { ...tasks[index], ...updates };
+      await this.saveCareTasks(tasks);
+    }
+  },
+
+  async deleteCareTask(taskId: string): Promise<void> {
+    const tasks = await this.getCareTasks();
+    const filtered = tasks.filter(t => t.id !== taskId);
+    await this.saveCareTasks(filtered);
+  },
+
+  // Care History
+  async getCareHistory(plantId?: string): Promise<CareHistory[]> {
+    try {
+      const data = await AsyncStorage.getItem(CARE_HISTORY_KEY);
+      const allHistory = data ? JSON.parse(data) : [];
+      return plantId ? allHistory.filter((h: CareHistory) => h.plantId === plantId) : allHistory;
+    } catch (error) {
+      console.error('Error loading care history:', error);
+      return [];
+    }
+  },
+
+  async saveCareHistory(history: CareHistory[]): Promise<void> {
+    try {
+      await AsyncStorage.setItem(CARE_HISTORY_KEY, JSON.stringify(history));
+    } catch (error) {
+      console.error('Error saving care history:', error);
+    }
+  },
+
+  async addCareHistory(entry: CareHistory): Promise<void> {
+    const history = await this.getCareHistory();
+    history.unshift(entry); // Add to beginning for recent-first order
+    await this.saveCareHistory(history);
+  },
+
+  async deleteCareHistory(entryId: string): Promise<void> {
+    const history = await this.getCareHistory();
+    const filtered = history.filter(h => h.id !== entryId);
+    await this.saveCareHistory(filtered);
+  },
+
   // Clear all data (useful for development/testing)
   async clearAll(): Promise<void> {
     try {
-      await AsyncStorage.multiRemove([PLANTS_KEY, LOCATIONS_KEY]);
+      await AsyncStorage.multiRemove([
+        PLANTS_KEY,
+        LOCATIONS_KEY,
+        CARE_TASKS_KEY,
+        CARE_HISTORY_KEY,
+      ]);
     } catch (error) {
       console.error('Error clearing storage:', error);
     }

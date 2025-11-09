@@ -13,6 +13,8 @@ export interface Plant {
   lastWateredDate: string | null; // ISO date string
   createdAt: string; // ISO date string
   notes?: string;
+  settings?: PlantSettings;
+  careInfo?: PlantCareInfo;
 }
 
 export interface WateringTask {
@@ -28,5 +30,88 @@ export type TabType = 'today' | 'soon';
 
 export interface PlantWithLocation extends Plant {
   location: Location;
+}
+
+// Care Task Types
+export type CareTaskType = 'water' | 'fertilize' | 'repot' | 'prune' | 'pest_check' | 'other';
+
+export interface CareTask {
+  id: string;
+  plantId: string;
+  type: CareTaskType;
+  title: string;
+  description?: string;
+  frequencyDays: number;
+  lastCompletedDate: string | null; // ISO date string
+  nextDueDate: string; // ISO date string
+  isLocked?: boolean;
+  createdAt: string;
+}
+
+export interface CareHistory {
+  id: string;
+  plantId: string;
+  taskType: CareTaskType;
+  title: string;
+  completedAt: string; // ISO date string
+  notes?: string;
+}
+
+// Plant Settings
+export interface LightSettings {
+  level: 'low' | 'medium' | 'high';
+  type: 'direct' | 'indirect' | 'shade';
+}
+
+export interface PotSettings {
+  size: string; // e.g., "6 inch", "Medium"
+  hasDrainage: boolean;
+  material?: string; // e.g., "ceramic", "plastic", "terracotta"
+}
+
+export interface PlantTypeSettings {
+  species?: string;
+  variety?: string;
+  category?: string; // e.g., "succulent", "fern", "tropical"
+}
+
+export interface RoomSettings {
+  temperature?: number; // in Celsius
+  humidity?: number; // percentage
+  roomType?: string; // e.g., "living room", "bathroom"
+}
+
+export interface LocationSettings {
+  isIndoor: boolean;
+  climate?: string;
+  season?: string;
+}
+
+export interface PlantSettings {
+  light?: LightSettings;
+  pot?: PotSettings;
+  plantType?: PlantTypeSettings;
+  room?: RoomSettings;
+  location?: LocationSettings;
+}
+
+// Plant Care Info
+export interface PlantCareInfo {
+  growSpeed: 'slow' | 'moderate' | 'fast';
+  lightNeeded: 'low' | 'medium' | 'high';
+  toxicity: 'non-toxic' | 'toxic-pets' | 'toxic-humans' | 'toxic-all';
+  waterNeeded: 'low' | 'moderate' | 'high';
+  growSpeedDescription?: string;
+  lightNeededDescription?: string;
+  toxicityDescription?: string;
+  waterNeededDescription?: string;
+}
+
+// Health Status
+export interface HealthStatus {
+  overall: 'excellent' | 'good' | 'fair' | 'poor';
+  issues?: string[];
+  lastChecked: string; // ISO date string
+  notes?: string;
 }
 
