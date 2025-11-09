@@ -27,10 +27,11 @@ export const PlantHeader: React.FC<PlantHeaderProps> = ({
         )}
       </View>
 
-      {/* Plant Info */}
-      <View style={styles.info}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.location}>{location}</Text>
+      <View style={styles.infoContainer}>
+        <View style={styles.info}>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.location}>{location}</Text>
+        </View>
       </View>
     </View>
   );
@@ -38,15 +39,15 @@ export const PlantHeader: React.FC<PlantHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: theme.spacing.lg,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.sage,
   },
   imageContainer: {
+    width: '100%',
     alignItems: 'center',
-    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.white,
   },
   image: {
-    width: 180,
+    width: '100%',
     height: 180,
     borderRadius: theme.borderRadius.full,
   },
@@ -54,13 +55,16 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.sageLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  infoContainer: {
+    width: '100%',
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+  },
   info: {
     alignItems: 'center',
-    marginBottom: theme.spacing.lg,
   },
   name: {
     fontSize: 28,
@@ -71,28 +75,6 @@ const styles = StyleSheet.create({
   location: {
     fontSize: 16,
     color: theme.colors.textSecondary,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: theme.spacing.md,
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
-  },
-  actionButtonSecondary: {
-    backgroundColor: theme.colors.sageLight,
-  },
-  actionLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-  actionLabelSecondary: {
-    color: theme.colors.text,
   },
 });
 

@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.sage,
   },
   headerButton: {
     padding: theme.spacing.sm,
