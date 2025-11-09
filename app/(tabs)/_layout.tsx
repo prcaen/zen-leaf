@@ -4,12 +4,44 @@ import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: theme.colors.primary, headerShown: false }}>
+    <Tabs 
+      screenOptions={{ 
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.primaryLight,
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: theme.colors.white,
+          borderTopWidth: 1,
+          borderTopColor: theme.colors.border,
+          paddingTop: 8,
+          paddingBottom: 8,
+          height: 72,
+        },
+        tabBarIconStyle : {
+            color: theme.colors.primaryLight,
+            backgroundColor: theme.colors.sageLight,
+            borderRadius: theme.borderRadius.full,
+            padding: theme.spacing.sm,
+            width: 40,
+            height: 40,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <Ionicons size={24} name="home" color={color} />,
+          tabBarShowLabel: false,
+        }}
+      />
+      <Tabs.Screen
+        name="plants"
+        options={{
+          title: 'Plants',
+          tabBarIcon: ({ color }) => <Ionicons size={24} name="leaf-outline" color={color} />,
           tabBarShowLabel: false,
         }}
       />

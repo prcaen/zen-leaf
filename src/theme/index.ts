@@ -4,6 +4,7 @@ export const theme = {
     primaryLight: '#6B8E68', // Medium green
     sage: '#D9E4D8', // Sage background
     sageLight: '#E8F0E7', // Light sage
+    sageDark: '#1A1A1A', // Dark sage
     white: '#FFFFFF',
     text: '#2C2C2C',
     textSecondary: '#6B7280',
