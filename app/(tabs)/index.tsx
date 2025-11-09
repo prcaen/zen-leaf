@@ -9,12 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { PlantCard } from '../src/components/PlantCard';
-import { TabBar } from '../src/components/TabBar';
-import { TaskSection } from '../src/components/TaskSection';
-import { usePlants } from '../src/state/PlantsContext';
-import { theme } from '../src/theme';
-import { TabType } from '../src/types';
+import { PlantCard } from '../../src/components/PlantCard';
+import { TabBar } from '../../src/components/TabBar';
+import { TaskSection } from '../../src/components/TaskSection';
+import { usePlants } from '../../src/state/PlantsContext';
+import { theme } from '../../src/theme';
+import { TabType } from '../../src/types';
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<TabType>('today');
@@ -107,31 +107,6 @@ export default function Index() {
           <Ionicons name="add" size={32} color={theme.colors.white} />
         </TouchableOpacity>
       </View>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <View style={styles.navIconActive}>
-            <Ionicons name="home" size={24} color={theme.colors.primary} />
-          </View>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <Ionicons name="leaf-outline" size={24} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <Ionicons name="search-outline" size={24} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <Ionicons name="water-outline" size={24} color={theme.colors.textSecondary} />
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-          <Text style={styles.navText}>P</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }
@@ -174,7 +149,7 @@ const styles = StyleSheet.create({
   fabContainer: {
     position: 'absolute',
     right: theme.spacing.lg,
-    bottom: 90,
+    bottom: 24,
   },
   fab: {
     width: 56,
@@ -184,32 +159,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     ...theme.shadows.md,
-  },
-  bottomNav: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.white,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  navItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing.sm,
-  },
-  navIconActive: {
-    backgroundColor: theme.colors.sageLight,
-    width: 48,
-    height: 48,
-    borderRadius: theme.borderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  navText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: theme.colors.textSecondary,
   },
 });

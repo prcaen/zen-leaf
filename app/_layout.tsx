@@ -5,7 +5,7 @@ export default function RootLayout() {
   return (
     <PlantsProvider>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
+        <Stack.Screen name="(tabs)" />
       </Stack>
     </PlantsProvider>
   );
