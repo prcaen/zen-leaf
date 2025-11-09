@@ -144,12 +144,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   bottomSpacer: {
-    height: 80,
+    height: 56 + theme.spacing.lg,
   },
   fabContainer: {
     position: 'absolute',
     right: theme.spacing.lg,
-    bottom: 24,
+    bottom: theme.spacing.lg,
   },
   fab: {
     width: 56,
