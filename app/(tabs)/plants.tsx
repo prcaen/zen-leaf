@@ -11,10 +11,11 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlantGridItem } from '../../src/components/PlantGridItem';
 import { SiteCard } from '../../src/components/SiteCard';
+import { Tab, TabBar } from '../../src/components/TabBar';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
 
-type ProfileTabType = 'sites' | 'plants';
+export type ProfileTabType = 'sites' | 'plants';
 
 export default function ProfileScreen() {
   const { plants, locations, wateringTasks } = usePlants();
@@ -34,9 +35,14 @@ export default function ProfileScreen() {
     return acc;
   }, {} as Record<string, number>);
 
+  const tabs: Tab<ProfileTabType>[] = [
+    { value: 'sites', label: 'Sites' },
+    { value: 'plants', label: 'Plantes' },
+  ];
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <StatusBar barStyle="light-content" backgroundColor="#1a1a1a" />
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
 
       {/* Header */}
       <View style={styles.header}>
@@ -55,31 +61,8 @@ export default function ProfileScreen() {
           </View>
         </View>
       </View>
-
-      {/* Tab Bar */}
-      <View style={styles.tabBarContainer}>
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'sites' && styles.tabActive]}
-            onPress={() => setActiveTab('sites')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabText, activeTab === 'sites' && styles.tabTextActive]}>
-              Sites
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'plants' && styles.tabActive]}
-            onPress={() => setActiveTab('plants')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.tabText, activeTab === 'plants' && styles.tabTextActive]}>
-              Plantes
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      
+      <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} containerStyle={styles.tabBarContainer} />
 
       {/* Content */}
       <ScrollView
@@ -117,9 +100,9 @@ export default function ProfileScreen() {
       </ScrollView>
 
       {/* Floating Action Button */}
-      <View style={styles.fabPlusContainer}>
-        <TouchableOpacity style={styles.fabPlus} activeOpacity={0.8}>
-          <Ionicons name="add" size={32} color={theme.colors.text} />
+      <View style={styles.fabContainer}>
+        <TouchableOpacity style={styles.fab} activeOpacity={0.8}>
+          <Ionicons name="add" size={32} color={theme.colors.white} />
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -170,41 +153,11 @@ const styles = StyleSheet.create({
   settingsButton: {
     padding: theme.spacing.sm,
   },
-  tabBarContainer: {
-    backgroundColor: theme.colors.sage,
-    paddingHorizontal: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.sageLight,
-    borderRadius: theme.borderRadius.xl,
-    padding: 4,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    alignItems: 'center',
-  },
-  tabActive: {
-    backgroundColor: theme.colors.primaryLight,
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#a0a0a0',
-  },
-  tabTextActive: {
-    color: '#1a1a1a',
-    fontWeight: '600',
-  },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    padding: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
     paddingBottom: 100,
   },
   sitesGrid: {
@@ -214,25 +167,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-  },
+    },
   fabContainer: {
-    position: 'absolute',
-    top: theme.spacing.lg,
-    right: theme.spacing.lg,
-  },
-  fabPlusContainer: {
     position: 'absolute',
     right: theme.spacing.lg,
     bottom: theme.spacing.lg,
   },
-  fabPlus: {
+  fab: {
     width: 56,
     height: 56,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.primaryLight,
+    backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     ...theme.shadows.md,
+  },
+  tabBarContainer: {
+    marginHorizontal: theme.spacing.lg,
   },
 });
 

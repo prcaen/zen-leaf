@@ -26,8 +26,6 @@ export interface WateringTask {
   nextWateringDate: string; // ISO date string
 }
 
-export type TabType = 'today' | 'soon';
-
 export interface PlantWithLocation extends Plant {
   location: Location;
 }

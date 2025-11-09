@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
   plantName: {
     fontSize: 14,
     fontWeight: '600',
-    color: theme.colors.white,
+    color: theme.colors.sageDark,
     textAlign: 'center',
     lineHeight: 18,
   },

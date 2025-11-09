@@ -1,38 +1,51 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { TabType } from '../types';
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { theme } from '../theme';
 
-interface TabBarProps {
-  activeTab: TabType;
-  onTabChange: (tab: TabType) => void;
+export interface Tab<T = string> {
+  value: T;
+  label: string;
 }
 
-export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
+interface TabBarProps<T = string> {
+  tabs: Tab<T>[];
+  activeTab: T;
+  onTabChange: (tab: T) => void;
+  containerStyle?: ViewStyle;
+}
+
+export function TabBar<T = string>({ 
+  tabs, 
+  activeTab, 
+  onTabChange,
+  containerStyle,
+}: TabBarProps<T>) {  
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        style={[styles.tab, activeTab === 'today' && styles.tabActive]}
-        onPress={() => onTabChange('today')}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.tabText, activeTab === 'today' && styles.tabTextActive]}>
-          Today
-        </Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity
-        style={[styles.tab, activeTab === 'soon' && styles.tabActive]}
-        onPress={() => onTabChange('soon')}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.tabText, activeTab === 'soon' && styles.tabTextActive]}>
-          Soon
-        </Text>
-      </TouchableOpacity>
+    <View style={[
+      styles.container,
+      containerStyle
+    ]}>
+      {tabs.map((tab) => (
+        <TouchableOpacity
+          key={String(tab.value)}
+          style={[
+            styles.tab,
+            activeTab === tab.value && styles.tabActive
+          ]}
+          onPress={() => onTabChange(tab.value)}
+          activeOpacity={0.7}
+        >
+          <Text style={[
+            styles.tabText,
+            activeTab === tab.value && styles.tabTextActive
+          ]}>
+            {tab.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

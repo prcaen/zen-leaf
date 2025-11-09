@@ -10,11 +10,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlantCard } from '../../src/components/PlantCard';
-import { TabBar } from '../../src/components/TabBar';
+import { Tab, TabBar } from '../../src/components/TabBar';
 import { TaskSection } from '../../src/components/TaskSection';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { TabType } from '../../src/types';
+
+export type TabType = 'today' | 'soon';
 
 export default function Index() {
   const [activeTab, setActiveTab] = useState<TabType>('today');
@@ -51,6 +52,11 @@ export default function Index() {
 
   const displayedTasks = activeTab === 'today' ? todayTasks : soonTasks;
 
+  const tabs: Tab<TabType>[] = [
+    { value: 'today', label: 'Today' },
+    { value: 'soon', label: 'Soon' },
+  ];
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -71,7 +77,7 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
       >
         {/* Tab Bar */}
-        <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Watering Section */}
         <TaskSection
