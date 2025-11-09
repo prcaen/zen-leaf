@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '../theme';
 
 interface TaskSectionProps {
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: theme.colors.white,
-    borderRadius: theme.borderRadius.xl,
+    borderRadius: theme.borderRadius.sm,
     padding: theme.spacing.lg,
     ...theme.shadows.md,
   },

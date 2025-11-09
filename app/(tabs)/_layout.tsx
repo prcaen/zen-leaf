@@ -10,6 +10,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <Ionicons size={24} name="home" color={color} />,
+          tabBarShowLabel: false,
         }}
       />
     </Tabs>
