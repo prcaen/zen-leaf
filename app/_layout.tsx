@@ -1,5 +1,12 @@
 import { Stack } from "expo-router";
+import { PlantsProvider } from "../src/state/PlantsContext";
 
 export default function RootLayout() {
-  return <Stack />;
+  return (
+    <PlantsProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+      </Stack>
+    </PlantsProvider>
+  );
 }
