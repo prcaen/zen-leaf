@@ -233,8 +233,15 @@ export default function PlantDetail() {
         {/* Action Cards */}
         <View style={styles.section}>
           <View style={styles.actionCardsGrid}>
+          <ActionCard
+              icon="water-outline"
+              title="Water Needed"
+              subtitle={plant.careInfo?.waterNeeded || 'Moderate'}
+              color={theme.colors.primaryLight}
+              onPress={handleWaterNeededPress}
+            />
             <ActionCard
-              icon="speedometer-outline"
+              icon="leaf-outline"
               title="Growth Speed"
               subtitle={plant.careInfo?.growSpeed || 'Moderate'}
               color={theme.colors.primaryLight}
@@ -261,13 +268,6 @@ export default function PlantDetail() {
                   : '#FF3B30'
               }
               onPress={handleToxicityPress}
-            />
-            <ActionCard
-              icon="water-outline"
-              title="Water Needed"
-              subtitle={plant.careInfo?.waterNeeded || 'Moderate'}
-              color={theme.colors.primaryLight}
-              onPress={handleWaterNeededPress}
             />
           </View>
         </View>
