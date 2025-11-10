@@ -23,6 +23,7 @@ import { SliderDialog } from '../../src/components/SliderDialog';
 import { TextInputDialog } from '../../src/components/TextInputDialog';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
+import { LightLevel, LightType } from '../../src/types';
 
 export default function PlantDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -275,14 +276,14 @@ export default function PlantDetail() {
 
   const handleChangeLightLevel = async (newLevel: string) => {
     const currentSettings = plant.settings || {};
-    const currentLight = currentSettings.light || { level: 'medium', type: 'indirect' };
+    const currentLight = currentSettings.light || { level: LightLevel.MEDIUM, type: LightType.INDIRECT };
     
     await updatePlant(id, {
       settings: {
         ...currentSettings,
         light: {
           ...currentLight,
-          level: newLevel as 'low' | 'medium' | 'high',
+          level: newLevel as LightLevel,
         },
       },
     });
@@ -294,7 +295,7 @@ export default function PlantDetail() {
 
   const handleChangeDistance = async (newDistance: number) => {
     const currentSettings = plant.settings || {};
-    const currentLight = currentSettings.light || { level: 'medium', type: 'indirect' };
+    const currentLight = currentSettings.light || { level: LightLevel.MEDIUM, type: LightType.INDIRECT };
     
     await updatePlant(id, {
       settings: {

@@ -65,9 +65,21 @@ export interface CareHistory {
 }
 
 // Plant Settings
+export enum LightLevel {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+}
+
+export enum LightType {
+  DIRECT = 'direct',
+  INDIRECT = 'indirect',
+  SHADE = 'shade',
+}
+
 export interface LightSettings {
-  level: 'low' | 'medium' | 'high';
-  type: 'direct' | 'indirect' | 'shade';
+  level: LightLevel;
+  type: LightType;
   distanceFromWindow?: number; // in centimeters
 }
 
@@ -83,15 +95,6 @@ export interface PlantTypeSettings {
   variety?: string;
   category?: string; // e.g., "succulent", "fern", "tropical"
   age?: number; // Plant age in years (0 = less than a year, 50 = 50+ years)
-}
-
-export interface RoomSettings {
-  temperature?: number; // in Celsius
-  humidity?: number; // percentage
-  roomType?: string; // e.g., "living room", "bathroom"
-  isNearAC?: boolean;
-  isNearHeater?: boolean;
-  isIndoor?: boolean;
 }
 
 export interface LocationSettings {
@@ -114,7 +117,7 @@ export interface PlantSettings {
 // Plant Care Info
 export interface PlantCareInfo {
   growSpeed: 'slow' | 'moderate' | 'fast';
-  lightNeeded: 'low' | 'medium' | 'high';
+  lightNeeded: LightLevel;
   toxicity: 'non-toxic' | 'toxic-pets' | 'toxic-humans' | 'toxic-all';
   waterNeeded: 'low' | 'moderate' | 'high';
   growSpeedDescription?: string;
