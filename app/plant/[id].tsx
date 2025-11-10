@@ -42,9 +42,9 @@ export default function PlantDetail() {
   const plantTasks = getCareTasks(id);
   const plantHistory = getCareHistory(id);
 
-  const handleRoomSettingPress = () => {
+  const handleRoomSettingPress = (dialogType: string) => {
     if (plant?.locationId) {
-      router.push(`/room/${plant.locationId}`);
+      router.push(`/room/${plant.locationId}?dialog=${dialogType}`);
     }
   };
 
@@ -649,7 +649,7 @@ export default function PlantDetail() {
                 value: location?.settings?.temperature
                   ? `${location.settings.temperature}°C`
                   : 'Not set',
-                onPress: handleRoomSettingPress,
+                onPress: () => handleRoomSettingPress('temperature'),
               },
               {
                 icon: 'water-outline',
@@ -657,7 +657,7 @@ export default function PlantDetail() {
                 value: location?.settings?.humidity
                   ? `${location.settings.humidity}%`
                   : 'Not set',
-                onPress: handleRoomSettingPress,
+                onPress: () => handleRoomSettingPress('humidity'),
               },
               {
                 icon: 'location-outline',
@@ -668,7 +668,7 @@ export default function PlantDetail() {
                     : location?.settings?.isIndoor === false
                       ? 'Outdoor'
                       : 'Not set',
-                onPress: handleRoomSettingPress,
+                onPress: () => handleRoomSettingPress('location'),
               },
               {
                 icon: 'snow-outline',
@@ -679,7 +679,7 @@ export default function PlantDetail() {
                     : location?.settings?.isNearAC === false
                       ? 'No'
                       : 'Not set',
-                onPress: handleRoomSettingPress,
+                onPress: () => handleRoomSettingPress('ac'),
               },
               {
                 icon: 'flame-outline',
@@ -690,7 +690,7 @@ export default function PlantDetail() {
                     : location?.settings?.isNearHeater === false
                       ? 'No'
                       : 'Not set',
-                onPress: handleRoomSettingPress,
+                onPress: () => handleRoomSettingPress('heater'),
               },
             ]}
           />

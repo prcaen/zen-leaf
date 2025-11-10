@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -18,10 +18,11 @@ import { Tab, TabBar } from '../../src/components/TabBar';
 import { TaskSection } from '../../src/components/TaskSection';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { TabType } from '../../src/types';
+
+type TabType = 'today' | 'soon';
 
 export default function RoomDetailScreen() {
-  const { locationId } = useLocalSearchParams<{ locationId: string }>();
+  const { locationId, dialog } = useLocalSearchParams<{ locationId: string; dialog?: string }>();
   const router = useRouter();
   const {
     plants,
@@ -43,6 +44,29 @@ export default function RoomDetailScreen() {
 
   const location = locations.find(l => l.id === locationId);
   const plantsInRoom = plants.filter(p => p.locationId === locationId);
+
+  // Open dialog based on query parameter
+  useEffect(() => {
+    if (dialog) {
+      switch (dialog) {
+        case 'temperature':
+          setShowTemperatureDialog(true);
+          break;
+        case 'humidity':
+          setShowHumidityDialog(true);
+          break;
+        case 'location':
+          setShowLocationDialog(true);
+          break;
+        case 'ac':
+          setShowACDialog(true);
+          break;
+        case 'heater':
+          setShowHeaterDialog(true);
+          break;
+      }
+    }
+  }, [dialog]);
 
   // Filter watering tasks for this room
   const roomTasks = wateringTasks.filter(task =>
@@ -188,7 +212,7 @@ export default function RoomDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Tab Bar */}
-        <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="light" />
+        <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
 
         {/* Watering Section */}
         <TaskSection
