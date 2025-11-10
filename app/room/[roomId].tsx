@@ -16,6 +16,7 @@ import { SelectionDialog, SelectionOption } from '../../src/components/Selection
 import { SliderDialog } from '../../src/components/SliderDialog';
 import { Tab, TabBar } from '../../src/components/TabBar';
 import { TaskSection } from '../../src/components/TaskSection';
+import { TextInputDialog } from '../../src/components/TextInputDialog';
 import {
   formatTemperature,
   getDisplayTemperature,
@@ -44,6 +45,7 @@ export default function RoomDetailScreen() {
   const [activeTab, setActiveTab] = useState<TabType>('today');
 
   // Dialog states
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
   const [showTemperatureDialog, setShowTemperatureDialog] = useState(false);
   const [showHumidityDialog, setShowHumidityDialog] = useState(false);
   const [showLightLevelDialog, setShowLightLevelDialog] = useState(false);
@@ -101,6 +103,14 @@ export default function RoomDetailScreen() {
   ];
 
   // Handlers for settings
+  const handleNamePress = () => {
+    setShowRenameDialog(true);
+  };
+
+  const handleRename = async (newName: string) => {
+    await updateRoom(roomId, { name: newName });
+  };
+
   const handleTemperaturePress = () => {
     setShowTemperatureDialog(true);
   };
@@ -108,10 +118,10 @@ export default function RoomDetailScreen() {
   const handleChangeTemperature = async (temperature: number) => {
     const currentSettings = room?.settings || {};
     const unitSystem = user?.unitSystem || UnitSystem.METRIC;
-    
+
     // Convert from display value to metric for storage
     const temperatureInCelsius = parseTemperature(temperature, unitSystem);
-    
+
     await updateRoom(roomId, {
       settings: {
         ...currentSettings,
@@ -241,50 +251,52 @@ export default function RoomDetailScreen() {
         </TaskSection>
 
         {/* Settings Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Settings</Text>
-
-          <SettingsSection
-            title=""
-            items={[
-              {
-                icon: 'thermometer-outline',
-                label: 'Temperature',
-                value: room.settings?.temperature
-                  ? formatTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
-                  : 'Not set',
-                onPress: handleTemperaturePress,
-              },
-              {
-                icon: 'water-outline',
-                label: 'Humidity',
-                value: room.settings?.humidity
-                  ? `${room.settings.humidity}%`
-                  : 'Not set',
-                onPress: handleHumidityPress,
-              },
-              {
-                icon: 'sunny-outline',
-                label: 'Light level',
-                value: room.settings?.lightLevel
-                  ? lightLevelOptions.find(opt => opt.id === room.settings?.lightLevel)?.label || room.settings.lightLevel
-                  : 'Not set',
-                onPress: handleLightLevelPress,
-              },
-              {
-                icon: 'location-outline',
-                label: 'Location',
-                value:
-                  room.settings?.isIndoor === true
-                    ? 'Indoor'
-                    : room.settings?.isIndoor === false
-                      ? 'Outdoor'
-                      : 'Not set',
-                onPress: handleRoomPress,
-              },
-            ]}
-          />
-        </View>
+        <SettingsSection
+          title="Settings"
+          items={[
+            {
+              icon: 'home-outline',
+              label: 'Name',
+              value: room.name,
+              onPress: handleNamePress,
+            },
+            {
+              icon: 'thermometer-outline',
+              label: 'Temperature',
+              value: room.settings?.temperature
+                ? formatTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
+                : 'Not set',
+              onPress: handleTemperaturePress,
+            },
+            {
+              icon: 'water-outline',
+              label: 'Humidity',
+              value: room.settings?.humidity
+                ? `${room.settings.humidity}%`
+                : 'Not set',
+              onPress: handleHumidityPress,
+            },
+            {
+              icon: 'sunny-outline',
+              label: 'Light level',
+              value: room.settings?.lightLevel
+                ? lightLevelOptions.find(opt => opt.id === room.settings?.lightLevel)?.label || room.settings.lightLevel
+                : 'Not set',
+              onPress: handleLightLevelPress,
+            },
+            {
+              icon: 'location-outline',
+              label: 'Location',
+              value:
+                room.settings?.isIndoor === true
+                  ? 'Indoor'
+                  : room.settings?.isIndoor === false
+                    ? 'Outdoor'
+                    : 'Not set',
+              onPress: handleRoomPress,
+            },
+          ]}
+        />
 
         {/* Bottom spacing */}
         <View style={styles.bottomSpacer} />
@@ -296,7 +308,7 @@ export default function RoomDetailScreen() {
         onClose={() => setShowTemperatureDialog(false)}
         onConfirm={handleChangeTemperature}
         title="Temperature"
-        initialValue={room.settings?.temperature 
+        initialValue={room.settings?.temperature
           ? getDisplayTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
           : (user?.unitSystem === UnitSystem.IMPERIAL ? 68 : 20)}
         minValue={user?.unitSystem === UnitSystem.IMPERIAL ? 32 : 0}
@@ -358,6 +370,20 @@ export default function RoomDetailScreen() {
         confirmText="Save"
         cancelText="Cancel"
         icon="location-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Rename Dialog */}
+      <TextInputDialog
+        visible={showRenameDialog}
+        onClose={() => setShowRenameDialog(false)}
+        onConfirm={handleRename}
+        title="Rename Room"
+        initialValue={room.name}
+        placeholder="Enter room name"
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="create-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>
@@ -436,9 +462,6 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: 56 + theme.spacing.lg,
-  },
-  section: {
-    padding: theme.spacing.lg,
   },
   sectionTitle: {
     fontSize: 20,

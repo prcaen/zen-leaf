@@ -30,7 +30,7 @@ import {
 } from '../../src/lib/number';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { GrowSpeed, LightLevel, LightType, Toxicity, UnitSystem, WaterNeeded } from '../../src/types';
+import { GrowSpeed, LightLevel, Toxicity, UnitSystem, WaterNeeded } from '../../src/types';
 
 export default function PlantDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -283,7 +283,7 @@ export default function PlantDetail() {
 
   const handleChangeDistance = async (newDistance: number) => {
     const currentSettings = plant.settings || {};
-    const currentLight = currentSettings.light || { type: LightType.INDIRECT };
+    const currentLight = currentSettings.light;
     const unitSystem = user?.unitSystem || UnitSystem.METRIC;
     
     // Convert from display value to metric for storage
@@ -498,6 +498,17 @@ export default function PlantDetail() {
 
   const roomSettings = (): SettingItemData[] => {
     const settings: SettingItemData[] = [];
+
+    settings.push({
+      icon: 'home-outline',
+      label: 'Name',
+      value: room?.name || 'Not set',
+      onPress: () => {
+        if (plant?.roomId) {
+          router.push(`/room/${plant.roomId}`);
+        }
+      },
+    });
 
     settings.push({
       icon: 'thermometer-outline',
