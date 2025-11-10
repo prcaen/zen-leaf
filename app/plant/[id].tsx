@@ -84,6 +84,9 @@ export default function PlantDetail() {
   // Change room dialog state
   const [showChangeRoomDialog, setShowChangeRoomDialog] = useState(false);
 
+  // Change light level dialog state
+  const [showLightLevelDialog, setShowLightLevelDialog] = useState(false);
+
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
   const headerTitleOpacity = useRef(new Animated.Value(0)).current;
@@ -235,6 +238,31 @@ export default function PlantDetail() {
     label: loc.name,
   }));
 
+  const lightLevelOptions: SelectionOption[] = [
+    { id: 'low', label: 'Low Light', icon: 'moon-outline' },
+    { id: 'medium', label: 'Medium Light', icon: 'partly-sunny-outline' },
+    { id: 'high', label: 'High Light', icon: 'sunny-outline' },
+  ];
+
+  const handleLightLevelPress = () => {
+    setShowLightLevelDialog(true);
+  };
+
+  const handleChangeLightLevel = async (newLevel: string) => {
+    const currentSettings = plant.settings || {};
+    const currentLight = currentSettings.light || { level: 'medium', type: 'indirect' };
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        light: {
+          ...currentLight,
+          level: newLevel as 'low' | 'medium' | 'high',
+        },
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -348,9 +376,9 @@ export default function PlantDetail() {
             items={[
               {
                 icon: 'sunny-outline',
-                label: 'Medium',
+                label: 'Light level',
                 value: plant.settings?.light?.level || 'Not set',
-                onPress: () => console.log('Light settings'),
+                onPress: handleLightLevelPress,
               },
               {
                 icon: 'swap-horizontal-outline',
@@ -574,6 +602,19 @@ export default function PlantDetail() {
         cancelText="Cancel"
         icon="home-outline"
         iconColor={theme.colors.primary}
+      />
+
+      {/* Change Light Level Dialog */}
+      <SelectionDialog
+        visible={showLightLevelDialog}
+        onClose={() => setShowLightLevelDialog(false)}
+        onConfirm={handleChangeLightLevel}
+        title="Light Level"
+        options={lightLevelOptions}
+        initialSelectedId={plant.settings?.light?.level || 'medium'}
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="sunny-outline"
       />
     </SafeAreaView>
   );
