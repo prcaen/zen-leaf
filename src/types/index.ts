@@ -63,8 +63,7 @@ export interface LightSettings {
 }
 
 export interface PotSettings {
-  size: string; // e.g., "6 inch", "Medium"
-  sizeInCm?: number; // Numeric size in cm (diameter)
+  size: number; // Pot size in cm (diameter)
   hasDrainage: boolean;
   material?: string; // e.g., "ceramic", "plastic", "terracotta"
   soil?: string; // e.g., "soil"

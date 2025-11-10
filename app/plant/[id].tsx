@@ -295,23 +295,23 @@ export default function PlantDetail() {
 
   const handleChangePotSize = async (newSize: number) => {
     const currentSettings = plant.settings || {};
-    const currentPot = currentSettings.pot || { size: 'Medium', hasDrainage: true };
-    
-    // Generate size label based on cm
-    let sizeLabel = 'Small';
-    if (newSize > 30) sizeLabel = 'Medium';
-    if (newSize > 60) sizeLabel = 'Large';
+    const currentPot = currentSettings.pot || { size: 30, hasDrainage: true };
     
     await updatePlant(id, {
       settings: {
         ...currentSettings,
         pot: {
           ...currentPot,
-          sizeInCm: newSize,
-          size: sizeLabel,
+          size: newSize,
         },
       },
     });
+  };
+
+  const getPotSizeLabel = (size: number): string => {
+    if (size <= 30) return 'Small';
+    if (size <= 60) return 'Medium';
+    return 'Large';
   };
 
   return (
@@ -448,9 +448,9 @@ export default function PlantDetail() {
               {
                 icon: 'resize-outline',
                 label: 'Size',
-                value: plant.settings?.pot?.sizeInCm 
-                  ? `${plant.settings.pot.sizeInCm} cm (${plant.settings.pot.size})` 
-                  : plant.settings?.pot?.size || 'Not set',
+                value: plant.settings?.pot?.size 
+                  ? `${plant.settings.pot.size} cm (${getPotSizeLabel(plant.settings.pot.size)})` 
+                  : 'Not set',
                 onPress: handlePotSizePress,
               },
               {
@@ -695,7 +695,7 @@ export default function PlantDetail() {
         onClose={() => setShowPotSizeDialog(false)}
         onConfirm={handleChangePotSize}
         title="Pot Size"
-        initialValue={plant.settings?.pot?.sizeInCm || 30}
+        initialValue={plant.settings?.pot?.size || 30}
         minValue={5}
         maxValue={100}
         step={5}
