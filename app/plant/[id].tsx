@@ -100,6 +100,9 @@ export default function PlantDetail() {
   // Change soil dialog state
   const [showSoilDialog, setShowSoilDialog] = useState(false);
 
+  // Change plant size dialog state
+  const [showPlantSizeDialog, setShowPlantSizeDialog] = useState(false);
+
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
   const headerTitleOpacity = useRef(new Animated.Value(0)).current;
@@ -370,6 +373,25 @@ export default function PlantDetail() {
     });
   };
 
+  const handlePlantSizePress = () => {
+    setShowPlantSizeDialog(true);
+  };
+
+  const handleChangePlantSize = async (newSize: number) => {
+    const currentSettings = plant.settings || {};
+    const currentPlantType = currentSettings.plantType || {};
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        plantType: {
+          ...currentPlantType,
+          size: newSize,
+        },
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -549,8 +571,10 @@ export default function PlantDetail() {
               {
                 icon: 'expand-outline',
                 label: 'Size',
-                value: plant.settings?.plantType?.size || 'Not set',
-                onPress: () => console.log('Size'),
+                value: plant.settings?.plantType?.size 
+                  ? `${plant.settings.plantType.size} cm` 
+                  : 'Not set',
+                onPress: handlePlantSizePress,
               },
               {
                 icon: 'time-outline',
@@ -795,6 +819,26 @@ export default function PlantDetail() {
         confirmText="Save"
         cancelText="Cancel"
         icon="flower-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Change Plant Size Dialog */}
+      <SliderDialog
+        visible={showPlantSizeDialog}
+        onClose={() => setShowPlantSizeDialog(false)}
+        onConfirm={handleChangePlantSize}
+        title="Plant Size"
+        description="No need for an exact measurement, an approximate height is fine."
+        initialValue={plant.settings?.plantType?.size || 30}
+        minValue={0}
+        maxValue={300}
+        step={5}
+        unit=" cm"
+        minLabel="Less than 5cm"
+        maxLabel="300cm+"
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="expand-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>

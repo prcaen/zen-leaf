@@ -15,6 +15,7 @@ interface SliderDialogProps {
   onClose: () => void;
   onConfirm: (value: number) => void;
   title: string;
+  description?: string;
   initialValue: number;
   minValue: number;
   maxValue: number;
@@ -33,6 +34,7 @@ export const SliderDialog: React.FC<SliderDialogProps> = ({
   onClose,
   onConfirm,
   title,
+  description,
   initialValue,
   minValue,
   maxValue,
@@ -92,6 +94,10 @@ export const SliderDialog: React.FC<SliderDialogProps> = ({
             </View>
             <Text style={styles.title}>{title}</Text>
           </View>
+
+          {description && (
+            <Text style={styles.description}>{description}</Text>
+          )}
 
           <View style={styles.valueContainer}>
             <Text style={styles.value}>{displayValue()}</Text>
@@ -171,6 +177,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.text,
     textAlign: 'center',
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.sm,
   },
   valueContainer: {
     alignItems: 'center',

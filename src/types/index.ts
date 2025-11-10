@@ -70,7 +70,7 @@ export interface PotSettings {
 }
 
 export interface PlantTypeSettings {
-  size?: string;
+  size?: number; // Plant height in cm
   variety?: string;
   category?: string; // e.g., "succulent", "fern", "tropical"
 }
