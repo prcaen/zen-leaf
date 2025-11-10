@@ -65,7 +65,7 @@ export default function RoomDetailScreen() {
         case 'lightLevel':
           setShowLightLevelDialog(true);
           break;
-        case 'room':
+        case 'location':
           setShowRoomDialog(true);
           break;
       }
@@ -265,7 +265,7 @@ export default function RoomDetailScreen() {
               },
               {
                 icon: 'sunny-outline',
-                label: 'Light Level',
+                label: 'Light level',
                 value: room.settings?.lightLevel
                   ? lightLevelOptions.find(opt => opt.id === room.settings?.lightLevel)?.label || room.settings.lightLevel
                   : 'Not set',

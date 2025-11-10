@@ -62,12 +62,6 @@ export enum LightLevel {
   DARK = 'dark',
 }
 
-export enum LightType {
-  DIRECT = 'direct',
-  INDIRECT = 'indirect',
-  SHADE = 'shade',
-}
-
 export enum GrowSpeed {
   SLOW = 'slow',
   MODERATE = 'moderate',
@@ -95,7 +89,6 @@ export enum HealthOverall {
 }
 
 export interface LightSettings {
-  type: LightType;
   distanceFromWindow?: number; // in centimeters
 }
 

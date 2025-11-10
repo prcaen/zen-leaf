@@ -501,7 +501,7 @@ export default function PlantDetail() {
 
     settings.push({
       icon: 'thermometer-outline',
-      label: 'Temperature',
+      label: 'Temperature (room setting)',
       value: room?.settings?.temperature
         ? formatTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
         : 'Not set',
@@ -510,7 +510,7 @@ export default function PlantDetail() {
 
     settings.push({
       icon: 'water-outline',
-      label: 'Humidity',
+      label: 'Humidity (room setting)',
       value: room?.settings?.humidity
         ? `${room.settings.humidity}%`
         : 'Not set',
@@ -519,13 +519,13 @@ export default function PlantDetail() {
 
     settings.push({
       icon: 'location-outline',
-      label: 'Room',
+      label: 'Location (room setting)',
       value: room?.settings?.isIndoor === true
         ? 'Indoor'
         : room?.settings?.isIndoor === false
         ? 'Outdoor'
         : 'Not set',
-      onPress: () => handleRoomSettingPress('room'),
+      onPress: () => handleRoomSettingPress('location'),
     });
 
     if (room?.settings?.isIndoor === true) {
@@ -670,6 +670,12 @@ export default function PlantDetail() {
           <SettingsSection
             title="Light"
             items={[
+              {
+                icon: 'sunny-outline',
+                label: 'Light level (room setting)',
+                value: room?.settings?.lightLevel ? room.settings.lightLevel : 'Not set',
+                onPress: () => handleRoomSettingPress('lightLevel'),
+              },
               {
                 icon: 'swap-horizontal-outline',
                 label: 'Distance from window',
