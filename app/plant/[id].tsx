@@ -97,6 +97,9 @@ export default function PlantDetail() {
   // Change drainage dialog state
   const [showDrainageDialog, setShowDrainageDialog] = useState(false);
 
+  // Change soil dialog state
+  const [showSoilDialog, setShowSoilDialog] = useState(false);
+
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
   const headerTitleOpacity = useRef(new Animated.Value(0)).current;
@@ -341,6 +344,32 @@ export default function PlantDetail() {
     { id: 'no', label: 'No, no drainage', icon: 'close-circle-outline' },
   ];
 
+  const soilOptions: SelectionOption[] = [
+    { id: 'all-purpose-potting-mix', label: 'All-purpose potting mix' },
+    { id: 'all-purpose-garden-soil', label: 'All purpose garden soil' },
+    { id: 'sandy-soil', label: 'Sandy Soil' },
+    { id: 'clay-soil', label: 'Clay Soil' },
+  ];
+
+  const handleSoilPress = () => {
+    setShowSoilDialog(true);
+  };
+
+  const handleChangeSoil = async (soilType: string) => {
+    const currentSettings = plant.settings || {};
+    const currentPot = currentSettings.pot || { size: 30, hasDrainage: true };
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        pot: {
+          ...currentPot,
+          soil: soilType,
+        },
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -494,8 +523,10 @@ export default function PlantDetail() {
               {
                 icon: 'flower-outline',
                 label: 'Soil',
-                value: plant.settings?.pot?.soil || 'Not set',
-                onPress: () => console.log('Soil'),
+                value: plant.settings?.pot?.soil 
+                  ? soilOptions.find(s => s.id === plant.settings?.pot?.soil)?.label || 'Not set'
+                  : 'Not set',
+                onPress: handleSoilPress,
               },
             ]}
           />
@@ -750,6 +781,20 @@ export default function PlantDetail() {
         confirmText="Save"
         cancelText="Cancel"
         icon="water-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Change Soil Dialog */}
+      <SelectionDialog
+        visible={showSoilDialog}
+        onClose={() => setShowSoilDialog(false)}
+        onConfirm={handleChangeSoil}
+        title="Soil Type"
+        options={soilOptions}
+        initialSelectedId={plant.settings?.pot?.soil || 'all-purpose-potting-mix'}
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="flower-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>
