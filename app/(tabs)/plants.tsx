@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ScrollView,
@@ -18,6 +19,7 @@ import { theme } from '../../src/theme';
 export type ProfileTabType = 'rooms' | 'plants';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { plants, rooms, wateringTasks, user } = usePlants();
   const [activeTab, setActiveTab] = useState<ProfileTabType>('rooms');
 
@@ -43,6 +45,18 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
+
+      {/* Top Bar */}
+      <View style={styles.topBar}>
+        <View style={styles.topBarSpacer} />
+        <TouchableOpacity
+          style={styles.settingsButton}
+          onPress={() => router.push('/profile/settings')}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="settings-outline" size={24} color={theme.colors.text} />
+        </TouchableOpacity>
+      </View>
 
       {/* Header */}
       <View style={styles.header}>
@@ -114,10 +128,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.sage,
   },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.sage,
+  },
+  topBarSpacer: {
+    flex: 1,
+  },
+  settingsButton: {
+    padding: theme.spacing.sm,
+  },
   header: {
     backgroundColor: theme.colors.sage,
     paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
+    paddingBottom: theme.spacing.lg,
   },
   headerContent: {
     flexDirection: 'row',
@@ -149,9 +177,6 @@ const styles = StyleSheet.create({
   userStats: {
     fontSize: 16,
     color: theme.colors.sageDark,
-  },
-  settingsButton: {
-    padding: theme.spacing.sm,
   },
   scrollView: {
     flex: 1,
