@@ -1,7 +1,6 @@
 export interface Room {
   id: string;
   name: string;
-  icon?: string;
   settings?: RoomSettings;
 }
 
@@ -23,7 +22,6 @@ export interface WateringTask {
   plant: Plant;
   room: Room;
   daysOverdue: number;
-  isOverdue: boolean;
   nextWateringDate: Date;
 }
 
@@ -151,5 +149,18 @@ export interface HealthStatus {
 export interface PositionInRoom {
   isNearAC?: boolean;
   isNearHeater?: boolean;
+}
+
+// User
+export enum UnitSystem {
+  METRIC = 'metric',
+  IMPERIAL = 'imperial',
+}
+
+export interface User {
+  name: string;
+  email: string;
+  locationName: string; // city
+  unitSystem: UnitSystem;
 }
 

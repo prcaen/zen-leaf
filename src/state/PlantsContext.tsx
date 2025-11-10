@@ -1,10 +1,11 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { storage } from '../lib/storage';
-import { CareHistory, CareTask, GrowSpeed, LightLevel, LightType, Plant, Room, Toxicity, WateringTask, WaterNeeded } from '../types';
+import { CareHistory, CareTask, GrowSpeed, LightLevel, LightType, Plant, Room, Toxicity, UnitSystem, User, WateringTask, WaterNeeded } from '../types';
 
 interface PlantsContextValue {
   plants: Plant[];
   rooms: Room[];
+  user: User | null;
   loading: boolean;
   wateringTasks: WateringTask[];
   selectedPlants: Set<string>;
@@ -26,6 +27,7 @@ interface PlantsContextValue {
   updateCareTask: (taskId: string, updates: Partial<CareTask>) => Promise<void>;
   completeCareTask: (taskId: string, plantId: string) => Promise<void>;
   deleteCareTask: (taskId: string) => Promise<void>;
+  updateUser: (updates: Partial<User>) => Promise<void>;
   refreshData: () => Promise<void>;
   initializeWithSampleData: () => Promise<void>;
 }
@@ -47,6 +49,7 @@ interface PlantsProviderProps {
 export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [user, setUser] = useState<User | null>(null);
   const [careTasks, setCareTasks] = useState<CareTask[]>([]);
   const [careHistory, setCareHistory] = useState<CareHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +86,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         plant,
         room: room,
         daysOverdue: Math.max(0, daysOverdue),
-        isOverdue: daysOverdue > 0,
         nextWateringDate: nextWateringDate,
       });
     });
@@ -100,16 +102,31 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [loadedPlants, loadedRooms, loadedTasks, loadedHistory] = await Promise.all([
+      const [loadedPlants, loadedRooms, loadedTasks, loadedHistory, loadedUser] = await Promise.all([
         storage.getPlants(),
         storage.getRooms(),
         storage.getCareTasks(),
         storage.getCareHistory(),
+        storage.getUser(),
       ]);
       setPlants(loadedPlants);
       setRooms(loadedRooms);
       setCareTasks(loadedTasks);
       setCareHistory(loadedHistory);
+      
+      // Initialize default user if none exists
+      if (!loadedUser) {
+        const defaultUser: User = {
+          name: 'Plant Parent',
+          email: 'user@example.com',
+          locationName: 'Paris',
+          unitSystem: UnitSystem.METRIC,
+        };
+        await storage.saveUser(defaultUser);
+        setUser(defaultUser);
+      } else {
+        setUser(loadedUser);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -272,6 +289,11 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const deleteCareTask = useCallback(async (taskId: string) => {
     await storage.deleteCareTask(taskId);
     setCareTasks(prev => prev.filter(t => t.id !== taskId));
+  }, []);
+
+  const updateUser = useCallback(async (updates: Partial<User>) => {
+    await storage.updateUser(updates);
+    setUser(prev => prev ? { ...prev, ...updates } : null);
   }, []);
 
   const initializeWithSampleData = useCallback(async () => {
@@ -480,6 +502,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const value: PlantsContextValue = {
     plants,
     rooms,
+    user,
     loading,
     wateringTasks,
     selectedPlants,
@@ -501,6 +524,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     updateCareTask,
     completeCareTask,
     deleteCareTask,
+    updateUser,
     refreshData,
     initializeWithSampleData,
   };

@@ -1,10 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CareHistory, CareTask, Plant, Room } from '../types';
+import { CareHistory, CareTask, Plant, Room, User } from '../types';
 
 const PLANTS_KEY = '@zen_leaf_plants';
 const ROOMS_KEY = '@zen_leaf_rooms';
 const CARE_TASKS_KEY = '@zen_leaf_care_tasks';
 const CARE_HISTORY_KEY = '@zen_leaf_care_history';
+const USER_KEY = '@zen_leaf_user';
 
 // Serialization helpers for Date objects
 // Convert Date objects to ISO strings for JSON storage
@@ -226,14 +227,41 @@ export const storage = {
     await this.saveCareHistory(filtered);
   },
 
+  // User
+  async getUser(): Promise<User | null> {
+    try {
+      const data = await AsyncStorage.getItem(USER_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (error) {
+      console.error('Error loading user:', error);
+      return null;
+    }
+  },
+
+  async saveUser(user: User): Promise<void> {
+    try {
+      await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
+    } catch (error) {
+      console.error('Error saving user:', error);
+    }
+  },
+
+  async updateUser(updates: Partial<User>): Promise<void> {
+    const user = await this.getUser();
+    if (user) {
+      await this.saveUser({ ...user, ...updates });
+    }
+  },
+
   // Clear all data (useful for development/testing)
   async clearAll(): Promise<void> {
     try {
       await AsyncStorage.multiRemove([
         PLANTS_KEY,
-        LOCATIONS_KEY,
+        ROOMS_KEY,
         CARE_TASKS_KEY,
         CARE_HISTORY_KEY,
+        USER_KEY,
       ]);
     } catch (error) {
       console.error('Error clearing storage:', error);

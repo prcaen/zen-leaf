@@ -15,29 +15,29 @@ import { Tab, TabBar } from '../../src/components/TabBar';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
 
-export type ProfileTabType = 'sites' | 'plants';
+export type ProfileTabType = 'rooms' | 'plants';
 
 export default function ProfileScreen() {
-  const { plants, rooms, wateringTasks } = usePlants();
-  const [activeTab, setActiveTab] = useState<ProfileTabType>('sites');
+  const { plants, rooms, wateringTasks, user } = usePlants();
+  const [activeTab, setActiveTab] = useState<ProfileTabType>('rooms');
 
   // Calculate statistics
   const totalPlants = plants.length;
-  const totalSites = rooms.length;
+  const totalRooms = rooms.length;
   
   // Count overdue tasks by location
   const overdueTasksByLocation = rooms.reduce((acc, room) => {
     const plantsInLocation = plants.filter(p => p.roomId === room.id);
     const overdueCount = wateringTasks.filter(task => 
-      task.isOverdue && plantsInLocation.some(p => p.id === task.plantId)
+      task.daysOverdue > 0 && plantsInLocation.some(p => p.id === task.plantId)
     ).length;
     acc[room.id] = overdueCount;
     return acc;
   }, {} as Record<string, number>);
 
   const tabs: Tab<ProfileTabType>[] = [
-    { value: 'sites', label: 'Sites' },
-    { value: 'plants', label: 'Plantes' },
+    { value: 'rooms', label: 'Rooms' },
+    { value: 'plants', label: 'Plants' },
   ];
 
   return (
@@ -53,9 +53,9 @@ export default function ProfileScreen() {
               <Ionicons name="person" size={48} color={theme.colors.primaryLight} />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.userName}>Pierrick</Text>
+              <Text style={styles.userName}>{user?.name}</Text>
               <Text style={styles.userStats}>
-                {totalPlants} Plantes • {totalSites} Sites
+                {totalPlants} Plants • {totalRooms} Rooms
               </Text>
             </View>
           </View>
@@ -70,8 +70,8 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {activeTab === 'sites' ? (
-          <View style={styles.sitesGrid}>
+        {activeTab === 'rooms' ? (
+          <View style={styles.roomsGrid}>
             {rooms.map(room => {
               const plantsInLocation = plants.filter(p => p.roomId === room.id);
               return (
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: 100,
   },
-  sitesGrid: {
+  roomsGrid: {
     flex: 1,
   },
   plantsGrid: {

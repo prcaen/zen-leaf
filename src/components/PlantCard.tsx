@@ -16,7 +16,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({
   isSelected,
   onToggleSelect,
 }) => {
-  const { plant, room: location, daysOverdue, isOverdue } = task;
+  const { plant, room: location, daysOverdue } = task;
   const router = useRouter();
 
   const handleCardPress = () => {
@@ -45,7 +45,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({
               <Ionicons name="leaf" size={32} color={theme.colors.primaryLight} />
             </View>
           )}
-          {isOverdue && (
+          {daysOverdue > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{daysOverdue}d late</Text>
             </View>
