@@ -19,6 +19,7 @@ import { SettingsSection } from '../../src/components/detail/SettingsSection';
 import { TasksList } from '../../src/components/detail/TasksList';
 import { InfoDialog } from '../../src/components/InfoDialog';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
+import { SliderDialog } from '../../src/components/SliderDialog';
 import { TextInputDialog } from '../../src/components/TextInputDialog';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
@@ -86,6 +87,9 @@ export default function PlantDetail() {
 
   // Change light level dialog state
   const [showLightLevelDialog, setShowLightLevelDialog] = useState(false);
+
+  // Change distance from window dialog state
+  const [showDistanceDialog, setShowDistanceDialog] = useState(false);
 
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
@@ -263,6 +267,25 @@ export default function PlantDetail() {
     });
   };
 
+  const handleDistancePress = () => {
+    setShowDistanceDialog(true);
+  };
+
+  const handleChangeDistance = async (newDistance: number) => {
+    const currentSettings = plant.settings || {};
+    const currentLight = currentSettings.light || { level: 'medium', type: 'indirect' };
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        light: {
+          ...currentLight,
+          distanceFromWindow: newDistance,
+        },
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -384,9 +407,9 @@ export default function PlantDetail() {
                 icon: 'swap-horizontal-outline',
                 label: 'Distance from window',
                 value: plant.settings?.light?.distanceFromWindow
-                  ? `${plant.settings.light.distanceFromWindow.toString()} cm`
+                  ? `${plant.settings.light.distanceFromWindow} cm`
                   : 'Not set',
-                onPress: () => console.log('Distance from window'),
+                onPress: handleDistancePress,
               },
             ]}
           />
@@ -615,6 +638,25 @@ export default function PlantDetail() {
         confirmText="Save"
         cancelText="Cancel"
         icon="sunny-outline"
+      />
+
+      {/* Change Distance from Window Dialog */}
+      <SliderDialog
+        visible={showDistanceDialog}
+        onClose={() => setShowDistanceDialog(false)}
+        onConfirm={handleChangeDistance}
+        title="Distance from Window"
+        initialValue={plant.settings?.light?.distanceFromWindow || 100}
+        minValue={0}
+        maxValue={300}
+        step={10}
+        unit=" cm"
+        minLabel="At window"
+        maxLabel="300+ cm"
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="swap-horizontal-outline"
+        iconColor={theme.colors.primary}
       />
     </SafeAreaView>
   );

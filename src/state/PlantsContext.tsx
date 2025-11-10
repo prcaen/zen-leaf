@@ -286,11 +286,11 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: null,
         createdAt: new Date().toISOString(),
         settings: {
-          light: { level: 'high', type: 'direct' },
+          light: { level: 'high', type: 'direct', distanceFromWindow: 30 },
           pot: { size: '6 inch', hasDrainage: true, material: 'terracotta' },
-          plantType: { species: 'Ocimum basilicum', variety: 'Sweet Basil', category: 'herb' },
-          room: { temperature: 22, humidity: 60, roomType: 'kitchen' },
-          location: { isIndoor: true, climate: 'temperate' },
+          plantType: { size: 'Medium', variety: 'Sweet Basil', category: 'herb' },
+          room: { temperature: 22, humidity: 60, roomType: 'kitchen', isIndoor: true },
+          location: { climate: 'temperate' },
         },
         careInfo: {
           growSpeed: 'fast',
@@ -311,11 +311,11 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
         createdAt: new Date().toISOString(),
         settings: {
-          light: { level: 'low', type: 'indirect' },
+          light: { level: 'low', type: 'indirect', distanceFromWindow: 150 },
           pot: { size: 'medium', hasDrainage: true, material: 'ceramic' },
-          plantType: { species: 'Spathiphyllum', category: 'tropical' },
-          room: { temperature: 20, humidity: 70, roomType: 'living room' },
-          location: { isIndoor: true, climate: 'humid' },
+          plantType: { size: 'Large', category: 'tropical' },
+          room: { temperature: 20, humidity: 70, roomType: 'living room', isIndoor: true },
+          location: { climate: 'humid' },
         },
         careInfo: {
           growSpeed: 'moderate',
@@ -336,11 +336,11 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(), // 8 days ago
         createdAt: new Date().toISOString(),
         settings: {
-          light: { level: 'medium', type: 'indirect' },
+          light: { level: 'medium', type: 'indirect', distanceFromWindow: 80 },
           pot: { size: 'large', hasDrainage: true, material: 'plastic' },
-          plantType: { species: 'Monstera deliciosa', category: 'tropical' },
-          room: { temperature: 21, humidity: 65, roomType: 'living room' },
-          location: { isIndoor: true, climate: 'tropical' },
+          plantType: { size: 'Large', category: 'tropical' },
+          room: { temperature: 21, humidity: 65, roomType: 'living room', isIndoor: true },
+          location: { climate: 'tropical' },
         },
         careInfo: {
           growSpeed: 'moderate',
