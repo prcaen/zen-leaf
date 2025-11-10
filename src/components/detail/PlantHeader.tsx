@@ -8,6 +8,7 @@ interface PlantHeaderProps {
   location: string;
   imageUrl?: string;
   onNamePress?: () => void;
+  onLocationPress?: () => void;
 }
 
 export const PlantHeader: React.FC<PlantHeaderProps> = ({
@@ -15,6 +16,7 @@ export const PlantHeader: React.FC<PlantHeaderProps> = ({
   location,
   imageUrl,
   onNamePress,
+  onLocationPress,
 }) => {
   return (
     <View style={styles.container}>
@@ -40,7 +42,15 @@ export const PlantHeader: React.FC<PlantHeaderProps> = ({
               <Text style={styles.name}>{name}</Text>
             </View>
           </TouchableOpacity>
-          <Text style={styles.location}>{location}</Text>
+          <TouchableOpacity 
+            onPress={onLocationPress} 
+            disabled={!onLocationPress}
+            activeOpacity={0.7}
+          >
+            <View style={styles.locationContainer}>
+              <Text style={styles.location}>{location}</Text>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -86,6 +96,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: theme.colors.text,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
   },
   location: {
     fontSize: 16,

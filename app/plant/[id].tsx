@@ -18,6 +18,7 @@ import { PlantHeader } from '../../src/components/detail/PlantHeader';
 import { SettingsSection } from '../../src/components/detail/SettingsSection';
 import { TasksList } from '../../src/components/detail/TasksList';
 import { InfoDialog } from '../../src/components/InfoDialog';
+import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
 import { TextInputDialog } from '../../src/components/TextInputDialog';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
@@ -79,6 +80,9 @@ export default function PlantDetail() {
 
   // Rename dialog state
   const [showRenameDialog, setShowRenameDialog] = useState(false);
+
+  // Change room dialog state
+  const [showChangeRoomDialog, setShowChangeRoomDialog] = useState(false);
 
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
@@ -218,6 +222,19 @@ export default function PlantDetail() {
     await updatePlant(id, { name: newName });
   };
 
+  const handleLocationPress = () => {
+    setShowChangeRoomDialog(true);
+  };
+
+  const handleChangeRoom = async (newLocationId: string) => {
+    await updatePlant(id, { locationId: newLocationId });
+  };
+
+  const roomOptions: SelectionOption[] = locations.map(loc => ({
+    id: loc.id,
+    label: loc.name,
+  }));
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -256,6 +273,7 @@ export default function PlantDetail() {
           location={location.name}
           imageUrl={plant.imageUrl}
           onNamePress={handleNamePress}
+          onLocationPress={handleLocationPress}
         />
 
         {/* Action Cards */}
@@ -541,6 +559,20 @@ export default function PlantDetail() {
         confirmText="Save"
         cancelText="Cancel"
         icon="create-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Change Room Dialog */}
+      <SelectionDialog
+        visible={showChangeRoomDialog}
+        onClose={() => setShowChangeRoomDialog(false)}
+        onConfirm={handleChangeRoom}
+        title="Change Room"
+        options={roomOptions}
+        initialSelectedId={plant.locationId}
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="home-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>
