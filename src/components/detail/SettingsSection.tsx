@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { capitalizeFirstLetter } from '../../lib/string';
 import { theme } from '../../theme';
 
 interface SettingItemData {
@@ -32,7 +33,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ title, items }
             </View>
             <View style={styles.itemContent}>
               <Text style={styles.itemLabel}>{item.label}</Text>
-              {item.value && <Text style={styles.itemValue}>{item.value}</Text>}
+              {item.value && <Text style={styles.itemValue}>{capitalizeFirstLetter(item.value)}</Text>}
             </View>
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textLight} />
           </TouchableOpacity>

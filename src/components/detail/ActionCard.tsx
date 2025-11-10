@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { capitalizeFirstLetter } from '../../lib/string';
 import { theme } from '../../theme';
 
 interface ActionCardProps {
@@ -29,7 +30,7 @@ export const ActionCard: React.FC<ActionCardProps> = ({
         <Ionicons name={icon} size={32} color={theme.colors.white} />
       </View>
       <Text style={styles.title}>{title}</Text>
-      {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+      {subtitle && <Text style={styles.subtitle}>{capitalizeFirstLetter(subtitle)}</Text>}
     </TouchableOpacity>
   );
 };
