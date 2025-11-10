@@ -21,6 +21,7 @@ interface SelectionDialogProps {
   onClose: () => void;
   onConfirm: (selectedId: string) => void;
   title: string;
+  description?: string;
   options: SelectionOption[];
   initialSelectedId: string;
   confirmText?: string;
@@ -34,6 +35,7 @@ export const SelectionDialog: React.FC<SelectionDialogProps> = ({
   onClose,
   onConfirm,
   title,
+  description,
   options,
   initialSelectedId,
   confirmText = 'Save',
@@ -77,6 +79,10 @@ export const SelectionDialog: React.FC<SelectionDialogProps> = ({
             </View>
             <Text style={styles.title}>{title}</Text>
           </View>
+
+          {description && (
+            <Text style={styles.description}>{description}</Text>
+          )}
 
           <ScrollView style={styles.optionsList} showsVerticalScrollIndicator={false}>
             {options.map((option) => (
@@ -169,6 +175,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.text,
     textAlign: 'center',
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.sm,
   },
   optionsList: {
     maxHeight: 300,

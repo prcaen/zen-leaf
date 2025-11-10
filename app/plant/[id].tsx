@@ -94,6 +94,9 @@ export default function PlantDetail() {
   // Change pot size dialog state
   const [showPotSizeDialog, setShowPotSizeDialog] = useState(false);
 
+  // Change drainage dialog state
+  const [showDrainageDialog, setShowDrainageDialog] = useState(false);
+
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
   const headerTitleOpacity = useRef(new Animated.Value(0)).current;
@@ -314,6 +317,30 @@ export default function PlantDetail() {
     return 'Large';
   };
 
+  const handleDrainagePress = () => {
+    setShowDrainageDialog(true);
+  };
+
+  const handleChangeDrainage = async (hasDrainage: string) => {
+    const currentSettings = plant.settings || {};
+    const currentPot = currentSettings.pot || { size: 30, hasDrainage: true };
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        pot: {
+          ...currentPot,
+          hasDrainage: hasDrainage === 'yes',
+        },
+      },
+    });
+  };
+
+  const drainageOptions: SelectionOption[] = [
+    { id: 'yes', label: 'Yes, my pot has a drainage', icon: 'checkmark-circle-outline' },
+    { id: 'no', label: 'No, no drainage', icon: 'close-circle-outline' },
+  ];
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -456,8 +483,13 @@ export default function PlantDetail() {
               {
                 icon: 'water-outline',
                 label: 'Drainage',
-                value: plant.settings?.pot?.hasDrainage ? 'Yes' : 'Not set',
-                onPress: () => console.log('Drainage'),
+                value:
+                  plant.settings?.pot?.hasDrainage == null
+                    ? 'Not set'
+                    : plant.settings.pot.hasDrainage
+                      ? 'Yes'
+                      : 'No',
+                onPress: handleDrainagePress,
               },
               {
                 icon: 'flower-outline',
@@ -703,6 +735,21 @@ export default function PlantDetail() {
         confirmText="Save"
         cancelText="Cancel"
         icon="resize-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Change Drainage Dialog */}
+      <SelectionDialog
+        visible={showDrainageDialog}
+        onClose={() => setShowDrainageDialog(false)}
+        onConfirm={handleChangeDrainage}
+        title="Pot Drainage"
+        description="Good drainage in a pot prevents root rot by allowing excess water to escape, ensuring healthy plant growth."
+        options={drainageOptions}
+        initialSelectedId={plant.settings?.pot?.hasDrainage ? 'yes' : 'no'}
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="water-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>
