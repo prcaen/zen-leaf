@@ -6,12 +6,73 @@ const LOCATIONS_KEY = '@zen_leaf_locations';
 const CARE_TASKS_KEY = '@zen_leaf_care_tasks';
 const CARE_HISTORY_KEY = '@zen_leaf_care_history';
 
+// Serialization helpers for Date objects
+// Convert Date objects to ISO strings for JSON storage
+function serializeDates<T>(obj: T): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return obj.toISOString();
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => serializeDates(item));
+  }
+
+  if (typeof obj === 'object') {
+    const serialized: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        serialized[key] = serializeDates((obj as any)[key]);
+      }
+    }
+    return serialized;
+  }
+
+  return obj;
+}
+
+// Deserialization helpers for Date objects
+// Convert ISO strings back to Date objects
+function deserializeDates<T>(obj: any): T {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(obj)) {
+    // Check if it's an ISO date string
+    const date = new Date(obj);
+    if (!isNaN(date.getTime())) {
+      return date as any;
+    }
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => deserializeDates(item)) as any;
+  }
+
+  if (typeof obj === 'object') {
+    const deserialized: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        deserialized[key] = deserializeDates(obj[key]);
+      }
+    }
+    return deserialized;
+  }
+
+  return obj;
+}
+
 export const storage = {
   // Plants
   async getPlants(): Promise<Plant[]> {
     try {
       const data = await AsyncStorage.getItem(PLANTS_KEY);
-      return data ? JSON.parse(data) : [];
+      const parsed = data ? JSON.parse(data) : [];
+      return deserializeDates<Plant[]>(parsed);
     } catch (error) {
       console.error('Error loading plants:', error);
       return [];
@@ -20,7 +81,8 @@ export const storage = {
 
   async savePlants(plants: Plant[]): Promise<void> {
     try {
-      await AsyncStorage.setItem(PLANTS_KEY, JSON.stringify(plants));
+      const serialized = serializeDates(plants);
+      await AsyncStorage.setItem(PLANTS_KEY, JSON.stringify(serialized));
     } catch (error) {
       console.error('Error saving plants:', error);
     }
@@ -91,8 +153,9 @@ export const storage = {
   async getCareTasks(plantId?: string): Promise<CareTask[]> {
     try {
       const data = await AsyncStorage.getItem(CARE_TASKS_KEY);
-      const allTasks = data ? JSON.parse(data) : [];
-      return plantId ? allTasks.filter((t: CareTask) => t.plantId === plantId) : allTasks;
+      const parsed = data ? JSON.parse(data) : [];
+      const deserialized = deserializeDates<CareTask[]>(parsed);
+      return plantId ? deserialized.filter((t: CareTask) => t.plantId === plantId) : deserialized;
     } catch (error) {
       console.error('Error loading care tasks:', error);
       return [];
@@ -101,7 +164,8 @@ export const storage = {
 
   async saveCareTasks(tasks: CareTask[]): Promise<void> {
     try {
-      await AsyncStorage.setItem(CARE_TASKS_KEY, JSON.stringify(tasks));
+      const serialized = serializeDates(tasks);
+      await AsyncStorage.setItem(CARE_TASKS_KEY, JSON.stringify(serialized));
     } catch (error) {
       console.error('Error saving care tasks:', error);
     }
@@ -132,8 +196,9 @@ export const storage = {
   async getCareHistory(plantId?: string): Promise<CareHistory[]> {
     try {
       const data = await AsyncStorage.getItem(CARE_HISTORY_KEY);
-      const allHistory = data ? JSON.parse(data) : [];
-      return plantId ? allHistory.filter((h: CareHistory) => h.plantId === plantId) : allHistory;
+      const parsed = data ? JSON.parse(data) : [];
+      const deserialized = deserializeDates<CareHistory[]>(parsed);
+      return plantId ? deserialized.filter((h: CareHistory) => h.plantId === plantId) : deserialized;
     } catch (error) {
       console.error('Error loading care history:', error);
       return [];
@@ -142,7 +207,8 @@ export const storage = {
 
   async saveCareHistory(history: CareHistory[]): Promise<void> {
     try {
-      await AsyncStorage.setItem(CARE_HISTORY_KEY, JSON.stringify(history));
+      const serialized = serializeDates(history);
+      await AsyncStorage.setItem(CARE_HISTORY_KEY, JSON.stringify(serialized));
     } catch (error) {
       console.error('Error saving care history:', error);
     }

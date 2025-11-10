@@ -19,8 +19,8 @@ export interface Plant {
   locationId: string;
   imageUrl?: string;
   wateringFrequencyDays: number;
-  lastWateredDate: string | null; // ISO date string
-  createdAt: string; // ISO date string
+  lastWateredDate: Date | null;
+  createdAt: Date;
   notes?: string;
   settings?: PlantSettings;
   careInfo?: PlantCareInfo;
@@ -32,7 +32,7 @@ export interface WateringTask {
   location: Location;
   daysOverdue: number;
   isOverdue: boolean;
-  nextWateringDate: string; // ISO date string
+  nextWateringDate: Date;
 }
 
 export interface PlantWithLocation extends Plant {
@@ -49,10 +49,10 @@ export interface CareTask {
   title: string;
   description?: string;
   frequencyDays: number;
-  lastCompletedDate: string | null; // ISO date string
-  nextDueDate: string; // ISO date string
+  lastCompletedDate: Date | null;
+  nextDueDate: Date;
   isLocked?: boolean;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export interface CareHistory {
@@ -60,7 +60,7 @@ export interface CareHistory {
   plantId: string;
   taskType: CareTaskType;
   title: string;
-  completedAt: string; // ISO date string
+  completedAt: Date;
   notes?: string;
 }
 
@@ -130,7 +130,7 @@ export interface PlantCareInfo {
 export interface HealthStatus {
   overall: 'excellent' | 'good' | 'fair' | 'poor';
   issues?: string[];
-  lastChecked: string; // ISO date string
+  lastChecked: Date;
   notes?: string;
 }
 

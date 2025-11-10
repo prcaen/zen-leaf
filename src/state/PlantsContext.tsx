@@ -65,7 +65,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       let daysOverdue = 0;
 
       if (plant.lastWateredDate) {
-        const lastWatered = new Date(plant.lastWateredDate);
+        const lastWatered = plant.lastWateredDate;
         nextWateringDate = new Date(lastWatered);
         nextWateringDate.setDate(lastWatered.getDate() + plant.wateringFrequencyDays);
         
@@ -83,7 +83,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         location,
         daysOverdue: Math.max(0, daysOverdue),
         isOverdue: daysOverdue > 0,
-        nextWateringDate: nextWateringDate.toISOString(),
+        nextWateringDate: nextWateringDate,
       });
     });
 
@@ -133,7 +133,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   }, []);
 
   const waterPlant = useCallback(async (plantId: string) => {
-    const now = new Date().toISOString();
+    const now = new Date();
     await storage.updatePlant(plantId, { lastWateredDate: now });
     setPlants(prev =>
       prev.map(p => (p.id === plantId ? { ...p, lastWateredDate: now } : p))
@@ -157,7 +157,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   }, []);
 
   const waterSelectedPlants = useCallback(async () => {
-    const now = new Date().toISOString();
+    const now = new Date();
     const plantIds = Array.from(selectedPlants);
     
     await Promise.all(
@@ -235,19 +235,19 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     const task = careTasks.find(t => t.id === taskId);
     if (!task) return;
 
-    const now = new Date().toISOString();
+    const now = new Date();
     const nextDueDate = new Date();
     nextDueDate.setDate(nextDueDate.getDate() + task.frequencyDays);
 
     // Update task
     await storage.updateCareTask(taskId, {
       lastCompletedDate: now,
-      nextDueDate: nextDueDate.toISOString(),
+      nextDueDate: nextDueDate,
     });
     setCareTasks(prev =>
       prev.map(t =>
         t.id === taskId
-          ? { ...t, lastCompletedDate: now, nextDueDate: nextDueDate.toISOString() }
+          ? { ...t, lastCompletedDate: now, nextDueDate: nextDueDate }
           : t
       )
     );
@@ -284,7 +284,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         locationId: 'loc1',
         wateringFrequencyDays: 2,
         lastWateredDate: null,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(),
         settings: {
           light: { level: LightLevel.HIGH, type: LightType.DIRECT, distanceFromWindow: 30 },
           pot: { size: 15, hasDrainage: true, material: 'terracotta', soil: 'all-purpose-potting-mix' },
@@ -307,8 +307,8 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         name: 'Peace Lily',
         locationId: 'loc2',
         wateringFrequencyDays: 3,
-        lastWateredDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
-        createdAt: new Date().toISOString(),
+        lastWateredDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
+        createdAt: new Date(),
         settings: {
           light: { level: LightLevel.LOW, type: LightType.INDIRECT, distanceFromWindow: 150 },
           pot: { size: 40, hasDrainage: true, material: 'ceramic', soil: 'all-purpose-garden-soil' },
@@ -331,8 +331,8 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         name: 'Monstera',
         locationId: 'loc2',
         wateringFrequencyDays: 7,
-        lastWateredDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(), // 8 days ago
-        createdAt: new Date().toISOString(),
+        lastWateredDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
+        createdAt: new Date(),
         settings: {
           light: { level: LightLevel.MEDIUM, type: LightType.INDIRECT, distanceFromWindow: 80 },
           pot: { size: 70, hasDrainage: true, material: 'plastic', soil: 'all-purpose-potting-mix' },
@@ -362,9 +362,9 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         title: 'Fertilize',
         description: 'Apply balanced liquid fertilizer',
         frequencyDays: 14,
-        lastCompletedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        nextDueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: now.toISOString(),
+        lastCompletedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+        nextDueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
+        createdAt: now,
       },
       {
         id: 'task2',
@@ -374,8 +374,8 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         description: 'Remove brown or yellow leaves',
         frequencyDays: 30,
         lastCompletedDate: null,
-        nextDueDate: now.toISOString(),
-        createdAt: now.toISOString(),
+        nextDueDate: now,
+        createdAt: now,
       },
       {
         id: 'task3',
@@ -384,9 +384,9 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         title: 'Check for pests',
         description: 'Inspect leaves for spider mites',
         frequencyDays: 7,
-        lastCompletedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        nextDueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-        createdAt: now.toISOString(),
+        lastCompletedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+        nextDueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+        createdAt: now,
       },
       {
         id: 'task4',
@@ -396,9 +396,9 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         description: 'Move to larger pot',
         frequencyDays: 365,
         lastCompletedDate: null,
-        nextDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        nextDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         isLocked: true,
-        createdAt: now.toISOString(),
+        createdAt: now,
       },
     ];
 
@@ -409,28 +409,28 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         plantId: 'plant2',
         taskType: 'water',
         title: 'Watered',
-        completedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+        completedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
       },
       {
         id: 'history2',
         plantId: 'plant3',
         taskType: 'water',
         title: 'Watered',
-        completedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+        completedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
       },
       {
         id: 'history3',
         plantId: 'plant1',
         taskType: 'fertilize',
         title: 'Fertilized',
-        completedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+        completedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
       },
       {
         id: 'history4',
         plantId: 'plant3',
         taskType: 'pest_check',
         title: 'Checked for pests',
-        completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
       },
     ];
 

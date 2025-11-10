@@ -12,8 +12,7 @@ interface HistoryListProps {
 export const HistoryList: React.FC<HistoryListProps> = ({ history, limit }) => {
   const displayHistory = limit ? history.slice(0, limit) : history;
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (date: Date) => {
     const now = new Date();
     const diffTime = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
