@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ConfirmDialog } from '../../src/components/ConfirmDialog';
 import { ActionCard } from '../../src/components/detail/ActionCard';
 import { HistoryList } from '../../src/components/detail/HistoryList';
 import { PlantHeader } from '../../src/components/detail/PlantHeader';
@@ -29,6 +30,7 @@ export default function PlantDetail() {
     getCareTasks,
     getCareHistory,
     completeCareTask,
+    deletePlant,
   } = usePlants();
 
   const plant = getPlantById(id);
@@ -69,6 +71,9 @@ export default function PlantDetail() {
     content: string;
     value: string;
   } | null>(null);
+
+  // Delete confirmation state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
@@ -191,6 +196,15 @@ export default function PlantDetail() {
     setDialogInfo(null);
   };
 
+  const handleDeletePress = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    await deletePlant(id);
+    router.back();
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -211,10 +225,8 @@ export default function PlantDetail() {
             {plant.name}
           </Text>
         </Animated.View>
-        <TouchableOpacity style={styles.headerButton}>
-          <TouchableOpacity style={styles.headerButton} onPress={handleDeletePlant}>
-            <Ionicons name="trash-outline" size={24} color={theme.colors.text} />
-          </TouchableOpacity>
+        <TouchableOpacity style={styles.headerButton} onPress={handleDeletePress}>
+          <Ionicons name="trash-outline" size={24} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
 
@@ -489,6 +501,20 @@ export default function PlantDetail() {
           value={dialogInfo.value}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        visible={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Plant?"
+        message={`Are you sure you want to delete ${plant.name}? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor={theme.colors.error}
+        icon="trash-outline"
+        iconColor={theme.colors.error}
+      />
     </SafeAreaView>
   );
 }
@@ -526,7 +552,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.sage,
+    backgroundColor: theme.colors.white,
   },
   headerButton: {
     padding: theme.spacing.sm,
