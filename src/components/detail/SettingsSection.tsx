@@ -4,7 +4,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { capitalizeFirstLetter } from '../../lib/string';
 import { theme } from '../../theme';
 
-interface SettingItemData {
+export interface SettingItemData {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   value?: string;

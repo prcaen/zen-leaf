@@ -16,8 +16,15 @@ import { SelectionDialog, SelectionOption } from '../../src/components/Selection
 import { SliderDialog } from '../../src/components/SliderDialog';
 import { Tab, TabBar } from '../../src/components/TabBar';
 import { TaskSection } from '../../src/components/TaskSection';
+import {
+  formatTemperature,
+  getDisplayTemperature,
+  getTemperatureUnit,
+  parseTemperature,
+} from '../../src/lib/number';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
+import { UnitSystem } from '../../src/types';
 
 type TabType = 'today' | 'soon';
 
@@ -31,6 +38,7 @@ export default function RoomDetailScreen() {
     selectedPlants,
     togglePlantSelection,
     updateRoom,
+    user,
   } = usePlants();
 
   const [activeTab, setActiveTab] = useState<TabType>('today');
@@ -103,10 +111,15 @@ export default function RoomDetailScreen() {
 
   const handleChangeTemperature = async (temperature: number) => {
     const currentSettings = room?.settings || {};
+    const unitSystem = user?.unitSystem || UnitSystem.METRIC;
+    
+    // Convert from display value to metric for storage
+    const temperatureInCelsius = parseTemperature(temperature, unitSystem);
+    
     await updateRoom(roomId, {
       settings: {
         ...currentSettings,
-        temperature,
+        temperature: temperatureInCelsius,
       },
     });
   };
@@ -229,7 +242,7 @@ export default function RoomDetailScreen() {
                 icon: 'thermometer-outline',
                 label: 'Temperature',
                 value: room.settings?.temperature
-                  ? `${room.settings.temperature}°C`
+                  ? formatTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
                   : 'Not set',
                 onPress: handleTemperaturePress,
               },
@@ -266,11 +279,13 @@ export default function RoomDetailScreen() {
         onClose={() => setShowTemperatureDialog(false)}
         onConfirm={handleChangeTemperature}
         title="Temperature"
-        initialValue={room.settings?.temperature || 20}
-        minValue={0}
-        maxValue={40}
+        initialValue={room.settings?.temperature 
+          ? getDisplayTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
+          : (user?.unitSystem === UnitSystem.IMPERIAL ? 68 : 20)}
+        minValue={user?.unitSystem === UnitSystem.IMPERIAL ? 32 : 0}
+        maxValue={user?.unitSystem === UnitSystem.IMPERIAL ? 104 : 40}
         step={1}
-        unit="°C"
+        unit={getTemperatureUnit(user?.unitSystem || UnitSystem.METRIC)}
         confirmText="Save"
         cancelText="Cancel"
         icon="thermometer-outline"

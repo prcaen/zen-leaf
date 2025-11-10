@@ -21,9 +21,16 @@ import { InfoDialog } from '../../src/components/InfoDialog';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
 import { SliderDialog } from '../../src/components/SliderDialog';
 import { TextInputDialog } from '../../src/components/TextInputDialog';
+import {
+  formatSize,
+  formatTemperature,
+  getDisplaySize,
+  getSizeUnit,
+  parseSize
+} from '../../src/lib/number';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { GrowSpeed, LightLevel, LightType, Toxicity, WaterNeeded } from '../../src/types';
+import { GrowSpeed, LightLevel, LightType, Toxicity, UnitSystem, WaterNeeded } from '../../src/types';
 
 export default function PlantDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -37,6 +44,7 @@ export default function PlantDetail() {
     completeCareTask,
     deletePlant,
     updatePlant,
+    user,
   } = usePlants();
 
   const plant = getPlantById(id);
@@ -303,13 +311,17 @@ export default function PlantDetail() {
   const handleChangeDistance = async (newDistance: number) => {
     const currentSettings = plant.settings || {};
     const currentLight = currentSettings.light || { level: LightLevel.MEDIUM, type: LightType.INDIRECT };
+    const unitSystem = user?.unitSystem || UnitSystem.METRIC;
+    
+    // Convert from display value to metric for storage
+    const distanceInCm = parseSize(newDistance, unitSystem);
     
     await updatePlant(id, {
       settings: {
         ...currentSettings,
         light: {
           ...currentLight,
-          distanceFromWindow: newDistance,
+          distanceFromWindow: distanceInCm,
         },
       },
     });
@@ -322,13 +334,17 @@ export default function PlantDetail() {
   const handleChangePotSize = async (newSize: number) => {
     const currentSettings = plant.settings || {};
     const currentPot = currentSettings.pot || { size: 30, hasDrainage: true };
+    const unitSystem = user?.unitSystem || UnitSystem.METRIC;
+    
+    // Convert from display value to metric for storage
+    const sizeInCm = parseSize(newSize, unitSystem);
     
     await updatePlant(id, {
       settings: {
         ...currentSettings,
         pot: {
           ...currentPot,
-          size: newSize,
+          size: sizeInCm,
         },
       },
     });
@@ -445,13 +461,17 @@ export default function PlantDetail() {
   const handleChangePlantSize = async (newSize: number) => {
     const currentSettings = plant.settings || {};
     const currentPlantType = currentSettings.plantType || {};
+    const unitSystem = user?.unitSystem || UnitSystem.METRIC;
+    
+    // Convert from display value to metric for storage
+    const sizeInCm = parseSize(newSize, unitSystem);
     
     await updatePlant(id, {
       settings: {
         ...currentSettings,
         plantType: {
           ...currentPlantType,
-          size: newSize,
+          size: sizeInCm,
         },
       },
     });
@@ -510,7 +530,7 @@ export default function PlantDetail() {
       icon: 'thermometer-outline',
       label: 'Temperature',
       value: room?.settings?.temperature
-        ? `${room.settings.temperature}°C`
+        ? formatTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
         : 'Not set',
       onPress: () => handleRoomSettingPress('temperature'),
     });
@@ -683,7 +703,7 @@ export default function PlantDetail() {
                 icon: 'swap-horizontal-outline',
                 label: 'Distance from window',
                 value: plant.settings?.light?.distanceFromWindow
-                  ? `${plant.settings.light.distanceFromWindow} cm`
+                  ? formatSize(plant.settings.light.distanceFromWindow, user?.unitSystem || UnitSystem.METRIC)
                   : 'Not set',
                 onPress: handleDistancePress,
               },
@@ -697,7 +717,7 @@ export default function PlantDetail() {
                 icon: 'resize-outline',
                 label: 'Size',
                 value: plant.settings?.pot?.size 
-                  ? `${plant.settings.pot.size} cm (${getPotSizeLabel(plant.settings.pot.size)})` 
+                  ? `${formatSize(plant.settings.pot.size, user?.unitSystem || UnitSystem.METRIC)} (${getPotSizeLabel(plant.settings.pot.size)})` 
                   : 'Not set',
                 onPress: handlePotSizePress,
               },
@@ -742,7 +762,7 @@ export default function PlantDetail() {
                 icon: 'expand-outline',
                 label: 'Size',
                 value: plant.settings?.plantType?.size 
-                  ? `${plant.settings.plantType.size} cm` 
+                  ? formatSize(plant.settings.plantType.size, user?.unitSystem || UnitSystem.METRIC)
                   : 'Not set',
                 onPress: handlePlantSizePress,
               },
@@ -836,13 +856,15 @@ export default function PlantDetail() {
         onClose={() => setShowDistanceDialog(false)}
         onConfirm={handleChangeDistance}
         title="Distance from Window"
-        initialValue={plant.settings?.light?.distanceFromWindow || 100}
-        minValue={0}
-        maxValue={300}
-        step={10}
-        unit=" cm"
+        initialValue={plant.settings?.light?.distanceFromWindow 
+          ? getDisplaySize(plant.settings.light.distanceFromWindow, user?.unitSystem || UnitSystem.METRIC)
+          : (user?.unitSystem === UnitSystem.IMPERIAL ? 39.4 : 100)}
+        minValue={user?.unitSystem === UnitSystem.IMPERIAL ? 0 : 0}
+        maxValue={user?.unitSystem === UnitSystem.IMPERIAL ? 118 : 300}
+        step={user?.unitSystem === UnitSystem.IMPERIAL ? 4 : 10}
+        unit={` ${getSizeUnit(user?.unitSystem || UnitSystem.METRIC)}`}
         minLabel="At window"
-        maxLabel="300+ cm"
+        maxLabel={user?.unitSystem === UnitSystem.IMPERIAL ? "118+\"" : "300+ cm"}
         confirmText="Save"
         cancelText="Cancel"
         icon="swap-horizontal-outline"
@@ -855,11 +877,13 @@ export default function PlantDetail() {
         onClose={() => setShowPotSizeDialog(false)}
         onConfirm={handleChangePotSize}
         title="Pot Size"
-        initialValue={plant.settings?.pot?.size || 30}
-        minValue={5}
-        maxValue={100}
-        step={5}
-        unit=" cm"
+        initialValue={plant.settings?.pot?.size 
+          ? getDisplaySize(plant.settings.pot.size, user?.unitSystem || UnitSystem.METRIC)
+          : (user?.unitSystem === UnitSystem.IMPERIAL ? 11.8 : 30)}
+        minValue={user?.unitSystem === UnitSystem.IMPERIAL ? 2 : 5}
+        maxValue={user?.unitSystem === UnitSystem.IMPERIAL ? 39.4 : 100}
+        step={user?.unitSystem === UnitSystem.IMPERIAL ? 2 : 5}
+        unit={` ${getSizeUnit(user?.unitSystem || UnitSystem.METRIC)}`}
         confirmText="Save"
         cancelText="Cancel"
         icon="resize-outline"
@@ -902,13 +926,15 @@ export default function PlantDetail() {
         onConfirm={handleChangePlantSize}
         title="Plant Size"
         description="No need for an exact measurement, an approximate height is fine."
-        initialValue={plant.settings?.plantType?.size || 30}
+        initialValue={plant.settings?.plantType?.size 
+          ? getDisplaySize(plant.settings.plantType.size, user?.unitSystem || UnitSystem.METRIC)
+          : (user?.unitSystem === UnitSystem.IMPERIAL ? 11.8 : 30)}
         minValue={0}
-        maxValue={300}
-        step={5}
-        unit=" cm"
-        minLabel="Less than 5cm"
-        maxLabel="300cm+"
+        maxValue={user?.unitSystem === UnitSystem.IMPERIAL ? 118 : 300}
+        step={user?.unitSystem === UnitSystem.IMPERIAL ? 2 : 5}
+        unit={` ${getSizeUnit(user?.unitSystem || UnitSystem.METRIC)}`}
+        minLabel={user?.unitSystem === UnitSystem.IMPERIAL ? "Less than 2\"" : "Less than 5cm"}
+        maxLabel={user?.unitSystem === UnitSystem.IMPERIAL ? "118\"+" : "300cm+"}
         confirmText="Save"
         cancelText="Cancel"
         icon="expand-outline"
