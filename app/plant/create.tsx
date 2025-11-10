@@ -1,33 +1,136 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
+  ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { PlantCatalogItem } from '../../src/components/PlantCatalogItem';
+import { commonHouseplants, PlantCatalogItem as PlantCatalogItemType } from '../../src/data/plantCatalog';
+import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
+import { GrowSpeed, LightLevel, Plant, Toxicity, WaterNeeded } from '../../src/types';
 
 export default function CreatePlantScreen() {
   const router = useRouter();
+  const { addPlant, rooms } = usePlants();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredPlants = commonHouseplants.filter(plant =>
+    plant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    plant.aliases.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handlePlantSelect = async (plant: PlantCatalogItemType) => {
+    // Get the first room or use a default room ID
+    // In a real app, you might want to show a room selection dialog
+    const defaultRoomId = rooms.length > 0 ? rooms[0].id : 'default-room';
+
+    // Map difficulty to care info
+    const getLightNeeded = (difficulty: string): LightLevel => {
+      // Default to part sun for most plants
+      return LightLevel.PART_SUN;
+    };
+
+    const getGrowSpeed = (difficulty: string): GrowSpeed => {
+      switch (difficulty) {
+        case 'Easy':
+          return GrowSpeed.FAST;
+        case 'Moderate':
+          return GrowSpeed.MODERATE;
+        case 'Advanced':
+          return GrowSpeed.SLOW;
+        default:
+          return GrowSpeed.MODERATE;
+      }
+    };
+
+    const getWaterNeeded = (careIcons: string[]): WaterNeeded => {
+      if (careIcons.includes('cloud')) {
+        return WaterNeeded.HIGH;
+      }
+      return WaterNeeded.MODERATE;
+    };
+
+    const newPlant: Plant = {
+      id: `plant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: plant.name,
+      roomId: defaultRoomId,
+      wateringFrequencyDays: 7, // Default to weekly
+      lastWateredDate: null,
+      createdAt: new Date(),
+      careInfo: {
+        growSpeed: getGrowSpeed(plant.difficulty),
+        lightNeeded: getLightNeeded(plant.difficulty),
+        toxicity: Toxicity.NON_TOXIC, // Default to non-toxic
+        waterNeeded: getWaterNeeded(plant.careIcons),
+      },
+      imageUrl: plant.imageUrl,
+    };
+
+    await addPlant(newPlant);
+    router.back();
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
+      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
+
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
+        <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
+          <Ionicons name="close" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Add Plant</Text>
-        <View style={styles.backButton} />
+        <View style={styles.headerContent}>
+          <Text style={styles.title}>Add plant</Text>
+          <Text style={styles.subtitle}>
+            Select a plant from the catalog to add to your home.
+          </Text>
+        </View>
       </View>
 
-      <View style={styles.content}>
-        <Ionicons name="leaf-outline" size={64} color={theme.colors.primaryLight} />
-        <Text style={styles.placeholderText}>Add Plant Screen</Text>
-        <Text style={styles.placeholderSubtext}>This screen will allow you to add a new plant.</Text>
+      {/* Action Buttons */}
+      <View style={styles.actionButtons}>
+        <View style={styles.searchInputContainer}>
+          <Ionicons name="search-outline" size={20} color={theme.colors.textSecondary} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search plants..."
+            placeholderTextColor={theme.colors.textLight}
+            autoFocus
+          />
+          <TouchableOpacity
+            onPress={() => {
+              setSearchQuery('');
+            }}
+          >
+            <Ionicons name="close-circle" size={20} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
       </View>
+
+      {/* Plant List */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {filteredPlants.map(plant => (
+          <PlantCatalogItem
+            key={plant.id}
+            plant={plant}
+            onPress={() => handlePlantSelect(plant)}
+          />
+        ))}
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -38,39 +141,81 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.sage,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.white,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.lg,
+    backgroundColor: theme.colors.sage,
   },
-  backButton: {
+  closeButton: {
+    alignSelf: 'flex-start',
     padding: theme.spacing.sm,
-    width: 40,
+    marginBottom: theme.spacing.md,
   },
-  headerTitle: {
-    fontSize: 20,
+  headerContent: {
+    marginTop: theme.spacing.sm,
+  },
+  title: {
+    fontSize: 32,
     fontWeight: '700',
-    color: theme.colors.text,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.xl,
-  },
-  placeholderText: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: theme.colors.text,
-    marginTop: theme.spacing.lg,
+    color: theme.colors.sageDark,
     marginBottom: theme.spacing.sm,
   },
-  placeholderSubtext: {
-    fontSize: 16,
+  subtitle: {
+    fontSize: 14,
     color: theme.colors.textSecondary,
-    textAlign: 'center',
+    lineHeight: 20,
+  },
+  actionButtons: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
+  },
+  searchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.colors.primaryLight,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
+    gap: theme.spacing.sm,
+  },
+  searchButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.text,
+  },
+  searchInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.white,
+    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  searchIcon: {
+    marginRight: theme.spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: theme.colors.text,
+    paddingVertical: theme.spacing.xs,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: theme.spacing.xl,
+  },
+  sectionHeader: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: theme.colors.textSecondary,
+    paddingHorizontal: theme.spacing.lg,
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.sm,
+    backgroundColor: theme.colors.sage,
   },
 });
-
