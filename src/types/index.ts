@@ -59,16 +59,18 @@ export interface CareHistory {
 export interface LightSettings {
   level: 'low' | 'medium' | 'high';
   type: 'direct' | 'indirect' | 'shade';
+  distanceFromWindow?: number; // in centimeters
 }
 
 export interface PotSettings {
   size: string; // e.g., "6 inch", "Medium"
   hasDrainage: boolean;
   material?: string; // e.g., "ceramic", "plastic", "terracotta"
+  soil?: string; // e.g., "soil"
 }
 
 export interface PlantTypeSettings {
-  species?: string;
+  size?: string;
   variety?: string;
   category?: string; // e.g., "succulent", "fern", "tropical"
 }
@@ -77,12 +79,19 @@ export interface RoomSettings {
   temperature?: number; // in Celsius
   humidity?: number; // percentage
   roomType?: string; // e.g., "living room", "bathroom"
+  isNearAC?: boolean;
+  isNearHeater?: boolean;
+  isIndoor?: boolean;
 }
 
 export interface LocationSettings {
-  isIndoor: boolean;
   climate?: string;
   season?: string;
+  temperature?: {
+    min?: number;
+    max?: number;
+  };
+  city?: string;
 }
 
 export interface PlantSettings {

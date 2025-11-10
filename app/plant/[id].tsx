@@ -78,7 +78,7 @@ export default function PlantDetail() {
     const offsetY = event.nativeEvent.contentOffset.y;
     // Show title when scrolled past the plant header (around 250px)
     const shouldShow = offsetY > 250;
-    
+
     if (shouldShow !== showHeaderTitle) {
       setShowHeaderTitle(shouldShow);
     }
@@ -109,9 +109,9 @@ export default function PlantDetail() {
     await completeCareTask(taskId, id);
   };
 
-  const handleModifySettings = () => {
-    // TODO: Navigate to settings screen
-    console.log('Modify settings');
+  const handleDeletePlant = () => {
+    // TODO: Delete plant
+    console.log('Delete plant');
   };
 
   const handleGrowSpeedPress = () => {
@@ -200,7 +200,7 @@ export default function PlantDetail() {
         <TouchableOpacity style={styles.headerButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.headerTitleContainer,
             { opacity: headerTitleOpacity }
@@ -212,7 +212,9 @@ export default function PlantDetail() {
           </Text>
         </Animated.View>
         <TouchableOpacity style={styles.headerButton}>
-          <Ionicons name="settings-outline" size={24} color={theme.colors.text} />
+          <TouchableOpacity style={styles.headerButton} onPress={handleDeletePlant}>
+            <Ionicons name="trash-outline" size={24} color={theme.colors.text} />
+          </TouchableOpacity>
         </TouchableOpacity>
       </View>
 
@@ -233,7 +235,7 @@ export default function PlantDetail() {
         {/* Action Cards */}
         <View style={styles.section}>
           <View style={styles.actionCardsGrid}>
-          <ActionCard
+            <ActionCard
               icon="water-outline"
               title="Water Needed"
               subtitle={plant.careInfo?.waterNeeded || 'Moderate'}
@@ -307,20 +309,16 @@ export default function PlantDetail() {
               {
                 icon: 'sunny-outline',
                 label: 'Medium',
-                value: 'Indirect light',
+                value: plant.settings?.light?.level || 'Not set',
                 onPress: () => console.log('Light settings'),
               },
               {
-                icon: 'time-outline',
-                label: 'Day',
-                value: '8-12 hours',
-                onPress: () => console.log('Day settings'),
-              },
-              {
-                icon: 'moon-outline',
-                label: 'Night',
-                value: 'Dark period',
-                onPress: () => console.log('Night settings'),
+                icon: 'swap-horizontal-outline',
+                label: 'Distance from window',
+                value: plant.settings?.light?.distanceFromWindow
+                  ? `${plant.settings.light.distanceFromWindow.toString()} cm`
+                  : 'Not set',
+                onPress: () => console.log('Distance from window'),
               },
             ]}
           />
@@ -331,14 +329,20 @@ export default function PlantDetail() {
               {
                 icon: 'resize-outline',
                 label: 'Size',
-                value: '6 inch pot',
+                value: plant.settings?.pot?.size || 'Not set',
                 onPress: () => console.log('Pot size'),
               },
               {
                 icon: 'water-outline',
                 label: 'Drainage',
-                value: 'Good drainage',
+                value: plant.settings?.pot?.hasDrainage ? 'Yes' : 'Not set',
                 onPress: () => console.log('Drainage'),
+              },
+              {
+                icon: 'flower-outline',
+                label: 'Soil',
+                value: plant.settings?.pot?.soil || 'Not set',
+                onPress: () => console.log('Soil'),
               },
             ]}
           />
@@ -358,11 +362,36 @@ export default function PlantDetail() {
                 value: plant.settings?.plantType?.variety || 'Not set',
                 onPress: () => console.log('Variety'),
               },
+              {
+                icon: 'expand-outline',
+                label: 'Size',
+                value: plant.settings?.plantType?.size || 'Not set',
+                onPress: () => console.log('Size'),
+              },
+              {
+                icon: 'time-outline',
+                label: 'Age',
+                value: plant.createdAt
+                  ? (() => {
+                    const createdDate = new Date(plant.createdAt);
+                    const now = new Date();
+                    const diffMs = now.getTime() - createdDate.getTime();
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    if (diffDays < 1) return 'Less than a day';
+                    if (diffDays < 30) return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+                    const months = Math.floor(diffDays / 30.44);
+                    if (months < 12) return `${months} month${months !== 1 ? 's' : ''}`;
+                    const years = Math.floor(months / 12);
+                    return `${years} year${years !== 1 ? 's' : ''}`;
+                  })()
+                  : 'Not set',
+                onPress: () => console.log('Age'),
+              },
             ]}
           />
 
           <SettingsSection
-            title="Room / Date"
+            title="Room"
             items={[
               {
                 icon: 'thermometer-outline',
@@ -376,34 +405,80 @@ export default function PlantDetail() {
                 value: plant.settings?.room?.humidity ? `${plant.settings.room.humidity}%` : 'Not set',
                 onPress: () => console.log('Humidity'),
               },
-            ]}
-          />
-
-          <SettingsSection
-            title="Location & Weather"
-            items={[
               {
                 icon: 'location-outline',
                 label: 'Location',
-                value: plant.settings?.location?.isIndoor ? 'Indoor' : 'Outdoor',
+                value: plant.settings?.room?.isIndoor ? 'Indoor' : 'Outdoor',
                 onPress: () => console.log('Location'),
               },
               {
-                icon: 'partly-sunny-outline',
-                label: 'Climate',
-                value: plant.settings?.location?.climate || 'Not set',
-                onPress: () => console.log('Climate'),
+                icon: 'snow-outline',
+                label: 'Near A/C',
+                value: plant.settings?.room?.isNearAC === true
+                  ? 'Yes'
+                  : plant.settings?.room?.isNearAC === false
+                    ? 'No'
+                    : 'Not set',
+                onPress: () => console.log('Near A/C'),
+              },
+              {
+                icon: 'flame-outline',
+                label: 'Near Heater',
+                value:
+                  plant.settings?.room?.isNearHeater === true
+                    ? 'Yes'
+                    : plant.settings?.room?.isNearHeater === false
+                      ? 'No'
+                      : 'Not set',
+                onPress: () => console.log('Near Heater'),
               },
             ]}
           />
 
-          <TouchableOpacity style={styles.modifyButton} onPress={handleModifySettings}>
-            <Text style={styles.modifyButtonText}>Modify settings</Text>
-          </TouchableOpacity>
+          {!plant.settings?.room?.isIndoor && (
+            <SettingsSection
+              title="Outdoor Settings"
+              items={[
+                {
+                  icon: 'partly-sunny-outline',
+                  label: 'Climate',
+                  value: plant.settings?.location?.climate || 'Not set',
+                  onPress: () => console.log('Climate'),
+                },
+                {
+                  icon: 'calendar-outline',
+                  label: 'Current Month',
+                  value: new Date().toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + new Date().toLocaleString('default', { month: 'long' }).slice(1),
+                  onPress: () => console.log('Current Month'),
+                },
+                {
+                  icon: 'thermometer-outline',
+                  label: 'Min Temp',
+                  value:
+                    plant.settings?.location?.temperature?.min != null
+                      ? `${plant.settings.location.temperature.min}°C`
+                      : 'Not set',
+                  onPress: () => console.log('Min Temp'),
+                },
+                {
+                  icon: 'thermometer-outline',
+                  label: 'Max Temp',
+                  value:
+                    plant.settings?.location?.temperature?.max != null
+                      ? `${plant.settings.location.temperature.max}°C`
+                      : 'Not set',
+                  onPress: () => console.log('Max Temp'),
+                },
+                {
+                  icon: 'pin-outline',
+                  label: 'City',
+                  value: plant.settings?.location?.city || 'Not set',
+                  onPress: () => console.log('City'),
+                },
+              ]}
+            />
+          )}
         </View>
-
-        {/* Bottom spacing */}
-        <View style={styles.bottomSpacer} />
       </ScrollView>
 
       {/* Info Dialog */}
@@ -507,48 +582,6 @@ const styles = StyleSheet.create({
   },
   soonContainer: {
     gap: theme.spacing.md,
-  },
-  unlockButton: {
-    backgroundColor: theme.colors.warning,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.xl,
-    alignItems: 'center',
-  },
-  unlockButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-  modifyButton: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.xl,
-    alignItems: 'center',
-    marginTop: theme.spacing.md,
-  },
-  modifyButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-  bottomSpacer: {
-    height: 56 + theme.spacing.lg,
-  },
-  fabContainer: {
-    position: 'absolute',
-    right: theme.spacing.lg,
-    bottom: theme.spacing.lg,
-  },
-  fab: {
-    width: 56,
-    height: 56,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...theme.shadows.md,
   },
 });
 
