@@ -42,6 +42,12 @@ export default function PlantDetail() {
   const plantTasks = getCareTasks(id);
   const plantHistory = getCareHistory(id);
 
+  const handleRoomSettingPress = () => {
+    if (plant?.locationId) {
+      router.push(`/room/${plant.locationId}`);
+    }
+  };
+
   // Separate tasks by due date
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -643,7 +649,7 @@ export default function PlantDetail() {
                 value: location?.settings?.temperature
                   ? `${location.settings.temperature}°C`
                   : 'Not set',
-                onPress: () => console.log('Temperature'),
+                onPress: handleRoomSettingPress,
               },
               {
                 icon: 'water-outline',
@@ -651,7 +657,7 @@ export default function PlantDetail() {
                 value: location?.settings?.humidity
                   ? `${location.settings.humidity}%`
                   : 'Not set',
-                onPress: () => console.log('Humidity'),
+                onPress: handleRoomSettingPress,
               },
               {
                 icon: 'location-outline',
@@ -662,7 +668,7 @@ export default function PlantDetail() {
                     : location?.settings?.isIndoor === false
                       ? 'Outdoor'
                       : 'Not set',
-                onPress: () => console.log('Location'),
+                onPress: handleRoomSettingPress,
               },
               {
                 icon: 'snow-outline',
@@ -673,7 +679,7 @@ export default function PlantDetail() {
                     : location?.settings?.isNearAC === false
                       ? 'No'
                       : 'Not set',
-                onPress: () => console.log('Near A/C'),
+                onPress: handleRoomSettingPress,
               },
               {
                 icon: 'flame-outline',
@@ -684,7 +690,7 @@ export default function PlantDetail() {
                     : location?.settings?.isNearHeater === false
                       ? 'No'
                       : 'Not set',
-                onPress: () => console.log('Near Heater'),
+                onPress: handleRoomSettingPress,
               },
             ]}
           />
