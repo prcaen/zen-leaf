@@ -144,7 +144,7 @@ export default function PlantDetail() {
       visible: true,
       title: 'Light Requirements',
       icon: 'sunny-outline',
-      iconColor: '#FDB813',
+      iconColor: theme.colors.primaryLight,
       content: careInfo?.lightNeededDescription || descriptions[light],
       value: light,
     });
@@ -163,7 +163,7 @@ export default function PlantDetail() {
       visible: true,
       title: 'Toxicity Information',
       icon: 'warning-outline',
-      iconColor: careInfo?.toxicity === 'non-toxic' ? '#34C759' : '#FF3B30',
+      iconColor: theme.colors.primaryLight,
       content: careInfo?.toxicityDescription || descriptions[toxicity],
       value: toxicity.replace('-', ' '),
     });
@@ -181,7 +181,7 @@ export default function PlantDetail() {
       visible: true,
       title: 'Water Requirements',
       icon: 'water-outline',
-      iconColor: '#007AFF',
+      iconColor: theme.colors.primaryLight,
       content: careInfo?.waterNeededDescription || descriptions[water],
       value: water,
     });
@@ -264,11 +264,7 @@ export default function PlantDetail() {
                   ? plant.careInfo.toxicity.replace('-', ' ')
                   : 'Non-toxic'
               }
-              color={
-                plant.careInfo?.toxicity === 'non-toxic' || !plant.careInfo?.toxicity
-                  ? theme.colors.primaryLight
-                  : '#FF3B30'
-              }
+              color={theme.colors.primaryLight}
               onPress={handleToxicityPress}
             />
           </View>
@@ -301,7 +297,7 @@ export default function PlantDetail() {
 
         {/* Settings */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Program based on:</Text>
+          <Text style={styles.sectionTitle}>Settings</Text>
 
           <SettingsSection
             title="Light"
