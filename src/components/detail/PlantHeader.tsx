@@ -1,18 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { theme } from '../../theme';
 
 interface PlantHeaderProps {
   name: string;
   location: string;
   imageUrl?: string;
+  onNamePress?: () => void;
 }
 
 export const PlantHeader: React.FC<PlantHeaderProps> = ({
   name,
   location,
   imageUrl,
+  onNamePress,
 }) => {
   return (
     <View style={styles.container}>
@@ -29,7 +31,15 @@ export const PlantHeader: React.FC<PlantHeaderProps> = ({
 
       <View style={styles.infoContainer}>
         <View style={styles.info}>
-          <Text style={styles.name}>{name}</Text>
+          <TouchableOpacity 
+            onPress={onNamePress} 
+            disabled={!onNamePress}
+            activeOpacity={0.7}
+          >
+            <View style={styles.nameContainer}>
+              <Text style={styles.name}>{name}</Text>
+            </View>
+          </TouchableOpacity>
           <Text style={styles.location}>{location}</Text>
         </View>
       </View>
@@ -66,11 +76,16 @@ const styles = StyleSheet.create({
   info: {
     alignItems: 'center',
   },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.xs,
+  },
   name: {
     fontSize: 28,
     fontWeight: '700',
     color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
   },
   location: {
     fontSize: 16,

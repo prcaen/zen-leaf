@@ -18,6 +18,7 @@ import { PlantHeader } from '../../src/components/detail/PlantHeader';
 import { SettingsSection } from '../../src/components/detail/SettingsSection';
 import { TasksList } from '../../src/components/detail/TasksList';
 import { InfoDialog } from '../../src/components/InfoDialog';
+import { TextInputDialog } from '../../src/components/TextInputDialog';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
 
@@ -31,6 +32,7 @@ export default function PlantDetail() {
     getCareHistory,
     completeCareTask,
     deletePlant,
+    updatePlant,
   } = usePlants();
 
   const plant = getPlantById(id);
@@ -74,6 +76,9 @@ export default function PlantDetail() {
 
   // Delete confirmation state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Rename dialog state
+  const [showRenameDialog, setShowRenameDialog] = useState(false);
 
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
@@ -205,6 +210,14 @@ export default function PlantDetail() {
     router.back();
   };
 
+  const handleNamePress = () => {
+    setShowRenameDialog(true);
+  };
+
+  const handleRename = async (newName: string) => {
+    await updatePlant(id, { name: newName });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -242,6 +255,7 @@ export default function PlantDetail() {
           name={plant.name}
           location={location.name}
           imageUrl={plant.imageUrl}
+          onNamePress={handleNamePress}
         />
 
         {/* Action Cards */}
@@ -514,6 +528,20 @@ export default function PlantDetail() {
         confirmColor={theme.colors.error}
         icon="trash-outline"
         iconColor={theme.colors.error}
+      />
+
+      {/* Rename Dialog */}
+      <TextInputDialog
+        visible={showRenameDialog}
+        onClose={() => setShowRenameDialog(false)}
+        onConfirm={handleRename}
+        title="Rename Plant"
+        initialValue={plant.name}
+        placeholder="Enter plant name"
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="create-outline"
+        iconColor={theme.colors.primary}
       />
     </SafeAreaView>
   );
