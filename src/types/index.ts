@@ -1,7 +1,16 @@
+export interface RoomLocationSettings {
+  temperature?: number; // in Celsius
+  humidity?: number; // percentage
+  isIndoor?: boolean; // indoor or outdoor
+  isNearAC?: boolean;
+  isNearHeater?: boolean;
+}
+
 export interface Location {
   id: string;
   name: string;
   icon?: string;
+  settings?: RoomLocationSettings;
 }
 
 export interface Plant {
