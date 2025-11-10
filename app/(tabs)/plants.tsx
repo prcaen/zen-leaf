@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActionDialog } from '../../src/components/ActionDialog';
 import { PlantGridItem } from '../../src/components/PlantGridItem';
 import { SiteCard } from '../../src/components/SiteCard';
 import { Tab, TabBar } from '../../src/components/TabBar';
@@ -22,6 +23,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { plants, rooms, wateringTasks, user } = usePlants();
   const [activeTab, setActiveTab] = useState<ProfileTabType>('rooms');
+  const [showActionDialog, setShowActionDialog] = useState(false);
 
   // Calculate statistics
   const totalPlants = plants.length;
@@ -115,10 +117,35 @@ export default function ProfileScreen() {
 
       {/* Floating Action Button */}
       <View style={styles.fabContainer}>
-        <TouchableOpacity style={styles.fab} activeOpacity={0.8}>
+        <TouchableOpacity 
+          style={styles.fab} 
+          activeOpacity={0.8}
+          onPress={() => setShowActionDialog(true)}
+        >
           <Ionicons name="add" size={32} color={theme.colors.white} />
         </TouchableOpacity>
       </View>
+
+      {/* Action Dialog */}
+      <ActionDialog
+        visible={showActionDialog}
+        onClose={() => setShowActionDialog(false)}
+        title="Add New"
+        options={[
+          {
+            id: 'create-room',
+            label: 'Create Room',
+            icon: 'home-outline',
+            onPress: () => router.push('/room/create'),
+          },
+          {
+            id: 'add-plant',
+            label: 'Add Plant',
+            icon: 'leaf-outline',
+            onPress: () => router.push('/plant/create'),
+          },
+        ]}
+      />
     </SafeAreaView>
   );
 }
