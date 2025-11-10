@@ -33,11 +33,6 @@ export default function CreatePlantScreen() {
     const defaultRoomId = rooms.length > 0 ? rooms[0].id : 'default-room';
 
     // Map difficulty to care info
-    const getLightNeeded = (difficulty: string): LightLevel => {
-      // Default to part sun for most plants
-      return LightLevel.PART_SUN;
-    };
-
     const getGrowSpeed = (difficulty: string): GrowSpeed => {
       switch (difficulty) {
         case 'Easy':
@@ -51,8 +46,9 @@ export default function CreatePlantScreen() {
       }
     };
 
-    const getWaterNeeded = (careIcons: string[]): WaterNeeded => {
-      if (careIcons.includes('cloud')) {
+    const getWaterNeeded = (lightLevel: LightLevel): WaterNeeded => {
+      // Plants that need more sun typically need more water
+      if (lightLevel === LightLevel.SUN) {
         return WaterNeeded.HIGH;
       }
       return WaterNeeded.MODERATE;
@@ -67,9 +63,9 @@ export default function CreatePlantScreen() {
       createdAt: new Date(),
       careInfo: {
         growSpeed: getGrowSpeed(plant.difficulty),
-        lightNeeded: getLightNeeded(plant.difficulty),
+        lightNeeded: plant.lightLevel,
         toxicity: Toxicity.NON_TOXIC, // Default to non-toxic
-        waterNeeded: getWaterNeeded(plant.careIcons),
+        waterNeeded: getWaterNeeded(plant.lightLevel),
       },
       imageUrl: plant.imageUrl,
     };

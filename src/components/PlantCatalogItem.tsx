@@ -23,14 +23,31 @@ export const PlantCatalogItem: React.FC<PlantCatalogItemProps> = ({ plant, onPre
     }
   };
 
-  const getIconName = (icon: string) => {
-    switch (icon) {
-      case 'person':
-        return 'person-outline';
+  const getLightLevelLabel = (lightLevel: string) => {
+    switch (lightLevel) {
+      case 'sun':
+        return 'Sun';
+      case 'part sun':
+        return 'Part Sun';
+      case 'shade':
+        return 'Shade';
+      case 'dark':
+        return 'Dark';
+      default:
+        return lightLevel;
+    }
+  };
+
+  const getLightLevelIcon = (lightLevel: string) => {
+    switch (lightLevel) {
       case 'sun':
         return 'sunny-outline';
-      case 'cloud':
-        return 'water-outline';
+      case 'part sun':
+        return 'partly-sunny-outline';
+      case 'shade':
+        return 'cloudy-outline';
+      case 'dark':
+        return 'moon-outline';
       default:
         return 'help-outline';
     }
@@ -58,16 +75,13 @@ export const PlantCatalogItem: React.FC<PlantCatalogItemProps> = ({ plant, onPre
           <View style={[styles.difficultyBadge, { backgroundColor: getDifficultyColor(plant.difficulty) }]}>
             <Text style={styles.difficultyText}>{plant.difficulty}</Text>
           </View>
-          <View style={styles.iconsContainer}>
-            {plant.careIcons.map((icon, index) => (
-              <Ionicons
-                key={index}
-                name={getIconName(icon) as any}
-                size={14}
-                color={theme.colors.textSecondary}
-                style={styles.icon}
-              />
-            ))}
+          <View style={styles.lightLevelContainer}>
+            <Ionicons
+              name={getLightLevelIcon(plant.lightLevel)}
+              size={11}
+              color={theme.colors.white}
+              style={styles.lightLevelIcon}
+            />
           </View>
         </View>
       </View>
@@ -133,13 +147,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.white,
   },
-  iconsContainer: {
+  lightLevelContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+    backgroundColor: theme.colors.primaryLight,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
-  icon: {
-    marginRight: 2,
+  lightLevelIcon: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.white,
   },
 });
 
