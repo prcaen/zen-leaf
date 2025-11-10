@@ -300,6 +300,14 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     // This will be called to populate initial data
     const sampleRooms: Room[] = [
       {
+        id: 'no-room', name: 'No Room', settings: {
+          temperature: undefined,
+          humidity: undefined,
+          isIndoor: undefined,
+          lightLevel: undefined,
+        }
+      },
+      {
         id: 'room1', name: 'Kitchen', settings: {
           temperature: 20,
           humidity: 40,

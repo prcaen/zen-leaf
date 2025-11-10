@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -28,9 +28,7 @@ export default function CreatePlantScreen() {
   );
 
   const handlePlantSelect = async (plant: PlantCatalogItemType) => {
-    // Get the first room or use a default room ID
-    // In a real app, you might want to show a room selection dialog
-    const defaultRoomId = rooms.length > 0 ? rooms[0].id : 'default-room';
+    const defaultRoomId = 'no-room';
 
     // Map difficulty to care info
     const getGrowSpeed = (difficulty: string): GrowSpeed => {
@@ -46,6 +44,19 @@ export default function CreatePlantScreen() {
       }
     };
 
+    const getToxicity = (difficulty: string): Toxicity => {
+      switch (difficulty) {
+        case 'Easy':
+          return Toxicity.NON_TOXIC;
+        case 'Moderate':
+          return Toxicity.TOXIC_PETS;
+        case 'Advanced':
+          return Toxicity.TOXIC_HUMANS;
+        default:
+          return Toxicity.NON_TOXIC;
+      }
+    };
+
     const getWaterNeeded = (lightLevel: LightLevel): WaterNeeded => {
       // Plants that need more sun typically need more water
       if (lightLevel === LightLevel.SUN) {
@@ -55,7 +66,7 @@ export default function CreatePlantScreen() {
     };
 
     const newPlant: Plant = {
-      id: `plant_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: useId(),
       name: plant.name,
       roomId: defaultRoomId,
       wateringFrequencyDays: 7, // Default to weekly
@@ -64,14 +75,14 @@ export default function CreatePlantScreen() {
       careInfo: {
         growSpeed: getGrowSpeed(plant.difficulty),
         lightNeeded: plant.lightLevel,
-        toxicity: Toxicity.NON_TOXIC, // Default to non-toxic
+        toxicity: getToxicity(plant.difficulty),
         waterNeeded: getWaterNeeded(plant.lightLevel),
       },
       imageUrl: plant.imageUrl,
     };
 
     await addPlant(newPlant);
-    router.back();
+    router.push(`/plant/create/${newPlant.id}/room`);
   };
 
   return (
