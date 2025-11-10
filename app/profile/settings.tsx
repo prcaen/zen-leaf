@@ -61,6 +61,7 @@ export default function ProfileSettingsScreen() {
       icon: 'mail-outline',
       label: 'Email',
       value: user.email || 'Not set',
+      lowerCaseValue: true,
       onPress: () => setShowEmailDialog(true),
     },
     {

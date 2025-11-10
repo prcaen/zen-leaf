@@ -8,6 +8,7 @@ export interface SettingItemData {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   value?: string;
+  lowerCaseValue?: boolean;
   onPress: () => void;
 }
 
@@ -33,7 +34,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ title, items }
             </View>
             <View style={styles.itemContent}>
               <Text style={styles.itemLabel}>{item.label}</Text>
-              {item.value && <Text style={styles.itemValue}>{capitalizeFirstLetter(item.value)}</Text>}
+              {item.value && <Text style={styles.itemValue}>{item.lowerCaseValue ? item.value.toLowerCase() : capitalizeFirstLetter(item.value)}</Text>}
             </View>
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textLight} />
           </TouchableOpacity>
