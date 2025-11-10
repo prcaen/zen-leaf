@@ -111,7 +111,7 @@ export const SliderDialog: React.FC<SliderDialogProps> = ({
             />
             <View style={styles.labels}>
               <Text style={styles.labelText}>{minLabel || `${minValue}${unit}`}</Text>
-              <Text style={styles.labelText}>{maxLabel || `${maxValue}${unit}+`}</Text>
+              <Text style={styles.labelText}>{maxLabel || `${maxValue}${unit}`}</Text>
             </View>
           </View>
 

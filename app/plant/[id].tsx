@@ -91,6 +91,9 @@ export default function PlantDetail() {
   // Change distance from window dialog state
   const [showDistanceDialog, setShowDistanceDialog] = useState(false);
 
+  // Change pot size dialog state
+  const [showPotSizeDialog, setShowPotSizeDialog] = useState(false);
+
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
   const headerTitleOpacity = useRef(new Animated.Value(0)).current;
@@ -286,6 +289,31 @@ export default function PlantDetail() {
     });
   };
 
+  const handlePotSizePress = () => {
+    setShowPotSizeDialog(true);
+  };
+
+  const handleChangePotSize = async (newSize: number) => {
+    const currentSettings = plant.settings || {};
+    const currentPot = currentSettings.pot || { size: 'Medium', hasDrainage: true };
+    
+    // Generate size label based on cm
+    let sizeLabel = 'Small';
+    if (newSize > 30) sizeLabel = 'Medium';
+    if (newSize > 60) sizeLabel = 'Large';
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        pot: {
+          ...currentPot,
+          sizeInCm: newSize,
+          size: sizeLabel,
+        },
+      },
+    });
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -420,8 +448,10 @@ export default function PlantDetail() {
               {
                 icon: 'resize-outline',
                 label: 'Size',
-                value: plant.settings?.pot?.size || 'Not set',
-                onPress: () => console.log('Pot size'),
+                value: plant.settings?.pot?.sizeInCm 
+                  ? `${plant.settings.pot.sizeInCm} cm (${plant.settings.pot.size})` 
+                  : plant.settings?.pot?.size || 'Not set',
+                onPress: handlePotSizePress,
               },
               {
                 icon: 'water-outline',
@@ -656,6 +686,23 @@ export default function PlantDetail() {
         confirmText="Save"
         cancelText="Cancel"
         icon="swap-horizontal-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Change Pot Size Dialog */}
+      <SliderDialog
+        visible={showPotSizeDialog}
+        onClose={() => setShowPotSizeDialog(false)}
+        onConfirm={handleChangePotSize}
+        title="Pot Size"
+        initialValue={plant.settings?.pot?.sizeInCm || 30}
+        minValue={5}
+        maxValue={100}
+        step={5}
+        unit=" cm"
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="resize-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>
