@@ -188,7 +188,7 @@ export default function RoomDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Tab Bar */}
-        <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} variant="light" />
 
         {/* Watering Section */}
         <TaskSection

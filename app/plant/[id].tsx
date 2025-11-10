@@ -640,38 +640,48 @@ export default function PlantDetail() {
               {
                 icon: 'thermometer-outline',
                 label: 'Temperature',
-                value: plant.settings?.room?.temperature ? `${plant.settings.room.temperature}°C` : 'Not set',
+                value: location?.settings?.temperature
+                  ? `${location.settings.temperature}°C`
+                  : 'Not set',
                 onPress: () => console.log('Temperature'),
               },
               {
                 icon: 'water-outline',
                 label: 'Humidity',
-                value: plant.settings?.room?.humidity ? `${plant.settings.room.humidity}%` : 'Not set',
+                value: location?.settings?.humidity
+                  ? `${location.settings.humidity}%`
+                  : 'Not set',
                 onPress: () => console.log('Humidity'),
               },
               {
                 icon: 'location-outline',
                 label: 'Location',
-                value: plant.settings?.room?.isIndoor ? 'Indoor' : 'Outdoor',
+                value:
+                  location?.settings?.isIndoor === true
+                    ? 'Indoor'
+                    : location?.settings?.isIndoor === false
+                      ? 'Outdoor'
+                      : 'Not set',
                 onPress: () => console.log('Location'),
               },
               {
                 icon: 'snow-outline',
                 label: 'Near A/C',
-                value: plant.settings?.room?.isNearAC === true
-                  ? 'Yes'
-                  : plant.settings?.room?.isNearAC === false
-                    ? 'No'
-                    : 'Not set',
+                value:
+                  location?.settings?.isNearAC === true
+                    ? 'Yes'
+                    : location?.settings?.isNearAC === false
+                      ? 'No'
+                      : 'Not set',
                 onPress: () => console.log('Near A/C'),
               },
               {
                 icon: 'flame-outline',
                 label: 'Near Heater',
                 value:
-                  plant.settings?.room?.isNearHeater === true
+                  location?.settings?.isNearHeater === true
                     ? 'Yes'
-                    : plant.settings?.room?.isNearHeater === false
+                    : location?.settings?.isNearHeater === false
                       ? 'No'
                       : 'Not set',
                 onPress: () => console.log('Near Heater'),
@@ -679,7 +689,7 @@ export default function PlantDetail() {
             ]}
           />
 
-          {!plant.settings?.room?.isIndoor && (
+          {location?.settings?.isIndoor === false && (
             <SettingsSection
               title="Outdoor Settings"
               items={[

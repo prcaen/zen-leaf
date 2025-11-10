@@ -289,7 +289,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: 'high', type: 'direct', distanceFromWindow: 30 },
           pot: { size: 15, hasDrainage: true, material: 'terracotta', soil: 'all-purpose-potting-mix' },
           plantType: { size: 25, variety: 'Sweet Basil', category: 'herb' },
-          room: { temperature: 22, humidity: 60, roomType: 'kitchen', isIndoor: true },
           location: { climate: 'temperate' },
         },
         careInfo: {
@@ -314,7 +313,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: 'low', type: 'indirect', distanceFromWindow: 150 },
           pot: { size: 40, hasDrainage: true, material: 'ceramic', soil: 'all-purpose-garden-soil' },
           plantType: { size: 60, category: 'tropical' },
-          room: { temperature: 20, humidity: 70, roomType: 'living room', isIndoor: true },
           location: { climate: 'humid' },
         },
         careInfo: {
@@ -339,7 +337,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: 'medium', type: 'indirect', distanceFromWindow: 80 },
           pot: { size: 70, hasDrainage: true, material: 'plastic', soil: 'all-purpose-potting-mix' },
           plantType: { size: 120, category: 'tropical' },
-          room: { temperature: 21, humidity: 65, roomType: 'living room', isIndoor: true },
           location: { climate: 'tropical' },
         },
         careInfo: {

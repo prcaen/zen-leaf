@@ -108,7 +108,6 @@ export interface PlantSettings {
   light?: LightSettings;
   pot?: PotSettings;
   plantType?: PlantTypeSettings;
-  room?: RoomSettings;
   location?: LocationSettings;
 }
 
