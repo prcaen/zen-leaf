@@ -101,9 +101,6 @@ export default function PlantDetail() {
   // Change room dialog state
   const [showChangeRoomDialog, setShowChangeRoomDialog] = useState(false);
 
-  // Change light level dialog state
-  const [showLightLevelDialog, setShowLightLevelDialog] = useState(false);
-
   // Change distance from window dialog state
   const [showDistanceDialog, setShowDistanceDialog] = useState(false);
 
@@ -192,11 +189,12 @@ export default function PlantDetail() {
 
   const handleLightNeededPress = () => {
     const careInfo = plant.careInfo;
-    const light = careInfo?.lightNeeded || 'medium';
+    const light = careInfo?.lightNeeded || LightLevel.PART_SUN;
     const descriptions = {
-      low: 'This plant thrives in low light conditions and can be placed away from windows. Perfect for darker rooms or offices.',
-      medium: 'This plant prefers bright, indirect light. Place near a window with filtered sunlight or in a well-lit room.',
-      high: 'This plant needs bright, direct sunlight for several hours a day. Best placed near south-facing windows.',
+      [LightLevel.SUN]: 'This plant needs bright, direct sunlight for several hours a day. Best placed near south-facing windows.',
+      [LightLevel.PART_SUN]: 'This plant prefers bright, indirect light. Place near a window with filtered sunlight or in a well-lit room.',
+      [LightLevel.SHADE]: 'This plant thrives in low light conditions and can be placed away from windows. Perfect for darker rooms or offices.',
+      [LightLevel.DARK]: 'This plant can tolerate very low light conditions and is perfect for dark corners or rooms with minimal natural light.',
     };
     setDialogInfo({
       visible: true,
@@ -279,38 +277,13 @@ export default function PlantDetail() {
     label: r.name,
   }));
 
-  const lightLevelOptions: SelectionOption[] = [
-    { id: 'low', label: 'Low Light', icon: 'moon-outline' },
-    { id: 'medium', label: 'Medium Light', icon: 'partly-sunny-outline' },
-    { id: 'high', label: 'High Light', icon: 'sunny-outline' },
-  ];
-
-  const handleLightLevelPress = () => {
-    setShowLightLevelDialog(true);
-  };
-
-  const handleChangeLightLevel = async (newLevel: string) => {
-    const currentSettings = plant.settings || {};
-    const currentLight = currentSettings.light || { level: LightLevel.MEDIUM, type: LightType.INDIRECT };
-    
-    await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        light: {
-          ...currentLight,
-          level: newLevel as LightLevel,
-        },
-      },
-    });
-  };
-
   const handleDistancePress = () => {
     setShowDistanceDialog(true);
   };
 
   const handleChangeDistance = async (newDistance: number) => {
     const currentSettings = plant.settings || {};
-    const currentLight = currentSettings.light || { level: LightLevel.MEDIUM, type: LightType.INDIRECT };
+    const currentLight = currentSettings.light || { type: LightType.INDIRECT };
     const unitSystem = user?.unitSystem || UnitSystem.METRIC;
     
     // Convert from display value to metric for storage
@@ -643,7 +616,11 @@ export default function PlantDetail() {
             <ActionCard
               icon="sunny-outline"
               title="Light Needed"
-              subtitle={plant.careInfo?.lightNeeded || 'Medium'}
+              subtitle={plant.careInfo?.lightNeeded 
+                ? plant.careInfo.lightNeeded === LightLevel.PART_SUN 
+                  ? 'Part Sun' 
+                  : plant.careInfo.lightNeeded.charAt(0).toUpperCase() + plant.careInfo.lightNeeded.slice(1)
+                : 'Part Sun'}
               color={theme.colors.primaryLight}
               onPress={handleLightNeededPress}
             />
@@ -693,12 +670,6 @@ export default function PlantDetail() {
           <SettingsSection
             title="Light"
             items={[
-              {
-                icon: 'sunny-outline',
-                label: 'Light level',
-                value: plant.settings?.light?.level || 'Not set',
-                onPress: handleLightLevelPress,
-              },
               {
                 icon: 'swap-horizontal-outline',
                 label: 'Distance from window',
@@ -835,19 +806,6 @@ export default function PlantDetail() {
         cancelText="Cancel"
         icon="home-outline"
         iconColor={theme.colors.primary}
-      />
-
-      {/* Change Light Level Dialog */}
-      <SelectionDialog
-        visible={showLightLevelDialog}
-        onClose={() => setShowLightLevelDialog(false)}
-        onConfirm={handleChangeLightLevel}
-        title="Light Level"
-        options={lightLevelOptions}
-        initialSelectedId={plant.settings?.light?.level || 'medium'}
-        confirmText="Save"
-        cancelText="Cancel"
-        icon="sunny-outline"
       />
 
       {/* Change Distance from Window Dialog */}

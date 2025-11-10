@@ -24,7 +24,7 @@ import {
 } from '../../src/lib/number';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { UnitSystem } from '../../src/types';
+import { LightLevel, UnitSystem } from '../../src/types';
 
 type TabType = 'today' | 'soon';
 
@@ -46,9 +46,8 @@ export default function RoomDetailScreen() {
   // Dialog states
   const [showTemperatureDialog, setShowTemperatureDialog] = useState(false);
   const [showHumidityDialog, setShowHumidityDialog] = useState(false);
+  const [showLightLevelDialog, setShowLightLevelDialog] = useState(false);
   const [showRoomDialog, setShowRoomDialog] = useState(false);
-  const [showACDialog, setShowACDialog] = useState(false);
-  const [showHeaterDialog, setShowHeaterDialog] = useState(false);
 
   const room = getRoomById(roomId);
   const plantsInRoom = plants.filter(p => p.roomId === roomId);
@@ -63,14 +62,11 @@ export default function RoomDetailScreen() {
         case 'humidity':
           setShowHumidityDialog(true);
           break;
+        case 'lightLevel':
+          setShowLightLevelDialog(true);
+          break;
         case 'room':
           setShowRoomDialog(true);
-          break;
-        case 'ac':
-          setShowACDialog(true);
-          break;
-        case 'heater':
-          setShowHeaterDialog(true);
           break;
       }
     }
@@ -138,6 +134,20 @@ export default function RoomDetailScreen() {
     });
   };
 
+  const handleLightLevelPress = () => {
+    setShowLightLevelDialog(true);
+  };
+
+  const handleChangeLightLevel = async (newLevel: string) => {
+    const currentSettings = room?.settings || {};
+    await updateRoom(roomId, {
+      settings: {
+        ...currentSettings,
+        lightLevel: newLevel as LightLevel,
+      },
+    });
+  };
+
   const handleRoomPress = () => {
     setShowRoomDialog(true);
   };
@@ -152,13 +162,12 @@ export default function RoomDetailScreen() {
     });
   };
 
-  const handleACPress = () => {
-    setShowACDialog(true);
-  };
-
-  const handleHeaterPress = () => {
-    setShowHeaterDialog(true);
-  };
+  const lightLevelOptions: SelectionOption[] = [
+    { id: LightLevel.SUN, label: 'Sun', icon: 'sunny-outline' },
+    { id: LightLevel.PART_SUN, label: 'Part Sun', icon: 'partly-sunny-outline' },
+    { id: LightLevel.SHADE, label: 'Shade', icon: 'cloudy-outline' },
+    { id: LightLevel.DARK, label: 'Dark', icon: 'moon-outline' },
+  ];
 
   const roomOptions: SelectionOption[] = [
     { id: 'indoor', label: 'Indoor', icon: 'home-outline' },
@@ -236,7 +245,7 @@ export default function RoomDetailScreen() {
           <Text style={styles.sectionTitle}>Settings</Text>
 
           <SettingsSection
-            title="Room"
+            title=""
             items={[
               {
                 icon: 'thermometer-outline',
@@ -255,8 +264,16 @@ export default function RoomDetailScreen() {
                 onPress: handleHumidityPress,
               },
               {
+                icon: 'sunny-outline',
+                label: 'Light Level',
+                value: room.settings?.lightLevel
+                  ? lightLevelOptions.find(opt => opt.id === room.settings?.lightLevel)?.label || room.settings.lightLevel
+                  : 'Not set',
+                onPress: handleLightLevelPress,
+              },
+              {
                 icon: 'location-outline',
-                label: 'Room',
+                label: 'Location',
                 value:
                   room.settings?.isIndoor === true
                     ? 'Indoor'
@@ -309,12 +326,27 @@ export default function RoomDetailScreen() {
         iconColor={theme.colors.primary}
       />
 
+      {/* Light Level Dialog */}
+      <SelectionDialog
+        visible={showLightLevelDialog}
+        onClose={() => setShowLightLevelDialog(false)}
+        onConfirm={handleChangeLightLevel}
+        title="Light Level"
+        description="Select the light level available in this room."
+        options={lightLevelOptions}
+        initialSelectedId={room.settings?.lightLevel || LightLevel.PART_SUN}
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="sunny-outline"
+        iconColor={theme.colors.primary}
+      />
+
       {/* Room Dialog */}
       <SelectionDialog
         visible={showRoomDialog}
         onClose={() => setShowRoomDialog(false)}
         onConfirm={handleChangeRoom}
-        title="Room"
+        title="Location"
         options={roomOptions}
         initialSelectedId={
           room.settings?.isIndoor === true

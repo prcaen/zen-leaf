@@ -304,6 +304,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           temperature: 20,
           humidity: 40,
           isIndoor: true,
+          lightLevel: LightLevel.SUN,
         }
       },
       {
@@ -311,6 +312,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           temperature: 20,
           humidity: 60,
           isIndoor: true,
+          lightLevel: LightLevel.PART_SUN,
         }
       },
       {
@@ -318,6 +320,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           temperature: 18,
           humidity: 45,
           isIndoor: true,
+          lightLevel: LightLevel.SHADE,
         }
       },
     ];
@@ -331,7 +334,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: null,
         createdAt: new Date(),
         settings: {
-          light: { level: LightLevel.HIGH, type: LightType.DIRECT, distanceFromWindow: 30 },
+          light: { type: LightType.DIRECT, distanceFromWindow: 30 },
           pot: { size: 15, hasDrainage: true, material: 'terracotta', soil: 'all-purpose-potting-mix' },
           plantType: { size: 25, variety: 'Sweet Basil', category: 'herb' },
           positionInRoom: {
@@ -341,7 +344,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         },
         careInfo: {
           growSpeed: GrowSpeed.FAST,
-          lightNeeded: LightLevel.HIGH,
+          lightNeeded: LightLevel.SUN,
           toxicity: Toxicity.NON_TOXIC,
           waterNeeded: WaterNeeded.HIGH,
           growSpeedDescription: 'Basil grows quickly in the right conditions. You can start harvesting leaves in 3-4 weeks!',
@@ -358,7 +361,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
         createdAt: new Date(),
         settings: {
-          light: { level: LightLevel.LOW, type: LightType.INDIRECT, distanceFromWindow: 150 },
+          light: { type: LightType.INDIRECT, distanceFromWindow: 150 },
           pot: { size: 40, hasDrainage: true, material: 'ceramic', soil: 'all-purpose-garden-soil' },
           plantType: { size: 60, category: 'tropical' },
           positionInRoom: {
@@ -368,7 +371,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         },
         careInfo: {
           growSpeed: GrowSpeed.MODERATE,
-          lightNeeded: LightLevel.LOW,
+          lightNeeded: LightLevel.SHADE,
           toxicity: Toxicity.TOXIC_PETS,
           waterNeeded: WaterNeeded.MODERATE,
           growSpeedDescription: 'Peace lilies grow at a steady pace, producing new leaves every few weeks and flowers periodically.',
@@ -385,7 +388,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
         createdAt: new Date(),
         settings: {
-          light: { level: LightLevel.MEDIUM, type: LightType.INDIRECT, distanceFromWindow: 80 },
+          light: { type: LightType.INDIRECT, distanceFromWindow: 80 },
           pot: { size: 70, hasDrainage: true, material: 'plastic', soil: 'all-purpose-potting-mix' },
           plantType: { size: 120, category: 'tropical' },
           positionInRoom: {
@@ -395,7 +398,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         },
         careInfo: {
           growSpeed: GrowSpeed.MODERATE,
-          lightNeeded: LightLevel.MEDIUM,
+          lightNeeded: LightLevel.PART_SUN,
           toxicity: Toxicity.TOXIC_PETS,
           waterNeeded: WaterNeeded.MODERATE,
           growSpeedDescription: 'Monsteras grow steadily, producing a new leaf every 4-6 weeks in optimal conditions. They can become quite large over time!',

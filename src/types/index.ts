@@ -56,9 +56,10 @@ export interface CareHistory {
 
 // Plant Settings
 export enum LightLevel {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
+  SUN = 'sun',
+  PART_SUN = 'part sun',
+  SHADE = 'shade',
+  DARK = 'dark',
 }
 
 export enum LightType {
@@ -94,7 +95,6 @@ export enum HealthOverall {
 }
 
 export interface LightSettings {
-  level: LightLevel;
   type: LightType;
   distanceFromWindow?: number; // in centimeters
 }
@@ -117,6 +117,7 @@ export interface RoomSettings {
   humidity?: number; // percentage
   isIndoor?: boolean; // indoor or outdoor
   temperature?: number; // in Celsius
+  lightLevel?: LightLevel;
 }
 
 export interface PlantSettings {
