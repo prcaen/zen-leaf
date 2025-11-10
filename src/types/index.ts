@@ -73,6 +73,7 @@ export interface PlantTypeSettings {
   size?: number; // Plant height in cm
   variety?: string;
   category?: string; // e.g., "succulent", "fern", "tropical"
+  age?: number; // Plant age in years (0 = less than a year, 50 = 50+ years)
 }
 
 export interface RoomSettings {

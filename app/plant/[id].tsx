@@ -103,6 +103,9 @@ export default function PlantDetail() {
   // Change plant size dialog state
   const [showPlantSizeDialog, setShowPlantSizeDialog] = useState(false);
 
+  // Change age/year dialog state
+  const [showAgeDialog, setShowAgeDialog] = useState(false);
+
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
   const headerTitleOpacity = useRef(new Animated.Value(0)).current;
@@ -392,6 +395,52 @@ export default function PlantDetail() {
     });
   };
 
+  const handleAgePress = () => {
+    setShowAgeDialog(true);
+  };
+
+  const handleChangeAge = async (age: number) => {
+    const currentSettings = plant.settings || {};
+    const currentPlantType = currentSettings.plantType || {};
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        plantType: {
+          ...currentPlantType,
+          age: age,
+        },
+      },
+    });
+  };
+
+  // Calculate age display
+  const getAgeDisplay = (): string => {
+    const age = plant.settings?.plantType?.age;
+    if (age !== undefined) {
+      if (age === 0) return 'Less than a year';
+      if (age === 1) return '1 year';
+      if (age >= 50) return '50 years and more';
+      return `${age} years`;
+    }
+    
+    // Fallback to createdAt calculation
+    if (plant.createdAt) {
+      const createdDate = new Date(plant.createdAt);
+      const now = new Date();
+      const diffMs = now.getTime() - createdDate.getTime();
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays < 1) return 'Less than a day';
+      if (diffDays < 30) return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+      const months = Math.floor(diffDays / 30.44);
+      if (months < 12) return `${months} month${months !== 1 ? 's' : ''}`;
+      const years = Math.floor(months / 12);
+      return `${years} year${years !== 1 ? 's' : ''}`;
+    }
+    
+    return 'Not set';
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
@@ -579,21 +628,8 @@ export default function PlantDetail() {
               {
                 icon: 'time-outline',
                 label: 'Age',
-                value: plant.createdAt
-                  ? (() => {
-                    const createdDate = new Date(plant.createdAt);
-                    const now = new Date();
-                    const diffMs = now.getTime() - createdDate.getTime();
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    if (diffDays < 1) return 'Less than a day';
-                    if (diffDays < 30) return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
-                    const months = Math.floor(diffDays / 30.44);
-                    if (months < 12) return `${months} month${months !== 1 ? 's' : ''}`;
-                    const years = Math.floor(months / 12);
-                    return `${years} year${years !== 1 ? 's' : ''}`;
-                  })()
-                  : 'Not set',
-                onPress: () => console.log('Age'),
+                value: getAgeDisplay(),
+                onPress: handleAgePress,
               },
             ]}
           />
@@ -839,6 +875,26 @@ export default function PlantDetail() {
         confirmText="Save"
         cancelText="Cancel"
         icon="expand-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Change Age Dialog */}
+      <SliderDialog
+        visible={showAgeDialog}
+        onClose={() => setShowAgeDialog(false)}
+        onConfirm={handleChangeAge}
+        title="Plant Age"
+        description="How old is this plant?"
+        initialValue={plant.settings?.plantType?.age ?? 0}
+        minValue={0}
+        maxValue={50}
+        step={1}
+        unit=" years"
+        minLabel="Less than a year"
+        maxLabel="50 years and more"
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="time-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>

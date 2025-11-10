@@ -68,6 +68,11 @@ export const SliderDialog: React.FC<SliderDialogProps> = ({
       return minLabel;
     }
 
+    // Handle singular/plural for units ending with 's'
+    if (value === 1 && unit.endsWith('s')) {
+      return `${value}${unit.slice(0, -1)}`;
+    }
+
     return `${value}${unit}`;
   };
 
