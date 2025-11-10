@@ -23,7 +23,7 @@ import { SliderDialog } from '../../src/components/SliderDialog';
 import { TextInputDialog } from '../../src/components/TextInputDialog';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { LightLevel, LightType } from '../../src/types';
+import { GrowSpeed, LightLevel, LightType, Toxicity, WaterNeeded } from '../../src/types';
 
 export default function PlantDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -159,11 +159,11 @@ export default function PlantDetail() {
 
   const handleGrowSpeedPress = () => {
     const careInfo = plant.careInfo;
-    const speed = careInfo?.growSpeed || 'moderate';
+    const speed = careInfo?.growSpeed || GrowSpeed.MODERATE;
     const descriptions = {
-      slow: 'This plant grows slowly and may take months or even years to reach maturity. Perfect for those who want low-maintenance greenery.',
-      moderate: 'This plant has a moderate growth rate, showing visible progress over weeks to months. Ideal for most indoor gardeners.',
-      fast: 'This plant grows rapidly and may need regular pruning or repotting. Great for seeing quick results!',
+      [GrowSpeed.SLOW]: 'This plant grows slowly and may take months or even years to reach maturity. Perfect for those who want low-maintenance greenery.',
+      [GrowSpeed.MODERATE]: 'This plant has a moderate growth rate, showing visible progress over weeks to months. Ideal for most indoor gardeners.',
+      [GrowSpeed.FAST]: 'This plant grows rapidly and may need regular pruning or repotting. Great for seeing quick results!',
     };
     setDialogInfo({
       visible: true,
@@ -195,12 +195,12 @@ export default function PlantDetail() {
 
   const handleToxicityPress = () => {
     const careInfo = plant.careInfo;
-    const toxicity = careInfo?.toxicity || 'non-toxic';
+    const toxicity = careInfo?.toxicity || Toxicity.NON_TOXIC;
     const descriptions = {
-      'non-toxic': 'This plant is safe for both pets and humans. You can display it anywhere without worry!',
-      'toxic-pets': 'This plant can be harmful to pets if ingested. Keep it out of reach of cats and dogs.',
-      'toxic-humans': 'This plant can cause irritation or illness in humans if ingested or touched. Handle with care.',
-      'toxic-all': 'This plant is toxic to both pets and humans. Keep it in a safe location away from children and animals.',
+      [Toxicity.NON_TOXIC]: 'This plant is safe for both pets and humans. You can display it anywhere without worry!',
+      [Toxicity.TOXIC_PETS]: 'This plant can be harmful to pets if ingested. Keep it out of reach of cats and dogs.',
+      [Toxicity.TOXIC_HUMANS]: 'This plant can cause irritation or illness in humans if ingested or touched. Handle with care.',
+      [Toxicity.TOXIC_ALL]: 'This plant is toxic to both pets and humans. Keep it in a safe location away from children and animals.',
     };
     setDialogInfo({
       visible: true,
@@ -214,11 +214,11 @@ export default function PlantDetail() {
 
   const handleWaterNeededPress = () => {
     const careInfo = plant.careInfo;
-    const water = careInfo?.waterNeeded || 'moderate';
+    const water = careInfo?.waterNeeded || WaterNeeded.MODERATE;
     const descriptions = {
-      low: 'This plant requires infrequent watering. Allow soil to dry out completely between waterings. Perfect for forgetful plant parents!',
-      moderate: 'This plant needs regular watering. Keep soil slightly moist but not waterlogged. Water when the top inch of soil is dry.',
-      high: 'This plant loves water and needs frequent watering. Keep soil consistently moist. Check daily during hot weather.',
+      [WaterNeeded.LOW]: 'This plant requires infrequent watering. Allow soil to dry out completely between waterings. Perfect for forgetful plant parents!',
+      [WaterNeeded.MODERATE]: 'This plant needs regular watering. Keep soil slightly moist but not waterlogged. Water when the top inch of soil is dry.',
+      [WaterNeeded.HIGH]: 'This plant loves water and needs frequent watering. Keep soil consistently moist. Check daily during hot weather.',
     };
     setDialogInfo({
       visible: true,

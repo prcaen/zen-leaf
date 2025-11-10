@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { storage } from '../lib/storage';
-import { CareHistory, CareTask, LightLevel, LightType, Location, Plant, WateringTask } from '../types';
+import { CareHistory, CareTask, GrowSpeed, LightLevel, LightType, Location, Plant, Toxicity, WateringTask, WaterNeeded } from '../types';
 
 interface PlantsContextValue {
   plants: Plant[];
@@ -292,10 +292,10 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           location: { climate: 'temperate' },
         },
         careInfo: {
-          growSpeed: 'fast',
+          growSpeed: GrowSpeed.FAST,
           lightNeeded: LightLevel.HIGH,
-          toxicity: 'non-toxic',
-          waterNeeded: 'high',
+          toxicity: Toxicity.NON_TOXIC,
+          waterNeeded: WaterNeeded.HIGH,
           growSpeedDescription: 'Basil grows quickly in the right conditions. You can start harvesting leaves in 3-4 weeks!',
           lightNeededDescription: 'Basil loves sun! Give it 6-8 hours of direct sunlight daily for best growth and flavor.',
           toxicityDescription: 'Basil is completely safe for both humans and pets. In fact, it\'s a delicious culinary herb!',
@@ -316,10 +316,10 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           location: { climate: 'humid' },
         },
         careInfo: {
-          growSpeed: 'moderate',
+          growSpeed: GrowSpeed.MODERATE,
           lightNeeded: LightLevel.LOW,
-          toxicity: 'toxic-pets',
-          waterNeeded: 'moderate',
+          toxicity: Toxicity.TOXIC_PETS,
+          waterNeeded: WaterNeeded.MODERATE,
           growSpeedDescription: 'Peace lilies grow at a steady pace, producing new leaves every few weeks and flowers periodically.',
           lightNeededDescription: 'One of the best low-light plants! Thrives in shade and can even tolerate fluorescent lighting.',
           toxicityDescription: 'Warning: Peace lilies contain calcium oxalates that are toxic to cats and dogs if ingested. Keep out of reach of pets.',
@@ -340,10 +340,10 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           location: { climate: 'tropical' },
         },
         careInfo: {
-          growSpeed: 'moderate',
+          growSpeed: GrowSpeed.MODERATE,
           lightNeeded: LightLevel.MEDIUM,
-          toxicity: 'toxic-pets',
-          waterNeeded: 'moderate',
+          toxicity: Toxicity.TOXIC_PETS,
+          waterNeeded: WaterNeeded.MODERATE,
           growSpeedDescription: 'Monsteras grow steadily, producing a new leaf every 4-6 weeks in optimal conditions. They can become quite large over time!',
           lightNeededDescription: 'Bright, indirect light is perfect. Direct sunlight can burn the leaves, while too little light slows growth.',
           toxicityDescription: 'Caution: Monstera leaves contain calcium oxalates and are toxic to pets and can cause irritation in humans. Keep away from curious pets and children.',

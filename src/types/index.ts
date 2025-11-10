@@ -77,6 +77,32 @@ export enum LightType {
   SHADE = 'shade',
 }
 
+export enum GrowSpeed {
+  SLOW = 'slow',
+  MODERATE = 'moderate',
+  FAST = 'fast',
+}
+
+export enum Toxicity {
+  NON_TOXIC = 'non-toxic',
+  TOXIC_PETS = 'toxic-pets',
+  TOXIC_HUMANS = 'toxic-humans',
+  TOXIC_ALL = 'toxic-all',
+}
+
+export enum WaterNeeded {
+  LOW = 'low',
+  MODERATE = 'moderate',
+  HIGH = 'high',
+}
+
+export enum HealthOverall {
+  EXCELLENT = 'excellent',
+  GOOD = 'good',
+  FAIR = 'fair',
+  POOR = 'poor',
+}
+
 export interface LightSettings {
   level: LightLevel;
   type: LightType;
@@ -116,10 +142,10 @@ export interface PlantSettings {
 
 // Plant Care Info
 export interface PlantCareInfo {
-  growSpeed: 'slow' | 'moderate' | 'fast';
+  growSpeed: GrowSpeed;
   lightNeeded: LightLevel;
-  toxicity: 'non-toxic' | 'toxic-pets' | 'toxic-humans' | 'toxic-all';
-  waterNeeded: 'low' | 'moderate' | 'high';
+  toxicity: Toxicity;
+  waterNeeded: WaterNeeded;
   growSpeedDescription?: string;
   lightNeededDescription?: string;
   toxicityDescription?: string;
@@ -128,7 +154,7 @@ export interface PlantCareInfo {
 
 // Health Status
 export interface HealthStatus {
-  overall: 'excellent' | 'good' | 'fair' | 'poor';
+  overall: HealthOverall;
   issues?: string[];
   lastChecked: Date;
   notes?: string;
