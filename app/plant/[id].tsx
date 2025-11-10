@@ -15,7 +15,7 @@ import { ConfirmDialog } from '../../src/components/ConfirmDialog';
 import { ActionCard } from '../../src/components/detail/ActionCard';
 import { HistoryList } from '../../src/components/detail/HistoryList';
 import { PlantHeader } from '../../src/components/detail/PlantHeader';
-import { SettingsSection } from '../../src/components/detail/SettingsSection';
+import { SettingItemData, SettingsSection } from '../../src/components/detail/SettingsSection';
 import { TasksList } from '../../src/components/detail/TasksList';
 import { InfoDialog } from '../../src/components/InfoDialog';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
@@ -113,6 +113,12 @@ export default function PlantDetail() {
 
   // Change age/year dialog state
   const [showAgeDialog, setShowAgeDialog] = useState(false);
+
+  // Change A/C dialog state
+  const [showACDialog, setShowACDialog] = useState(false);
+
+  // Change Heater dialog state
+  const [showHeaterDialog, setShowHeaterDialog] = useState(false);
 
   // Scroll state for sticky header
   const [showHeaderTitle, setShowHeaderTitle] = useState(false);
@@ -365,6 +371,54 @@ export default function PlantDetail() {
     { id: 'clay-soil', label: 'Clay Soil' },
   ];
 
+  const handleACPress = () => {
+    setShowACDialog(true);
+  };
+
+  const handleChangeAC = async (isNearAC: string) => {
+    const currentSettings = plant.settings || {};
+    const currentPosition = currentSettings.positionInRoom || {};
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        positionInRoom: {
+          ...currentPosition,
+          isNearAC: isNearAC === 'yes',
+        },
+      },
+    });
+  };
+
+  const acOptions: SelectionOption[] = [
+    { id: 'yes', label: 'Yes, near A/C', icon: 'snow-outline' },
+    { id: 'no', label: 'No, not near A/C', icon: 'close-circle-outline' },
+  ];
+
+  const handleHeaterPress = () => {
+    setShowHeaterDialog(true);
+  };
+
+  const handleChangeHeater = async (isNearHeater: string) => {
+    const currentSettings = plant.settings || {};
+    const currentPosition = currentSettings.positionInRoom || {};
+    
+    await updatePlant(id, {
+      settings: {
+        ...currentSettings,
+        positionInRoom: {
+          ...currentPosition,
+          isNearHeater: isNearHeater === 'yes',
+        },
+      },
+    });
+  };
+
+  const heaterOptions: SelectionOption[] = [
+    { id: 'yes', label: 'Yes, near heater', icon: 'flame-outline' },
+    { id: 'no', label: 'No, not near heater', icon: 'close-circle-outline' },
+  ];
+
   const handleSoilPress = () => {
     setShowSoilDialog(true);
   };
@@ -448,6 +502,65 @@ export default function PlantDetail() {
     
     return 'Not set';
   };
+
+  const roomSettings = (): SettingItemData[] => {
+    const settings: SettingItemData[] = [];
+
+    settings.push({
+      icon: 'thermometer-outline',
+      label: 'Temperature',
+      value: room?.settings?.temperature
+        ? `${room.settings.temperature}°C`
+        : 'Not set',
+      onPress: () => handleRoomSettingPress('temperature'),
+    });
+
+    settings.push({
+      icon: 'water-outline',
+      label: 'Humidity',
+      value: room?.settings?.humidity
+        ? `${room.settings.humidity}%`
+        : 'Not set',
+      onPress: () => handleRoomSettingPress('humidity'),
+    });
+
+    settings.push({
+      icon: 'location-outline',
+      label: 'Room',
+      value: room?.settings?.isIndoor === true
+        ? 'Indoor'
+        : room?.settings?.isIndoor === false
+        ? 'Outdoor'
+        : 'Not set',
+      onPress: () => handleRoomSettingPress('room'),
+    });
+
+    if (room?.settings?.isIndoor === true) {
+      settings.push({
+        icon: 'snow-outline',
+        label: 'Near A/C',
+        value: plant?.settings?.positionInRoom?.isNearAC === true
+          ? 'Yes'
+          : plant?.settings?.positionInRoom?.isNearAC === false
+          ? 'No'
+          : 'Not set',
+        onPress: handleACPress,
+      });
+
+      settings.push({
+        icon: 'flame-outline',
+        label: 'Near Heater',
+        value: plant?.settings?.positionInRoom?.isNearHeater === true
+          ? 'Yes'
+          : plant?.settings?.positionInRoom?.isNearHeater === false
+          ? 'No'
+          : 'Not set',
+        onPress: handleHeaterPress,
+      });
+    }
+
+    return settings;
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -644,93 +757,8 @@ export default function PlantDetail() {
 
           <SettingsSection
             title="Room"
-            items={[
-              {
-                icon: 'thermometer-outline',
-                label: 'Temperature',
-                value: room?.settings?.temperature
-                  ? `${room.settings.temperature}°C`
-                  : 'Not set',
-                onPress: () => handleRoomSettingPress('temperature'),
-              },
-              {
-                icon: 'water-outline',
-                label: 'Humidity',
-                value: room?.settings?.humidity
-                  ? `${room.settings.humidity}%`
-                  : 'Not set',
-                onPress: () => handleRoomSettingPress('humidity'),
-              },
-              {
-                icon: 'location-outline',
-                label: 'Room',
-                value:
-                  room?.settings?.isIndoor === true
-                    ? 'Indoor'
-                    : room?.settings?.isIndoor === false
-                      ? 'Outdoor'
-                      : 'Not set',
-                onPress: () => handleRoomSettingPress('room'),
-              },
-              {
-                icon: 'snow-outline',
-                label: 'Near A/C',
-                value:
-                  room?.settings?.isNearAC === true
-                    ? 'Yes'
-                    : room?.settings?.isNearAC === false
-                      ? 'No'
-                      : 'Not set',
-                onPress: () => handleRoomSettingPress('ac'),
-              },
-              {
-                icon: 'flame-outline',
-                label: 'Near Heater',
-                value:
-                  room?.settings?.isNearHeater === true
-                    ? 'Yes'
-                    : room?.settings?.isNearHeater === false
-                      ? 'No'
-                      : 'Not set',
-                onPress: () => handleRoomSettingPress('heater'),
-              },
-            ]}
+            items={roomSettings()}
           />
-
-          {room?.settings?.isIndoor === false && (
-            <SettingsSection
-              title="Outdoor Settings"
-              items={[
-                {
-                  icon: 'partly-sunny-outline',
-                  label: 'Climate',
-                  value: room?.settings?.climate || 'Not set',
-                  onPress: () => console.log('Climate'),
-                },
-                {
-                  icon: 'calendar-outline',
-                  label: 'Current Month',
-                  value: new Date().toLocaleString('default', { month: 'long' }).charAt(0).toUpperCase() + new Date().toLocaleString('default', { month: 'long' }).slice(1),
-                  onPress: () => console.log('Current Month'),
-                },
-                {
-                  icon: 'thermometer-outline',
-                  label: 'Temperature',
-                  value:
-                  room?.settings?.temperature != null
-                      ? `${room?.settings?.temperature}°C`
-                      : 'Not set',
-                  onPress: () => console.log('Temperature'),
-                },
-                {
-                  icon: 'pin-outline',
-                  label: 'City',
-                  value: room?.settings?.city || 'Not set',
-                  onPress: () => console.log('City'),
-                },
-              ]}
-            />
-          )}
         </View>
       </ScrollView>
 
@@ -884,6 +912,36 @@ export default function PlantDetail() {
         confirmText="Save"
         cancelText="Cancel"
         icon="expand-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Change A/C Dialog */}
+      <SelectionDialog
+        visible={showACDialog}
+        onClose={() => setShowACDialog(false)}
+        onConfirm={handleChangeAC}
+        title="Near A/C"
+        description="Plants near air conditioning units may need more frequent watering due to dry air."
+        options={acOptions}
+        initialSelectedId={plant.settings?.positionInRoom?.isNearAC === true ? 'yes' : 'no'}
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="snow-outline"
+        iconColor={theme.colors.primary}
+      />
+
+      {/* Change Heater Dialog */}
+      <SelectionDialog
+        visible={showHeaterDialog}
+        onClose={() => setShowHeaterDialog(false)}
+        onConfirm={handleChangeHeater}
+        title="Near Heater"
+        description="Plants near heaters may need more frequent watering due to increased heat and dry air."
+        options={heaterOptions}
+        initialSelectedId={plant.settings?.positionInRoom?.isNearHeater === true ? 'yes' : 'no'}
+        confirmText="Save"
+        cancelText="Cancel"
+        icon="flame-outline"
         iconColor={theme.colors.primary}
       />
 

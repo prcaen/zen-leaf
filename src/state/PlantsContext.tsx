@@ -282,10 +282,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           temperature: 20,
           humidity: 40,
           isIndoor: true,
-          isNearAC: false,
-          isNearHeater: true,
-          climate: 'temperate',
-          city: 'Paris',
         }
       },
       {
@@ -293,10 +289,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           temperature: 20,
           humidity: 60,
           isIndoor: true,
-          isNearAC: false,
-          isNearHeater: true,
-          climate: 'temperate',
-          city: 'Paris',
         }
       },
       {
@@ -304,10 +296,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           temperature: 18,
           humidity: 45,
           isIndoor: true,
-          isNearAC: true,
-          isNearHeater: true,
-          climate: 'temperate',
-          city: 'Paris',
         }
       },
     ];
@@ -324,6 +312,10 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: LightLevel.HIGH, type: LightType.DIRECT, distanceFromWindow: 30 },
           pot: { size: 15, hasDrainage: true, material: 'terracotta', soil: 'all-purpose-potting-mix' },
           plantType: { size: 25, variety: 'Sweet Basil', category: 'herb' },
+          positionInRoom: {
+            isNearAC: false,
+            isNearHeater: true,
+          },
         },
         careInfo: {
           growSpeed: GrowSpeed.FAST,
@@ -347,6 +339,10 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: LightLevel.LOW, type: LightType.INDIRECT, distanceFromWindow: 150 },
           pot: { size: 40, hasDrainage: true, material: 'ceramic', soil: 'all-purpose-garden-soil' },
           plantType: { size: 60, category: 'tropical' },
+          positionInRoom: {
+            isNearAC: false,
+            isNearHeater: true,
+          },
         },
         careInfo: {
           growSpeed: GrowSpeed.MODERATE,
@@ -370,6 +366,10 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: LightLevel.MEDIUM, type: LightType.INDIRECT, distanceFromWindow: 80 },
           pot: { size: 70, hasDrainage: true, material: 'plastic', soil: 'all-purpose-potting-mix' },
           plantType: { size: 120, category: 'tropical' },
+          positionInRoom: {
+            isNearAC: false,
+            isNearHeater: true,
+          },
         },
         careInfo: {
           growSpeed: GrowSpeed.MODERATE,

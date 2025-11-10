@@ -118,17 +118,14 @@ export interface PlantTypeSettings {
 export interface RoomSettings {
   humidity?: number; // percentage
   isIndoor?: boolean; // indoor or outdoor
-  isNearAC?: boolean; // only applicable for indoor locations
-  isNearHeater?: boolean; // only applicable for indoor locations
-  climate?: string; // only applicable for outdoor locations
   temperature?: number; // in Celsius
-  city?: string; // only applicable for outdoor locations
 }
 
 export interface PlantSettings {
   light?: LightSettings;
   pot?: PotSettings;
   plantType?: PlantTypeSettings;
+  positionInRoom?: PositionInRoom;
 }
 
 // Plant Care Info
@@ -149,5 +146,10 @@ export interface HealthStatus {
   issues?: string[];
   lastChecked: Date;
   notes?: string;
+}
+
+export interface PositionInRoom {
+  isNearAC?: boolean;
+  isNearHeater?: boolean;
 }
 

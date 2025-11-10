@@ -143,28 +143,8 @@ export default function RoomDetailScreen() {
     setShowACDialog(true);
   };
 
-  const handleChangeAC = async (selectedId: string) => {
-    const currentSettings = room?.settings || {};
-    await updateRoom(roomId, {
-      settings: {
-        ...currentSettings,
-        isNearAC: selectedId === 'yes',
-      },
-    });
-  };
-
   const handleHeaterPress = () => {
     setShowHeaterDialog(true);
-  };
-
-  const handleChangeHeater = async (selectedId: string) => {
-    const currentSettings = room?.settings || {};
-    await updateRoom(roomId, {
-      settings: {
-        ...currentSettings,
-        isNearHeater: selectedId === 'yes',
-      },
-    });
   };
 
   const roomOptions: SelectionOption[] = [
@@ -272,28 +252,6 @@ export default function RoomDetailScreen() {
                       : 'Not set',
                 onPress: handleRoomPress,
               },
-              {
-                icon: 'snow-outline',
-                label: 'Near A/C',
-                value:
-                  room.settings?.isNearAC === true
-                    ? 'Yes'
-                    : room.settings?.isNearAC === false
-                      ? 'No'
-                      : 'Not set',
-                onPress: handleACPress,
-              },
-              {
-                icon: 'flame-outline',
-                label: 'Near Heater',
-                value:
-                  room.settings?.isNearHeater === true
-                    ? 'Yes'
-                    : room.settings?.isNearHeater === false
-                      ? 'No'
-                      : 'Not set',
-                onPress: handleHeaterPress,
-              },
             ]}
           />
         </View>
@@ -353,46 +311,6 @@ export default function RoomDetailScreen() {
         confirmText="Save"
         cancelText="Cancel"
         icon="location-outline"
-        iconColor={theme.colors.primary}
-      />
-
-      {/* Near A/C Dialog */}
-      <SelectionDialog
-        visible={showACDialog}
-        onClose={() => setShowACDialog(false)}
-        onConfirm={handleChangeAC}
-        title="Near A/C"
-        options={yesNoOptions}
-        initialSelectedId={
-          room.settings?.isNearAC === true
-            ? 'yes'
-            : room.settings?.isNearAC === false
-              ? 'no'
-              : 'no'
-        }
-        confirmText="Save"
-        cancelText="Cancel"
-        icon="snow-outline"
-        iconColor={theme.colors.primary}
-      />
-
-      {/* Near Heater Dialog */}
-      <SelectionDialog
-        visible={showHeaterDialog}
-        onClose={() => setShowHeaterDialog(false)}
-        onConfirm={handleChangeHeater}
-        title="Near Heater"
-        options={yesNoOptions}
-        initialSelectedId={
-          room.settings?.isNearHeater === true
-            ? 'yes'
-            : room.settings?.isNearHeater === false
-              ? 'no'
-              : 'no'
-        }
-        confirmText="Save"
-        cancelText="Cancel"
-        icon="flame-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>
