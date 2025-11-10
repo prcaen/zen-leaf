@@ -30,7 +30,8 @@ export default function PlantDetail() {
   const router = useRouter();
   const {
     getPlantById,
-    locations,
+    rooms,
+    getRoomById,
     getCareTasks,
     getCareHistory,
     completeCareTask,
@@ -39,13 +40,13 @@ export default function PlantDetail() {
   } = usePlants();
 
   const plant = getPlantById(id);
-  const location = plant ? locations.find(l => l.id === plant.locationId) : undefined;
+  const room = plant ? getRoomById(plant.roomId) : null;
   const plantTasks = getCareTasks(id);
   const plantHistory = getCareHistory(id);
 
   const handleRoomSettingPress = (dialogType: string) => {
-    if (plant?.locationId) {
-      router.push(`/room/${plant.locationId}?dialog=${dialogType}`);
+    if (plant?.roomId) {
+      router.push(`/room/${plant.roomId}?dialog=${dialogType}`);
     }
   };
 
@@ -135,7 +136,7 @@ export default function PlantDetail() {
     }).start();
   }, [showHeaderTitle]);
 
-  if (!plant || !location) {
+  if (!plant || !room) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
@@ -200,7 +201,7 @@ export default function PlantDetail() {
       [Toxicity.NON_TOXIC]: 'This plant is safe for both pets and humans. You can display it anywhere without worry!',
       [Toxicity.TOXIC_PETS]: 'This plant can be harmful to pets if ingested. Keep it out of reach of cats and dogs.',
       [Toxicity.TOXIC_HUMANS]: 'This plant can cause irritation or illness in humans if ingested or touched. Handle with care.',
-      [Toxicity.TOXIC_ALL]: 'This plant is toxic to both pets and humans. Keep it in a safe location away from children and animals.',
+      [Toxicity.TOXIC_ALL]: 'This plant is toxic to both pets and humans. Keep it in a safe room away from children and animals.',
     };
     setDialogInfo({
       visible: true,
@@ -251,17 +252,17 @@ export default function PlantDetail() {
     await updatePlant(id, { name: newName });
   };
 
-  const handleLocationPress = () => {
+  const handleRoomPress = () => {
     setShowChangeRoomDialog(true);
   };
 
-  const handleChangeRoom = async (newLocationId: string) => {
-    await updatePlant(id, { locationId: newLocationId });
+  const handleChangeRoom = async (newRoomId: string) => {
+    await updatePlant(id, { roomId: newRoomId });
   };
 
-  const roomOptions: SelectionOption[] = locations.map(loc => ({
-    id: loc.id,
-    label: loc.name,
+  const roomOptions: SelectionOption[] = rooms.map(r => ({
+    id: r.id,
+    label: r.name,
   }));
 
   const lightLevelOptions: SelectionOption[] = [
@@ -483,10 +484,10 @@ export default function PlantDetail() {
         {/* Plant Header */}
         <PlantHeader
           name={plant.name}
-          location={location.name}
+          room={room.name}
           imageUrl={plant.imageUrl}
           onNamePress={handleNamePress}
-          onLocationPress={handleLocationPress}
+          onRoomPress={handleRoomPress}
         />
 
         {/* Action Cards */}
@@ -647,37 +648,37 @@ export default function PlantDetail() {
               {
                 icon: 'thermometer-outline',
                 label: 'Temperature',
-                value: location?.settings?.temperature
-                  ? `${location.settings.temperature}°C`
+                value: room?.settings?.temperature
+                  ? `${room.settings.temperature}°C`
                   : 'Not set',
                 onPress: () => handleRoomSettingPress('temperature'),
               },
               {
                 icon: 'water-outline',
                 label: 'Humidity',
-                value: location?.settings?.humidity
-                  ? `${location.settings.humidity}%`
+                value: room?.settings?.humidity
+                  ? `${room.settings.humidity}%`
                   : 'Not set',
                 onPress: () => handleRoomSettingPress('humidity'),
               },
               {
                 icon: 'location-outline',
-                label: 'Location',
+                label: 'Room',
                 value:
-                  location?.settings?.isIndoor === true
+                  room?.settings?.isIndoor === true
                     ? 'Indoor'
-                    : location?.settings?.isIndoor === false
+                    : room?.settings?.isIndoor === false
                       ? 'Outdoor'
                       : 'Not set',
-                onPress: () => handleRoomSettingPress('location'),
+                onPress: () => handleRoomSettingPress('room'),
               },
               {
                 icon: 'snow-outline',
                 label: 'Near A/C',
                 value:
-                  location?.settings?.isNearAC === true
+                  room?.settings?.isNearAC === true
                     ? 'Yes'
-                    : location?.settings?.isNearAC === false
+                    : room?.settings?.isNearAC === false
                       ? 'No'
                       : 'Not set',
                 onPress: () => handleRoomSettingPress('ac'),
@@ -686,9 +687,9 @@ export default function PlantDetail() {
                 icon: 'flame-outline',
                 label: 'Near Heater',
                 value:
-                  location?.settings?.isNearHeater === true
+                  room?.settings?.isNearHeater === true
                     ? 'Yes'
-                    : location?.settings?.isNearHeater === false
+                    : room?.settings?.isNearHeater === false
                       ? 'No'
                       : 'Not set',
                 onPress: () => handleRoomSettingPress('heater'),
@@ -696,14 +697,14 @@ export default function PlantDetail() {
             ]}
           />
 
-          {location?.settings?.isIndoor === false && (
+          {room?.settings?.isIndoor === false && (
             <SettingsSection
               title="Outdoor Settings"
               items={[
                 {
                   icon: 'partly-sunny-outline',
                   label: 'Climate',
-                  value: plant.settings?.location?.climate || 'Not set',
+                  value: room?.settings?.climate || 'Not set',
                   onPress: () => console.log('Climate'),
                 },
                 {
@@ -714,26 +715,17 @@ export default function PlantDetail() {
                 },
                 {
                   icon: 'thermometer-outline',
-                  label: 'Min Temp',
+                  label: 'Temperature',
                   value:
-                    plant.settings?.location?.temperature?.min != null
-                      ? `${plant.settings.location.temperature.min}°C`
+                  room?.settings?.temperature != null
+                      ? `${room?.settings?.temperature}°C`
                       : 'Not set',
-                  onPress: () => console.log('Min Temp'),
-                },
-                {
-                  icon: 'thermometer-outline',
-                  label: 'Max Temp',
-                  value:
-                    plant.settings?.location?.temperature?.max != null
-                      ? `${plant.settings.location.temperature.max}°C`
-                      : 'Not set',
-                  onPress: () => console.log('Max Temp'),
+                  onPress: () => console.log('Temperature'),
                 },
                 {
                   icon: 'pin-outline',
                   label: 'City',
-                  value: plant.settings?.location?.city || 'Not set',
+                  value: room?.settings?.city || 'Not set',
                   onPress: () => console.log('City'),
                 },
               ]}
@@ -790,7 +782,7 @@ export default function PlantDetail() {
         onConfirm={handleChangeRoom}
         title="Change Room"
         options={roomOptions}
-        initialSelectedId={plant.locationId}
+        initialSelectedId={plant.roomId}
         confirmText="Save"
         cancelText="Cancel"
         icon="home-outline"

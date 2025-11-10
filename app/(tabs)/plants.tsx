@@ -18,20 +18,20 @@ import { theme } from '../../src/theme';
 export type ProfileTabType = 'sites' | 'plants';
 
 export default function ProfileScreen() {
-  const { plants, locations, wateringTasks } = usePlants();
+  const { plants, rooms, wateringTasks } = usePlants();
   const [activeTab, setActiveTab] = useState<ProfileTabType>('sites');
 
   // Calculate statistics
   const totalPlants = plants.length;
-  const totalSites = locations.length;
+  const totalSites = rooms.length;
   
   // Count overdue tasks by location
-  const overdueTasksByLocation = locations.reduce((acc, location) => {
-    const plantsInLocation = plants.filter(p => p.locationId === location.id);
+  const overdueTasksByLocation = rooms.reduce((acc, room) => {
+    const plantsInLocation = plants.filter(p => p.roomId === room.id);
     const overdueCount = wateringTasks.filter(task => 
       task.isOverdue && plantsInLocation.some(p => p.id === task.plantId)
     ).length;
-    acc[location.id] = overdueCount;
+    acc[room.id] = overdueCount;
     return acc;
   }, {} as Record<string, number>);
 
@@ -72,15 +72,15 @@ export default function ProfileScreen() {
       >
         {activeTab === 'sites' ? (
           <View style={styles.sitesGrid}>
-            {locations.map(location => {
-              const plantsInLocation = plants.filter(p => p.locationId === location.id);
+            {rooms.map(room => {
+              const plantsInLocation = plants.filter(p => p.roomId === room.id);
               return (
                 <SiteCard
-                  key={location.id}
-                  locationId={location.id}
-                  locationName={location.name}
+                  key={room.id}
+                  locationId={room.id}
+                  locationName={room.name}
                   plantsInLocation={plantsInLocation}
-                  overdueCount={overdueTasksByLocation[location.id] || 0}
+                  overdueCount={overdueTasksByLocation[room.id] || 0}
                 />
               );
             })}

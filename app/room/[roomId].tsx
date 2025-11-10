@@ -22,15 +22,15 @@ import { theme } from '../../src/theme';
 type TabType = 'today' | 'soon';
 
 export default function RoomDetailScreen() {
-  const { locationId, dialog } = useLocalSearchParams<{ locationId: string; dialog?: string }>();
+  const { roomId, dialog } = useLocalSearchParams<{ roomId: string; dialog?: string }>();
   const router = useRouter();
   const {
     plants,
-    locations,
+    getRoomById,
     wateringTasks,
     selectedPlants,
     togglePlantSelection,
-    updateLocation,
+    updateRoom,
   } = usePlants();
 
   const [activeTab, setActiveTab] = useState<TabType>('today');
@@ -38,12 +38,12 @@ export default function RoomDetailScreen() {
   // Dialog states
   const [showTemperatureDialog, setShowTemperatureDialog] = useState(false);
   const [showHumidityDialog, setShowHumidityDialog] = useState(false);
-  const [showLocationDialog, setShowLocationDialog] = useState(false);
+  const [showRoomDialog, setShowRoomDialog] = useState(false);
   const [showACDialog, setShowACDialog] = useState(false);
   const [showHeaterDialog, setShowHeaterDialog] = useState(false);
 
-  const location = locations.find(l => l.id === locationId);
-  const plantsInRoom = plants.filter(p => p.locationId === locationId);
+  const room = getRoomById(roomId);
+  const plantsInRoom = plants.filter(p => p.roomId === roomId);
 
   // Open dialog based on query parameter
   useEffect(() => {
@@ -55,8 +55,8 @@ export default function RoomDetailScreen() {
         case 'humidity':
           setShowHumidityDialog(true);
           break;
-        case 'location':
-          setShowLocationDialog(true);
+        case 'room':
+          setShowRoomDialog(true);
           break;
         case 'ac':
           setShowACDialog(true);
@@ -102,8 +102,8 @@ export default function RoomDetailScreen() {
   };
 
   const handleChangeTemperature = async (temperature: number) => {
-    const currentSettings = location?.settings || {};
-    await updateLocation(locationId, {
+    const currentSettings = room?.settings || {};
+    await updateRoom(roomId, {
       settings: {
         ...currentSettings,
         temperature,
@@ -116,8 +116,8 @@ export default function RoomDetailScreen() {
   };
 
   const handleChangeHumidity = async (humidity: number) => {
-    const currentSettings = location?.settings || {};
-    await updateLocation(locationId, {
+    const currentSettings = room?.settings || {};
+    await updateRoom(roomId, {
       settings: {
         ...currentSettings,
         humidity,
@@ -125,13 +125,13 @@ export default function RoomDetailScreen() {
     });
   };
 
-  const handleLocationPress = () => {
-    setShowLocationDialog(true);
+  const handleRoomPress = () => {
+    setShowRoomDialog(true);
   };
 
-  const handleChangeLocation = async (selectedId: string) => {
-    const currentSettings = location?.settings || {};
-    await updateLocation(locationId, {
+  const handleChangeRoom = async (selectedId: string) => {
+    const currentSettings = room?.settings || {};
+    await updateRoom(roomId, {
       settings: {
         ...currentSettings,
         isIndoor: selectedId === 'indoor',
@@ -144,8 +144,8 @@ export default function RoomDetailScreen() {
   };
 
   const handleChangeAC = async (selectedId: string) => {
-    const currentSettings = location?.settings || {};
-    await updateLocation(locationId, {
+    const currentSettings = room?.settings || {};
+    await updateRoom(roomId, {
       settings: {
         ...currentSettings,
         isNearAC: selectedId === 'yes',
@@ -158,8 +158,8 @@ export default function RoomDetailScreen() {
   };
 
   const handleChangeHeater = async (selectedId: string) => {
-    const currentSettings = location?.settings || {};
-    await updateLocation(locationId, {
+    const currentSettings = room?.settings || {};
+    await updateRoom(roomId, {
       settings: {
         ...currentSettings,
         isNearHeater: selectedId === 'yes',
@@ -167,7 +167,7 @@ export default function RoomDetailScreen() {
     });
   };
 
-  const locationOptions: SelectionOption[] = [
+  const roomOptions: SelectionOption[] = [
     { id: 'indoor', label: 'Indoor', icon: 'home-outline' },
     { id: 'outdoor', label: 'Outdoor', icon: 'sunny-outline' },
   ];
@@ -177,7 +177,7 @@ export default function RoomDetailScreen() {
     { id: 'no', label: 'No', icon: 'close-circle-outline' },
   ];
 
-  if (!location) {
+  if (!room) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
@@ -200,7 +200,7 @@ export default function RoomDetailScreen() {
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>{location.name}</Text>
+          <Text style={styles.headerTitle}>{room.name}</Text>
           <Text style={styles.headerSubtitle}>{plantsInRoom.length} plants</Text>
         </View>
         <View style={styles.headerButton} />
@@ -248,37 +248,37 @@ export default function RoomDetailScreen() {
               {
                 icon: 'thermometer-outline',
                 label: 'Temperature',
-                value: location.settings?.temperature
-                  ? `${location.settings.temperature}°C`
+                value: room.settings?.temperature
+                  ? `${room.settings.temperature}°C`
                   : 'Not set',
                 onPress: handleTemperaturePress,
               },
               {
                 icon: 'water-outline',
                 label: 'Humidity',
-                value: location.settings?.humidity
-                  ? `${location.settings.humidity}%`
+                value: room.settings?.humidity
+                  ? `${room.settings.humidity}%`
                   : 'Not set',
                 onPress: handleHumidityPress,
               },
               {
                 icon: 'location-outline',
-                label: 'Location',
+                label: 'Room',
                 value:
-                  location.settings?.isIndoor === true
+                  room.settings?.isIndoor === true
                     ? 'Indoor'
-                    : location.settings?.isIndoor === false
+                    : room.settings?.isIndoor === false
                       ? 'Outdoor'
                       : 'Not set',
-                onPress: handleLocationPress,
+                onPress: handleRoomPress,
               },
               {
                 icon: 'snow-outline',
                 label: 'Near A/C',
                 value:
-                  location.settings?.isNearAC === true
+                  room.settings?.isNearAC === true
                     ? 'Yes'
-                    : location.settings?.isNearAC === false
+                    : room.settings?.isNearAC === false
                       ? 'No'
                       : 'Not set',
                 onPress: handleACPress,
@@ -287,9 +287,9 @@ export default function RoomDetailScreen() {
                 icon: 'flame-outline',
                 label: 'Near Heater',
                 value:
-                  location.settings?.isNearHeater === true
+                  room.settings?.isNearHeater === true
                     ? 'Yes'
-                    : location.settings?.isNearHeater === false
+                    : room.settings?.isNearHeater === false
                       ? 'No'
                       : 'Not set',
                 onPress: handleHeaterPress,
@@ -308,7 +308,7 @@ export default function RoomDetailScreen() {
         onClose={() => setShowTemperatureDialog(false)}
         onConfirm={handleChangeTemperature}
         title="Temperature"
-        initialValue={location.settings?.temperature || 20}
+        initialValue={room.settings?.temperature || 20}
         minValue={0}
         maxValue={40}
         step={1}
@@ -325,7 +325,7 @@ export default function RoomDetailScreen() {
         onClose={() => setShowHumidityDialog(false)}
         onConfirm={handleChangeHumidity}
         title="Humidity"
-        initialValue={location.settings?.humidity || 50}
+        initialValue={room.settings?.humidity || 50}
         minValue={0}
         maxValue={100}
         step={5}
@@ -336,17 +336,17 @@ export default function RoomDetailScreen() {
         iconColor={theme.colors.primary}
       />
 
-      {/* Location Dialog */}
+      {/* Room Dialog */}
       <SelectionDialog
-        visible={showLocationDialog}
-        onClose={() => setShowLocationDialog(false)}
-        onConfirm={handleChangeLocation}
-        title="Location"
-        options={locationOptions}
+        visible={showRoomDialog}
+        onClose={() => setShowRoomDialog(false)}
+        onConfirm={handleChangeRoom}
+        title="Room"
+        options={roomOptions}
         initialSelectedId={
-          location.settings?.isIndoor === true
+          room.settings?.isIndoor === true
             ? 'indoor'
-            : location.settings?.isIndoor === false
+            : room.settings?.isIndoor === false
               ? 'outdoor'
               : 'indoor'
         }
@@ -364,9 +364,9 @@ export default function RoomDetailScreen() {
         title="Near A/C"
         options={yesNoOptions}
         initialSelectedId={
-          location.settings?.isNearAC === true
+          room.settings?.isNearAC === true
             ? 'yes'
-            : location.settings?.isNearAC === false
+            : room.settings?.isNearAC === false
               ? 'no'
               : 'no'
         }
@@ -384,9 +384,9 @@ export default function RoomDetailScreen() {
         title="Near Heater"
         options={yesNoOptions}
         initialSelectedId={
-          location.settings?.isNearHeater === true
+          room.settings?.isNearHeater === true
             ? 'yes'
-            : location.settings?.isNearHeater === false
+            : room.settings?.isNearHeater === false
               ? 'no'
               : 'no'
         }

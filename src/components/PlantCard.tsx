@@ -16,7 +16,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({
   isSelected,
   onToggleSelect,
 }) => {
-  const { plant, location, daysOverdue, isOverdue } = task;
+  const { plant, room: location, daysOverdue, isOverdue } = task;
   const router = useRouter();
 
   const handleCardPress = () => {

@@ -1,4 +1,4 @@
-import { Plant, Location } from '../types';
+import { Plant, Room } from '../types';
 
 // Placeholder for future API integration
 // This file structure is ready for when you want to add backend API calls
@@ -50,14 +50,14 @@ export const plantsApi = {
     throw new Error('API not implemented yet');
   },
 
-  async fetchLocations(): Promise<Location[]> {
+  async fetchLocations(): Promise<Room[]> {
     // TODO: Implement API call
     // const response = await fetch(`${API_BASE_URL}/locations`);
     // return response.json();
     throw new Error('API not implemented yet');
   },
 
-  async createLocation(location: Omit<Location, 'id'>): Promise<Location> {
+  async createLocation(location: Omit<Room, 'id'>): Promise<Room> {
     // TODO: Implement API call
     // const response = await fetch(`${API_BASE_URL}/locations`, {
     //   method: 'POST',
@@ -68,7 +68,7 @@ export const plantsApi = {
     throw new Error('API not implemented yet');
   },
 
-  async syncWithServer(): Promise<{ plants: Plant[]; locations: Location[] }> {
+  async syncWithServer(): Promise<{ plants: Plant[]; locations: Room[] }> {
     // TODO: Implement sync logic
     // This would handle syncing local data with the server
     throw new Error('API not implemented yet');

@@ -5,18 +5,18 @@ import { theme } from '../../theme';
 
 interface PlantHeaderProps {
   name: string;
-  location: string;
+  room: string;
   imageUrl?: string;
   onNamePress?: () => void;
-  onLocationPress?: () => void;
+  onRoomPress?: () => void;
 }
 
 export const PlantHeader: React.FC<PlantHeaderProps> = ({
   name,
-  location,
+  room,
   imageUrl,
   onNamePress,
-  onLocationPress,
+  onRoomPress,
 }) => {
   return (
     <View style={styles.container}>
@@ -43,12 +43,12 @@ export const PlantHeader: React.FC<PlantHeaderProps> = ({
             </View>
           </TouchableOpacity>
           <TouchableOpacity 
-            onPress={onLocationPress} 
-            disabled={!onLocationPress}
+            onPress={onRoomPress} 
+            disabled={!onRoomPress}
             activeOpacity={0.7}
           >
             <View style={styles.locationContainer}>
-              <Text style={styles.location}>{location}</Text>
+              <Text style={styles.location}>{room}</Text>
             </View>
           </TouchableOpacity>
         </View>

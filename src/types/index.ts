@@ -1,22 +1,14 @@
-export interface RoomLocationSettings {
-  temperature?: number; // in Celsius
-  humidity?: number; // percentage
-  isIndoor?: boolean; // indoor or outdoor
-  isNearAC?: boolean;
-  isNearHeater?: boolean;
-}
-
-export interface Location {
+export interface Room {
   id: string;
   name: string;
   icon?: string;
-  settings?: RoomLocationSettings;
+  settings?: RoomSettings;
 }
 
 export interface Plant {
   id: string;
   name: string;
-  locationId: string;
+  roomId: string;
   imageUrl?: string;
   wateringFrequencyDays: number;
   lastWateredDate: Date | null;
@@ -29,14 +21,14 @@ export interface Plant {
 export interface WateringTask {
   plantId: string;
   plant: Plant;
-  location: Location;
+  room: Room;
   daysOverdue: number;
   isOverdue: boolean;
   nextWateringDate: Date;
 }
 
-export interface PlantWithLocation extends Plant {
-  location: Location;
+export interface PlantWithRoom extends Plant {
+  room: Room;
 }
 
 // Care Task Types
@@ -110,8 +102,8 @@ export interface LightSettings {
 }
 
 export interface PotSettings {
-  size: number; // Pot size in cm (diameter)
-  hasDrainage: boolean;
+  size?: number; // Pot size in cm (diameter)
+  hasDrainage?: boolean;
   material?: string; // e.g., "ceramic", "plastic", "terracotta"
   soil?: string; // e.g., "soil"
 }
@@ -123,21 +115,20 @@ export interface PlantTypeSettings {
   age?: number; // Plant age in years (0 = less than a year, 50 = 50+ years)
 }
 
-export interface LocationSettings {
-  climate?: string;
-  season?: string;
-  temperature?: {
-    min?: number;
-    max?: number;
-  };
-  city?: string;
+export interface RoomSettings {
+  humidity?: number; // percentage
+  isIndoor?: boolean; // indoor or outdoor
+  isNearAC?: boolean; // only applicable for indoor locations
+  isNearHeater?: boolean; // only applicable for indoor locations
+  climate?: string; // only applicable for outdoor locations
+  temperature?: number; // in Celsius
+  city?: string; // only applicable for outdoor locations
 }
 
 export interface PlantSettings {
   light?: LightSettings;
   pot?: PotSettings;
   plantType?: PlantTypeSettings;
-  location?: LocationSettings;
 }
 
 // Plant Care Info

@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Plant, Location, CareTask, CareHistory } from '../types';
+import { CareHistory, CareTask, Plant, Room } from '../types';
 
 const PLANTS_KEY = '@zen_leaf_plants';
-const LOCATIONS_KEY = '@zen_leaf_locations';
+const ROOMS_KEY = '@zen_leaf_rooms';
 const CARE_TASKS_KEY = '@zen_leaf_care_tasks';
 const CARE_HISTORY_KEY = '@zen_leaf_care_history';
 
@@ -109,44 +109,44 @@ export const storage = {
     await this.savePlants(filtered);
   },
 
-  // Locations
-  async getLocations(): Promise<Location[]> {
+  // Rooms
+  async getRooms(): Promise<Room[]> {
     try {
-      const data = await AsyncStorage.getItem(LOCATIONS_KEY);
+      const data = await AsyncStorage.getItem(ROOMS_KEY);
       return data ? JSON.parse(data) : [];
     } catch (error) {
-      console.error('Error loading locations:', error);
+      console.error('Error loading rooms:', error);
       return [];
     }
   },
 
-  async saveLocations(locations: Location[]): Promise<void> {
+  async saveRooms(rooms: Room[]): Promise<void> {
     try {
-      await AsyncStorage.setItem(LOCATIONS_KEY, JSON.stringify(locations));
+      await AsyncStorage.setItem(ROOMS_KEY, JSON.stringify(rooms));
     } catch (error) {
-      console.error('Error saving locations:', error);
+      console.error('Error saving rooms:', error);
     }
   },
 
-  async addLocation(location: Location): Promise<void> {
-    const locations = await this.getLocations();
-    locations.push(location);
-    await this.saveLocations(locations);
+    async addRoom(room: Room): Promise<void> {
+    const rooms = await this.getRooms();
+    rooms.push(room);
+    await this.saveRooms(rooms);
   },
 
-  async updateLocation(locationId: string, updates: Partial<Location>): Promise<void> {
-    const locations = await this.getLocations();
-    const index = locations.findIndex(l => l.id === locationId);
+  async updateRoom(roomId: string, updates: Partial<Room>): Promise<void> {
+    const rooms = await this.getRooms();
+    const index = rooms.findIndex(r => r.id === roomId);
     if (index !== -1) {
-      locations[index] = { ...locations[index], ...updates };
-      await this.saveLocations(locations);
+      rooms[index] = { ...rooms[index], ...updates };
+      await this.saveRooms(rooms);
     }
   },
 
-  async deleteLocation(locationId: string): Promise<void> {
-    const locations = await this.getLocations();
-    const filtered = locations.filter(l => l.id !== locationId);
-    await this.saveLocations(filtered);
+  async deleteRoom(roomId: string): Promise<void> {
+    const rooms = await this.getRooms();
+    const filtered = rooms.filter(r => r.id !== roomId);
+    await this.saveRooms(filtered);
   },
 
   // Care Tasks

@@ -1,10 +1,10 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { storage } from '../lib/storage';
-import { CareHistory, CareTask, GrowSpeed, LightLevel, LightType, Location, Plant, Toxicity, WateringTask, WaterNeeded } from '../types';
+import { CareHistory, CareTask, GrowSpeed, LightLevel, LightType, Plant, Room, Toxicity, WateringTask, WaterNeeded } from '../types';
 
 interface PlantsContextValue {
   plants: Plant[];
-  locations: Location[];
+  rooms: Room[];
   loading: boolean;
   wateringTasks: WateringTask[];
   selectedPlants: Set<string>;
@@ -15,10 +15,11 @@ interface PlantsContextValue {
   addPlant: (plant: Plant) => Promise<void>;
   updatePlant: (plantId: string, updates: Partial<Plant>) => Promise<void>;
   deletePlant: (plantId: string) => Promise<void>;
-  addLocation: (location: Location) => Promise<void>;
-  updateLocation: (locationId: string, updates: Partial<Location>) => Promise<void>;
-  deleteLocation: (locationId: string) => Promise<void>;
+  addRoom: (room: Room) => Promise<void>;
+  updateRoom: (roomId: string, updates: Partial<Room>) => Promise<void>;
+  deleteRoom: (roomId: string) => Promise<void>;
   getPlantById: (plantId: string) => Plant | undefined;
+  getRoomById: (roomId: string) => Room | undefined;
   getCareTasks: (plantId?: string) => CareTask[];
   getCareHistory: (plantId?: string, limit?: number) => CareHistory[];
   addCareTask: (task: CareTask) => Promise<void>;
@@ -45,7 +46,7 @@ interface PlantsProviderProps {
 
 export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const [plants, setPlants] = useState<Plant[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [careTasks, setCareTasks] = useState<CareTask[]>([]);
   const [careHistory, setCareHistory] = useState<CareHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,8 +59,8 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     today.setHours(0, 0, 0, 0);
 
     plants.forEach(plant => {
-      const location = locations.find(l => l.id === plant.locationId);
-      if (!location) return;
+      const room = rooms.find(r => r.id === plant.roomId);
+      if (!room) return;
 
       let nextWateringDate: Date;
       let daysOverdue = 0;
@@ -68,7 +69,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         const lastWatered = plant.lastWateredDate;
         nextWateringDate = new Date(lastWatered);
         nextWateringDate.setDate(lastWatered.getDate() + plant.wateringFrequencyDays);
-        
+
         const diffTime = today.getTime() - nextWateringDate.getTime();
         daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
       } else {
@@ -80,7 +81,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       tasks.push({
         plantId: plant.id,
         plant,
-        location,
+        room: room,
         daysOverdue: Math.max(0, daysOverdue),
         isOverdue: daysOverdue > 0,
         nextWateringDate: nextWateringDate,
@@ -89,7 +90,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
 
     // Sort by days overdue (descending)
     return tasks.sort((a, b) => b.daysOverdue - a.daysOverdue);
-  }, [plants, locations]);
+  }, [plants, rooms]);
 
   // Load data on mount
   useEffect(() => {
@@ -99,14 +100,14 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [loadedPlants, loadedLocations, loadedTasks, loadedHistory] = await Promise.all([
+      const [loadedPlants, loadedRooms, loadedTasks, loadedHistory] = await Promise.all([
         storage.getPlants(),
-        storage.getLocations(),
+        storage.getRooms(),
         storage.getCareTasks(),
         storage.getCareHistory(),
       ]);
       setPlants(loadedPlants);
-      setLocations(loadedLocations);
+      setRooms(loadedRooms);
       setCareTasks(loadedTasks);
       setCareHistory(loadedHistory);
     } catch (error) {
@@ -159,7 +160,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const waterSelectedPlants = useCallback(async () => {
     const now = new Date();
     const plantIds = Array.from(selectedPlants);
-    
+
     await Promise.all(
       plantIds.map(id => storage.updatePlant(id, { lastWateredDate: now }))
     );
@@ -189,22 +190,26 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     setPlants(prev => prev.filter(p => p.id !== plantId));
   }, []);
 
-  const addLocation = useCallback(async (location: Location) => {
-    await storage.addLocation(location);
-    setLocations(prev => [...prev, location]);
+  const addRoom = useCallback(async (room: Room) => {
+    await storage.addRoom(room);
+    setRooms(prev => [...prev, room]);
   }, []);
 
-  const updateLocation = useCallback(async (locationId: string, updates: Partial<Location>) => {
-    await storage.updateLocation(locationId, updates);
-    setLocations(prev =>
-      prev.map(l => (l.id === locationId ? { ...l, ...updates } : l))
+  const updateRoom = useCallback(async (roomId: string, updates: Partial<Room>) => {
+    await storage.updateRoom(roomId, updates);
+    setRooms(prev =>
+      prev.map(r => (r.id === roomId ? { ...r, ...updates } : r))
     );
   }, []);
 
-  const deleteLocation = useCallback(async (locationId: string) => {
-    await storage.deleteLocation(locationId);
-    setLocations(prev => prev.filter(l => l.id !== locationId));
+  const deleteRoom = useCallback(async (roomId: string) => {
+    await storage.deleteRoom(roomId);
+    setRooms(prev => prev.filter(r => r.id !== roomId));
   }, []);
+
+  const getRoomById = useCallback((roomId: string) => {
+    return rooms.find(r => r.id === roomId);
+  }, [rooms]);
 
   const getPlantById = useCallback((plantId: string) => {
     return plants.find(p => p.id === plantId);
@@ -271,17 +276,47 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
 
   const initializeWithSampleData = useCallback(async () => {
     // This will be called to populate initial data
-    const sampleLocations: Location[] = [
-      { id: 'loc1', name: 'Kitchen' },
-      { id: 'loc2', name: 'Living Room' },
-      { id: 'loc3', name: 'Bedroom' },
+    const sampleRooms: Room[] = [
+      {
+        id: 'room1', name: 'Kitchen', settings: {
+          temperature: 20,
+          humidity: 40,
+          isIndoor: true,
+          isNearAC: false,
+          isNearHeater: true,
+          climate: 'temperate',
+          city: 'Paris',
+        }
+      },
+      {
+        id: 'room2', name: 'Living Room', settings: {
+          temperature: 20,
+          humidity: 60,
+          isIndoor: true,
+          isNearAC: false,
+          isNearHeater: true,
+          climate: 'temperate',
+          city: 'Paris',
+        }
+      },
+      {
+        id: 'room3', name: 'Bedroom', settings: {
+          temperature: 18,
+          humidity: 45,
+          isIndoor: true,
+          isNearAC: true,
+          isNearHeater: true,
+          climate: 'temperate',
+          city: 'Paris',
+        }
+      },
     ];
 
     const samplePlants: Plant[] = [
       {
         id: 'plant1',
         name: 'Basil',
-        locationId: 'loc1',
+        roomId: 'room1',
         wateringFrequencyDays: 2,
         lastWateredDate: null,
         createdAt: new Date(),
@@ -289,7 +324,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: LightLevel.HIGH, type: LightType.DIRECT, distanceFromWindow: 30 },
           pot: { size: 15, hasDrainage: true, material: 'terracotta', soil: 'all-purpose-potting-mix' },
           plantType: { size: 25, variety: 'Sweet Basil', category: 'herb' },
-          location: { climate: 'temperate' },
         },
         careInfo: {
           growSpeed: GrowSpeed.FAST,
@@ -305,7 +339,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       {
         id: 'plant2',
         name: 'Peace Lily',
-        locationId: 'loc2',
+        roomId: 'room2',
         wateringFrequencyDays: 3,
         lastWateredDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
         createdAt: new Date(),
@@ -313,7 +347,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: LightLevel.LOW, type: LightType.INDIRECT, distanceFromWindow: 150 },
           pot: { size: 40, hasDrainage: true, material: 'ceramic', soil: 'all-purpose-garden-soil' },
           plantType: { size: 60, category: 'tropical' },
-          location: { climate: 'humid' },
         },
         careInfo: {
           growSpeed: GrowSpeed.MODERATE,
@@ -329,7 +362,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       {
         id: 'plant3',
         name: 'Monstera',
-        locationId: 'loc2',
+        roomId: 'room2',
         wateringFrequencyDays: 7,
         lastWateredDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
         createdAt: new Date(),
@@ -337,7 +370,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           light: { level: LightLevel.MEDIUM, type: LightType.INDIRECT, distanceFromWindow: 80 },
           pot: { size: 70, hasDrainage: true, material: 'plastic', soil: 'all-purpose-potting-mix' },
           plantType: { size: 120, category: 'tropical' },
-          location: { climate: 'tropical' },
         },
         careInfo: {
           growSpeed: GrowSpeed.MODERATE,
@@ -434,12 +466,12 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       },
     ];
 
-    await storage.saveLocations(sampleLocations);
+    await storage.saveRooms(sampleRooms);
     await storage.savePlants(samplePlants);
     await storage.saveCareTasks(sampleTasks);
     await storage.saveCareHistory(sampleHistory);
-    
-    setLocations(sampleLocations);
+
+    setRooms(sampleRooms);
     setPlants(samplePlants);
     setCareTasks(sampleTasks);
     setCareHistory(sampleHistory);
@@ -447,7 +479,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
 
   const value: PlantsContextValue = {
     plants,
-    locations,
+    rooms,
     loading,
     wateringTasks,
     selectedPlants,
@@ -458,10 +490,11 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     addPlant,
     updatePlant,
     deletePlant,
-    addLocation,
-    updateLocation,
-    deleteLocation,
+    addRoom,
+    updateRoom,
+    deleteRoom,
     getPlantById,
+    getRoomById,
     getCareTasks,
     getCareHistory,
     addCareTask,
