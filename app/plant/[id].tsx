@@ -1002,7 +1002,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    backgroundColor: theme.colors.white,
+  
   },
   headerButton: {
     padding: theme.spacing.sm,

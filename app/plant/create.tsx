@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Crypto from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
@@ -66,7 +67,7 @@ export default function CreatePlantScreen() {
     };
 
     const newPlant: Plant = {
-      id: crypto.randomUUID(),
+      id: Crypto.randomUUID(),
       name: plant.name,
       roomId: defaultRoomId,
       wateringFrequencyDays: 7, // Default to weekly

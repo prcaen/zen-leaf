@@ -2,13 +2,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { usePlants } from '../../../../src/state/PlantsContext';
@@ -26,6 +26,9 @@ export default function SelectRoomScreen() {
 
   // Filter rooms by indoor/outdoor
   const filteredRooms = rooms.filter(room => {
+    if (room.id === 'no-room') {
+      return false;
+    }
     if (filterIndoor) {
       return room.settings?.isIndoor !== false; // Show indoor or undefined
     }

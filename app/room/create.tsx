@@ -119,15 +119,7 @@ export default function CreateRoomScreen() {
           <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Create Room</Text>
-        <TouchableOpacity
-          style={styles.createButton}
-          onPress={handleCreate}
-          disabled={!canCreate}
-        >
-          <Text style={[styles.createButtonText, !canCreate && styles.createButtonTextDisabled]}>
-            Create
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.backButton} />
       </View>
 
       <ScrollView
@@ -191,6 +183,17 @@ export default function CreateRoomScreen() {
             ]}
           />
         </View>
+
+        {/* Submit Button */}
+        <TouchableOpacity
+          style={[styles.submitButton, !canCreate && styles.submitButtonDisabled]}
+          onPress={handleCreate}
+          disabled={!canCreate}
+        >
+          <Text style={[styles.submitButtonText, !canCreate && styles.submitButtonTextDisabled]}>
+            Create Room
+          </Text>
+        </TouchableOpacity>
 
         {/* Bottom spacing */}
         <View style={styles.bottomSpacer} />
@@ -275,7 +278,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.md,
-    backgroundColor: theme.colors.white,
   },
   backButton: {
     padding: theme.spacing.sm,
@@ -286,18 +288,27 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.text,
   },
-  createButton: {
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
+  submitButton: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.lg,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.xs,
   },
-  createButtonText: {
+  submitButtonDisabled: {
+    backgroundColor: theme.colors.border,
+    opacity: 0.5,
+  },
+  submitButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: theme.colors.primary,
+    color: theme.colors.white,
   },
-  createButtonTextDisabled: {
+  submitButtonTextDisabled: {
     color: theme.colors.textLight,
-    opacity: 0.5,
   },
   scrollView: {
     flex: 1,
