@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../src/components/Button';
 import { SettingsSection } from '../../src/components/detail/SettingsSection';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
 import { SliderDialog } from '../../src/components/SliderDialog';
@@ -185,15 +186,13 @@ export default function CreateRoomScreen() {
         </View>
 
         {/* Submit Button */}
-        <TouchableOpacity
-          style={[styles.submitButton, !canCreate && styles.submitButtonDisabled]}
+        <Button
+          title="Create Room"
           onPress={handleCreate}
+          variant="common"
           disabled={!canCreate}
-        >
-          <Text style={[styles.submitButtonText, !canCreate && styles.submitButtonTextDisabled]}>
-            Create Room
-          </Text>
-        </TouchableOpacity>
+          style={styles.submitButton}
+        />
 
         {/* Bottom spacing */}
         <View style={styles.bottomSpacer} />
@@ -289,26 +288,8 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   submitButton: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.borderRadius.lg,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: theme.spacing.xs,
     marginBottom: theme.spacing.xs,
-  },
-  submitButtonDisabled: {
-    backgroundColor: theme.colors.border,
-    opacity: 0.5,
-  },
-  submitButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.white,
-  },
-  submitButtonTextDisabled: {
-    color: theme.colors.textLight,
   },
   scrollView: {
     flex: 1,

@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../../../src/components/Button';
 import { usePlants } from '../../../../src/state/PlantsContext';
 import { theme } from '../../../../src/theme';
 import { LightLevel } from '../../../../src/types';
@@ -147,14 +148,12 @@ export default function SelectRoomScreen() {
         <Text style={styles.question}>Where is the plant placed?</Text>
 
         {/* Create Room Button */}
-        <TouchableOpacity
-          style={styles.createRoomButton}
+        <Button
+          title="Create a new site"
           onPress={handleCreateRoom}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="home-outline" size={20} color={theme.colors.white} />
-          <Text style={styles.createRoomButtonText}>Create a new site</Text>
-        </TouchableOpacity>
+          variant="common"
+          style={styles.createRoomButton}
+        />
 
         {/* Filter Button */}
         <TouchableOpacity
@@ -256,20 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   createRoomButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.primaryLight,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.lg,
     marginBottom: theme.spacing.md,
-    gap: theme.spacing.sm,
-  },
-  createRoomButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.white,
   },
   filterButton: {
     alignSelf: 'flex-start',
