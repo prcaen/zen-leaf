@@ -1,0 +1,533 @@
+import { CareHistory, CareTask, Plant, Room, User } from '../types';
+import { supabase } from './supabase';
+
+// Helper to convert camelCase to snake_case for database columns
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+function camelToSnake(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(camelToSnake);
+  }
+
+  if (typeof obj === 'object' && !(obj instanceof Date)) {
+    const snakeObj: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const snakeKey = toSnakeCase(key);
+        snakeObj[snakeKey] = camelToSnake(obj[key]);
+      }
+    }
+    return snakeObj;
+  }
+
+  return obj;
+}
+
+// Helper to convert snake_case to camelCase for TypeScript
+function toCamelCase(str: string): string {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+function snakeToCamel(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(snakeToCamel);
+  }
+
+  if (typeof obj === 'object' && !(obj instanceof Date)) {
+    const camelObj: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        const camelKey = toCamelCase(key);
+        camelObj[camelKey] = snakeToCamel(obj[key]);
+      }
+    }
+    return camelObj;
+  }
+
+  return obj;
+}
+
+// Helper to convert Date objects to ISO strings for Supabase
+function serializeDates<T>(obj: T): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return obj.toISOString();
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => serializeDates(item));
+  }
+
+  if (typeof obj === 'object') {
+    const serialized: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        serialized[key] = serializeDates((obj as any)[key]);
+      }
+    }
+    return serialized;
+  }
+
+  return obj;
+}
+
+// Helper to convert ISO strings back to Date objects
+function deserializeDates<T>(obj: any): T {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (typeof obj === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(obj)) {
+    const date = new Date(obj);
+    if (!isNaN(date.getTime())) {
+      return date as any;
+    }
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => deserializeDates(item)) as any;
+  }
+
+  if (typeof obj === 'object') {
+    const deserialized: any = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        deserialized[key] = deserializeDates(obj[key]);
+      }
+    }
+    return deserialized;
+  }
+
+  return obj;
+}
+
+// Helper to get current user ID
+async function getUserId(): Promise<string | null> {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.id || null;
+}
+
+export const api = {
+  // Plants
+  async getPlants(): Promise<Plant[]> {
+    try {
+      const userId = await getUserId();
+      if (!userId) return [];
+
+      const { data, error } = await supabase
+        .from('plants')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data || []).map(item => {
+        const camelCase = snakeToCamel(item);
+        return deserializeDates<Plant>(camelCase);
+      });
+    } catch (error) {
+      console.error('Error fetching plants:', error);
+      return [];
+    }
+  },
+
+  async addPlant(plant: Plant): Promise<Plant> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(plant);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('plants')
+        .insert({ ...snakeCase, user_id: userId })
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<Plant>(camelCase);
+    } catch (error) {
+      console.error('Error adding plant:', error);
+      throw error;
+    }
+  },
+
+  async updatePlant(plantId: string, updates: Partial<Plant>): Promise<Plant> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(updates);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('plants')
+        .update(snakeCase)
+        .eq('id', plantId)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<Plant>(camelCase);
+    } catch (error) {
+      console.error('Error updating plant:', error);
+      throw error;
+    }
+  },
+
+  async deletePlant(plantId: string): Promise<void> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('plants')
+        .delete()
+        .eq('id', plantId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting plant:', error);
+      throw error;
+    }
+  },
+
+  // Rooms
+  async getRooms(): Promise<Room[]> {
+    try {
+      const userId = await getUserId();
+      if (!userId) return [];
+
+      const { data, error } = await supabase
+        .from('rooms')
+        .select('*')
+        .eq('user_id', userId)
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      return (data || []).map(item => {
+        const camelCase = snakeToCamel(item);
+        return deserializeDates<Room>(camelCase);
+      });
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+      return [];
+    }
+  },
+
+  async addRoom(room: Room): Promise<Room> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(room);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('rooms')
+        .insert({ ...snakeCase, user_id: userId })
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<Room>(camelCase);
+    } catch (error) {
+      console.error('Error adding room:', error);
+      throw error;
+    }
+  },
+
+  async updateRoom(roomId: string, updates: Partial<Room>): Promise<Room> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(updates);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('rooms')
+        .update(snakeCase)
+        .eq('id', roomId)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<Room>(camelCase);
+    } catch (error) {
+      console.error('Error updating room:', error);
+      throw error;
+    }
+  },
+
+  async deleteRoom(roomId: string): Promise<void> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('rooms')
+        .delete()
+        .eq('id', roomId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      throw error;
+    }
+  },
+
+  // Care Tasks
+  async getCareTasks(plantId?: string): Promise<CareTask[]> {
+    try {
+      const userId = await getUserId();
+      if (!userId) return [];
+
+      let query = supabase
+        .from('care_tasks')
+        .select('*')
+        .eq('user_id', userId)
+        .order('next_due_date', { ascending: true });
+
+      if (plantId) {
+        query = query.eq('plant_id', plantId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      return (data || []).map(item => {
+        const camelCase = snakeToCamel(item);
+        return deserializeDates<CareTask>(camelCase);
+      });
+    } catch (error) {
+      console.error('Error fetching care tasks:', error);
+      return [];
+    }
+  },
+
+  async addCareTask(task: CareTask): Promise<CareTask> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(task);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('care_tasks')
+        .insert({ ...snakeCase, user_id: userId })
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<CareTask>(camelCase);
+    } catch (error) {
+      console.error('Error adding care task:', error);
+      throw error;
+    }
+  },
+
+  async updateCareTask(taskId: string, updates: Partial<CareTask>): Promise<CareTask> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(updates);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('care_tasks')
+        .update(snakeCase)
+        .eq('id', taskId)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<CareTask>(camelCase);
+    } catch (error) {
+      console.error('Error updating care task:', error);
+      throw error;
+    }
+  },
+
+  async deleteCareTask(taskId: string): Promise<void> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('care_tasks')
+        .delete()
+        .eq('id', taskId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting care task:', error);
+      throw error;
+    }
+  },
+
+  // Care History
+  async getCareHistory(plantId?: string): Promise<CareHistory[]> {
+    try {
+      const userId = await getUserId();
+      if (!userId) return [];
+
+      let query = supabase
+        .from('care_history')
+        .select('*')
+        .eq('user_id', userId)
+        .order('completed_at', { ascending: false });
+
+      if (plantId) {
+        query = query.eq('plant_id', plantId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      return (data || []).map(item => {
+        const camelCase = snakeToCamel(item);
+        return deserializeDates<CareHistory>(camelCase);
+      });
+    } catch (error) {
+      console.error('Error fetching care history:', error);
+      return [];
+    }
+  },
+
+  async addCareHistory(entry: CareHistory): Promise<CareHistory> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(entry);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('care_history')
+        .insert({ ...snakeCase, user_id: userId })
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<CareHistory>(camelCase);
+    } catch (error) {
+      console.error('Error adding care history:', error);
+      throw error;
+    }
+  },
+
+  async deleteCareHistory(entryId: string): Promise<void> {
+    try {
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('care_history')
+        .delete()
+        .eq('id', entryId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting care history:', error);
+      throw error;
+    }
+  },
+
+  // User
+  async getUser(): Promise<User | null> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        // User might not exist in users table yet
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        throw error;
+      }
+
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<User>(camelCase);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
+  },
+
+  async saveUser(userData: User): Promise<User> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(userData);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('users')
+        .upsert({ id: user.id, ...snakeCase })
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<User>(camelCase);
+    } catch (error) {
+      console.error('Error saving user:', error);
+      throw error;
+    }
+  },
+
+  async updateUser(updates: Partial<User>): Promise<User> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const serialized = serializeDates(updates);
+      const snakeCase = camelToSnake(serialized);
+      const { data, error } = await supabase
+        .from('users')
+        .update(snakeCase)
+        .eq('id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      const camelCase = snakeToCamel(data);
+      return deserializeDates<User>(camelCase);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
+  },
+};
+

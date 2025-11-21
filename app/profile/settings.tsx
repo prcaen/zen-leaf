@@ -10,9 +10,12 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../src/components/Button';
+import { ConfirmDialog } from '../../src/components/ConfirmDialog';
 import { SettingItemData, SettingsSection } from '../../src/components/detail/SettingsSection';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
 import { TextInputDialog } from '../../src/components/TextInputDialog';
+import { useAuth } from '../../src/state/AuthContext';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
 import { UnitSystem } from '../../src/types';
@@ -20,10 +23,21 @@ import { UnitSystem } from '../../src/types';
 export default function ProfileSettingsScreen() {
   const router = useRouter();
   const { user, updateUser } = usePlants();
+  const { signOut } = useAuth();
   const [showNameDialog, setShowNameDialog] = useState(false);
   const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showLocationDialog, setShowLocationDialog] = useState(false);
   const [showUnitSystemDialog, setShowUnitSystemDialog] = useState(false);
+  const [showSignOutDialog, setShowSignOutDialog] = useState(false);
+
+  const handleSignOutPress = () => {
+    setShowSignOutDialog(true);
+  };
+
+  const handleSignOutConfirm = async () => {
+    await signOut();
+    // Navigation will happen automatically via auth state change
+  };
 
   if (!user) {
     return null;
@@ -97,6 +111,13 @@ export default function ProfileSettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <SettingsSection title="Profile" items={settings} />
+
+        <Button
+            title="Sign Out"
+            onPress={handleSignOutPress}
+            variant="destructive"
+            style={styles.signOutButton}
+          />
       </ScrollView>
 
       {/* Name Dialog */}
@@ -155,6 +176,20 @@ export default function ProfileSettingsScreen() {
         icon="resize-outline"
         iconColor={theme.colors.primary}
       />
+
+      {/* Sign Out Confirmation Dialog */}
+      <ConfirmDialog
+        visible={showSignOutDialog}
+        onClose={() => setShowSignOutDialog(false)}
+        onConfirm={handleSignOutConfirm}
+        title="Sign Out"
+        message="Are you sure you want to sign out? You'll need to sign in again to access your account."
+        confirmText="Sign Out"
+        cancelText="Cancel"
+        confirmColor="#C94A4A"
+        icon="log-out-outline"
+        iconColor="#C94A4A"
+      />
     </SafeAreaView>
   );
 }
@@ -187,6 +222,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: theme.spacing.lg,
     paddingBottom: theme.spacing.xl,
+  },
+  signOutButton: {
+    marginTop: theme.spacing.sm,
   },
 });
 
