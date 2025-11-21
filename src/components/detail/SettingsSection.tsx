@@ -31,6 +31,9 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ title, items }
           >
             <View style={styles.itemIcon}>
               <Ionicons name={item.icon} size={20} color={theme.colors.text} />
+              {(!item.value || item.value === 'Not set') && (
+                <View style={styles.pastille} />
+              )}
             </View>
             <View style={styles.itemContent}>
               <Text style={styles.itemLabel}>{item.label}</Text>
@@ -75,6 +78,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: theme.spacing.md,
+    position: 'relative',
+  },
+  pastille: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#DC2626',
+    borderWidth: 2,
+    borderColor: theme.colors.white,
   },
   itemContent: {
     flex: 1,
