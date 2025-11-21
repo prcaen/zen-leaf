@@ -83,7 +83,7 @@ export default function CreatePlantScreen() {
     };
 
     await addPlant(newPlant);
-    router.push(`/plant/create/${newPlant.id}/room`);
+    router.replace(`/plant/create/${newPlant.id}/room`);
   };
 
   return (

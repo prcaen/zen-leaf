@@ -71,7 +71,7 @@ export default function SelectRoomScreen() {
   const handleRoomSelect = async (roomId: string) => {
     if (plant) {
       await updatePlant(plantId, { roomId });
-      router.push(`/plant/${plantId}`);
+      router.replace(`/plant/${plantId}`);
     }
   };
 
