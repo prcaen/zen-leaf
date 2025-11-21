@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -66,6 +67,10 @@ export default function SignupScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          <Image
+              source={require('../../assets/images/auth-hero.png')}
+              style={styles.heroImage}
+            />
           <View style={styles.header}>
             <Text style={styles.title}>Create account</Text>
             <Text style={styles.subtitle}>Sign up to get started</Text>
@@ -184,6 +189,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: theme.spacing.lg,
     justifyContent: 'center',
+  },
+  heroImage: {
+    width: '100%',
+    height: 200,
+    marginBottom: theme.spacing.xl,
   },
   header: {
     marginBottom: theme.spacing.xl,
