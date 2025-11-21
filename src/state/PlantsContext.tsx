@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { storage } from '../lib/storage';
-import { CareHistory, CareTask, GrowSpeed, LightLevel, LightType, Plant, Room, Toxicity, UnitSystem, User, WateringTask, WaterNeeded } from '../types';
+import { CareHistory, CareTask, GrowSpeed, LightLevel, Plant, Room, Toxicity, UnitSystem, User, WateringTask, WaterNeeded } from '../types';
 
 interface PlantsContextValue {
   plants: Plant[];
@@ -342,7 +342,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: null,
         createdAt: new Date(),
         settings: {
-          light: { type: LightType.DIRECT, distanceFromWindow: 30 },
+          light: { distanceFromWindow: 30 },
           pot: { size: 15, hasDrainage: true, material: 'terracotta', soil: 'all-purpose-potting-mix' },
           plantType: { size: 25, variety: 'Sweet Basil', category: 'herb' },
           positionInRoom: {
@@ -369,7 +369,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
         createdAt: new Date(),
         settings: {
-          light: { type: LightType.INDIRECT, distanceFromWindow: 150 },
+          light: { distanceFromWindow: 150 },
           pot: { size: 40, hasDrainage: true, material: 'ceramic', soil: 'all-purpose-garden-soil' },
           plantType: { size: 60, category: 'tropical' },
           positionInRoom: {
@@ -396,7 +396,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         lastWateredDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
         createdAt: new Date(),
         settings: {
-          light: { type: LightType.INDIRECT, distanceFromWindow: 80 },
+          light: { distanceFromWindow: 80 },
           pot: { size: 70, hasDrainage: true, material: 'plastic', soil: 'all-purpose-potting-mix' },
           plantType: { size: 120, category: 'tropical' },
           positionInRoom: {

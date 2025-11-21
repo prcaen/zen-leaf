@@ -88,7 +88,7 @@ export default function ProfileScreen() {
       >
         {activeTab === 'rooms' ? (
           <View style={styles.roomsGrid}>
-            {rooms.map(room => {
+            {[...rooms.filter(room => room.id !== 'no-room'), ...rooms.filter(room => room.id === 'no-room')].map(room => {
               const plantsInLocation = plants.filter(p => p.roomId === room.id);
               return (
                 <SiteCard
