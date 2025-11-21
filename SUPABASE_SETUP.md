@@ -184,11 +184,87 @@ CREATE POLICY "Users can delete own care_history" ON care_history
   FOR DELETE USING (auth.uid() = user_id);
 ```
 
-## 4. Update API Column Mappings
+## 4. Storage Bucket Setup
+
+To enable image uploads for plants, you need to create a storage bucket and configure Row Level Security policies.
+
+### 4.1. Create Storage Bucket
+
+1. Go to Supabase Dashboard > Storage
+2. Click "New bucket"
+3. Name it `main`
+4. Make it **Public** (so images can be accessed via public URLs)
+5. Click "Create bucket"
+
+### 4.2. Configure Storage Policies
+
+Run the following SQL in your Supabase SQL Editor to set up RLS policies for the storage bucket:
+
+```sql
+-- Enable RLS on storage.objects
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can upload files to their own folder
+CREATE POLICY "Users can upload own files"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'main' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy: Users can view their own files
+CREATE POLICY "Users can view own files"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'main' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy: Users can update their own files
+CREATE POLICY "Users can update own files"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'main' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy: Users can delete their own files
+CREATE POLICY "Users can delete own files"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'main' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+```
+
+**Note:** The file path structure is `{userId}/{plantId}/{filename}`, so the policies check that the first folder in the path matches the authenticated user's ID.
+
+### 4.3. Alternative: Public Read Access (Optional)
+
+If you want all images to be publicly readable (but only authenticated users can upload), you can add this policy:
+
+```sql
+-- Policy: Anyone can view files in main bucket (public read)
+CREATE POLICY "Public can view main bucket files"
+ON storage.objects
+FOR SELECT
+TO public
+USING (bucket_id = 'main');
+```
+
+## 5. Update API Column Mappings
 
 The API service (`src/lib/api.ts`) expects snake_case column names. If your database uses different naming, you'll need to update the column mappings in the API file.
 
-## 5. Authentication (Optional)
+## 6. Authentication (Optional)
 
 If you want to add user authentication:
 
@@ -197,7 +273,7 @@ If you want to add user authentication:
 3. Add user_id columns to tables if you want multi-user support
 4. Update RLS policies to restrict data by user_id
 
-## 6. Testing
+## 7. Testing
 
 After setup, test the connection:
 
@@ -209,7 +285,7 @@ const { data, error } = await supabase.from('rooms').select('count');
 console.log('Supabase connection:', error ? 'Failed' : 'Success');
 ```
 
-## 7. Migration from AsyncStorage
+## 8. Migration from AsyncStorage
 
 To migrate existing data from AsyncStorage to Supabase:
 
@@ -220,7 +296,9 @@ To migrate existing data from AsyncStorage to Supabase:
 ## Troubleshooting
 
 - **Connection errors**: Verify your Supabase URL and anon key are correct
-- **RLS errors**: Check your Row Level Security policies
+- **RLS errors**: Check your Row Level Security policies for both database tables and storage buckets
+- **Storage RLS errors**: Make sure the storage bucket exists and RLS policies are set up correctly. The file path must start with the user's ID (e.g., `{userId}/{plantId}/filename.jpg`)
 - **Column errors**: Ensure column names match between TypeScript types and database schema
 - **Date serialization**: The API handles Date serialization automatically
+- **Image upload errors**: Verify the storage bucket is created and policies allow authenticated users to upload to their own folder
 

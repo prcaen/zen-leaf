@@ -46,7 +46,8 @@
     },
     "extra": {
       "supabaseUrl": "",
-      "supabaseAnonKey": ""
+      "supabaseAnonKey": "",
+      "supabaseStorageBucketPlants": "plants",
     }
   }
 }

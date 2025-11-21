@@ -21,6 +21,7 @@ import { InfoDialog } from '../../src/components/InfoDialog';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
 import { SliderDialog } from '../../src/components/SliderDialog';
 import { TextInputDialog } from '../../src/components/TextInputDialog';
+import { pickImage, takePicture, uploadPlantImage } from '../../src/lib/imageUpload';
 import {
   formatSize,
   formatTemperature,
@@ -97,6 +98,9 @@ export default function PlantDetail() {
 
   // Rename dialog state
   const [showRenameDialog, setShowRenameDialog] = useState(false);
+
+  // Image upload loading state
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Change room dialog state
   const [showChangeRoomDialog, setShowChangeRoomDialog] = useState(false);
@@ -270,6 +274,30 @@ export default function PlantDetail() {
 
   const handleChangeRoom = async (newRoomId: string) => {
     await updatePlant(id, { roomId: newRoomId });
+  };
+
+  const handleImageUpload = () => {
+    handleImageSourceSelect('camera');
+  };
+
+  const handleImageSourceSelect = async (source: 'camera' | 'library') => {
+    try {
+      setIsUploadingImage(true);
+      const result = source === 'camera' ? await takePicture([16, 9]) : await pickImage();
+
+      if (result.canceled || !result.assets || result.assets.length === 0) {
+        return;
+      }
+
+      const imageUri = result.assets[0].uri;
+      const imageUrl = await uploadPlantImage(imageUri, id);
+      await updatePlant(id, { imageUrl });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      // You might want to show an error dialog here
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   const roomOptions: SelectionOption[] = rooms.map(r => ({
@@ -605,6 +633,7 @@ export default function PlantDetail() {
           imageUrl={plant.imageUrl}
           onNamePress={handleNamePress}
           onRoomPress={handleRoomPress}
+          onImageUpload={handleImageUpload}
         />
 
         {/* Action Cards */}
