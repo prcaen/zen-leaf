@@ -121,6 +121,7 @@ export const commonHouseplants: PlantCatalogItem[] = [
     aliases: '',
     difficulty: 'Moderate',
     lightLevel: LightLevel.SUN,
+    imageUrl: 'https://hlcieyhydqncunaxffgt.supabase.co/storage/v1/object/public/main/basil.jpeg',
   },
   {
     id: 'silver-inch-plant',
