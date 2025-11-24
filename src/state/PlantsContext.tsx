@@ -1,5 +1,5 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
-import { storage } from '../lib/storage';
+import { api } from '../lib/api';
 import { CareHistory, CareTask, GrowSpeed, LightLevel, Plant, Room, Toxicity, UnitSystem, User, WateringTask, WaterNeeded } from '../types';
 
 interface PlantsContextValue {
@@ -103,11 +103,11 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     setLoading(true);
     try {
       const [loadedPlants, loadedRooms, loadedTasks, loadedHistory, loadedUser] = await Promise.all([
-        storage.getPlants(),
-        storage.getRooms(),
-        storage.getCareTasks(),
-        storage.getCareHistory(),
-        storage.getUser(),
+        api.getPlants(),
+        api.getRooms(),
+        api.getCareTasks(),
+        api.getCareHistory(),
+        api.getUser(),
       ]);
       setPlants(loadedPlants);
       setRooms(loadedRooms);
@@ -122,7 +122,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           locationName: 'Paris',
           unitSystem: UnitSystem.METRIC,
         };
-        await storage.saveUser(defaultUser);
+        await api.saveUser(defaultUser);
         setUser(defaultUser);
       } else {
         setUser(loadedUser);
@@ -152,9 +152,9 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
 
   const waterPlant = useCallback(async (plantId: string) => {
     const now = new Date();
-    await storage.updatePlant(plantId, { lastWateredDate: now });
+    const updatedPlant = await api.updatePlant(plantId, { lastWateredDate: now });
     setPlants(prev =>
-      prev.map(p => (p.id === plantId ? { ...p, lastWateredDate: now } : p))
+      prev.map(p => (p.id === plantId ? updatedPlant : p))
     );
     setSelectedPlants(prev => {
       const newSet = new Set(prev);
@@ -170,57 +170,58 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       title: 'Watered',
       completedAt: now,
     };
-    await storage.addCareHistory(historyEntry);
-    setCareHistory(prev => [historyEntry, ...prev]);
+    const savedHistory = await api.addCareHistory(historyEntry);
+    setCareHistory(prev => [savedHistory, ...prev]);
   }, []);
 
   const waterSelectedPlants = useCallback(async () => {
     const now = new Date();
     const plantIds = Array.from(selectedPlants);
 
-    await Promise.all(
-      plantIds.map(id => storage.updatePlant(id, { lastWateredDate: now }))
+    const updatedPlants = await Promise.all(
+      plantIds.map(id => api.updatePlant(id, { lastWateredDate: now }))
     );
 
     setPlants(prev =>
-      prev.map(p =>
-        selectedPlants.has(p.id) ? { ...p, lastWateredDate: now } : p
-      )
+      prev.map(p => {
+        const updated = updatedPlants.find(up => up.id === p.id);
+        return updated || p;
+      })
     );
     setSelectedPlants(new Set());
   }, [selectedPlants]);
 
   const addPlant = useCallback(async (plant: Plant) => {
-    await storage.addPlant(plant);
-    setPlants(prev => [...prev, plant]);
+    const savedPlant = await api.addPlant(plant);
+    setPlants(prev => [...prev, savedPlant]);
   }, []);
 
   const updatePlant = useCallback(async (plantId: string, updates: Partial<Plant>) => {
-    await storage.updatePlant(plantId, updates);
+    const updatedPlant = await api.updatePlant(plantId, updates);
     setPlants(prev =>
-      prev.map(p => (p.id === plantId ? { ...p, ...updates } : p))
+      prev.map(p => (p.id === plantId ? updatedPlant : p))
     );
   }, []);
 
   const deletePlant = useCallback(async (plantId: string) => {
-    await storage.deletePlant(plantId);
+    await api.deletePlant(plantId);
     setPlants(prev => prev.filter(p => p.id !== plantId));
   }, []);
 
   const addRoom = useCallback(async (room: Room) => {
-    await storage.addRoom(room);
-    setRooms(prev => [...prev, room]);
+    const savedRoom = await api.addRoom(room);
+    setRooms(prev => [...prev, savedRoom]);
   }, []);
 
   const updateRoom = useCallback(async (roomId: string, updates: Partial<Room>) => {
-    await storage.updateRoom(roomId, updates);
+    const updatedRoom = await api.updateRoom(roomId, updates);
     setRooms(prev =>
-      prev.map(r => (r.id === roomId ? { ...r, ...updates } : r))
+      prev.map(r => (r.id === roomId ? updatedRoom : r))
     );
   }, []);
 
   const deleteRoom = useCallback(async (roomId: string) => {
-    await storage.deleteRoom(roomId);
+    await api.deleteRoom(roomId);
     setRooms(prev => prev.filter(r => r.id !== roomId));
   }, []);
 
@@ -242,14 +243,14 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   }, [careHistory]);
 
   const addCareTask = useCallback(async (task: CareTask) => {
-    await storage.addCareTask(task);
-    setCareTasks(prev => [...prev, task]);
+    const savedTask = await api.addCareTask(task);
+    setCareTasks(prev => [...prev, savedTask]);
   }, []);
 
   const updateCareTask = useCallback(async (taskId: string, updates: Partial<CareTask>) => {
-    await storage.updateCareTask(taskId, updates);
+    const updatedTask = await api.updateCareTask(taskId, updates);
     setCareTasks(prev =>
-      prev.map(t => (t.id === taskId ? { ...t, ...updates } : t))
+      prev.map(t => (t.id === taskId ? updatedTask : t))
     );
   }, []);
 
@@ -262,16 +263,12 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     nextDueDate.setDate(nextDueDate.getDate() + task.frequencyDays);
 
     // Update task
-    await storage.updateCareTask(taskId, {
+    const updatedTask = await api.updateCareTask(taskId, {
       lastCompletedDate: now,
       nextDueDate: nextDueDate,
     });
     setCareTasks(prev =>
-      prev.map(t =>
-        t.id === taskId
-          ? { ...t, lastCompletedDate: now, nextDueDate: nextDueDate }
-          : t
-      )
+      prev.map(t => (t.id === taskId ? updatedTask : t))
     );
 
     // Add to history
@@ -282,18 +279,18 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       title: task.title,
       completedAt: now,
     };
-    await storage.addCareHistory(historyEntry);
-    setCareHistory(prev => [historyEntry, ...prev]);
+    const savedHistory = await api.addCareHistory(historyEntry);
+    setCareHistory(prev => [savedHistory, ...prev]);
   }, [careTasks]);
 
   const deleteCareTask = useCallback(async (taskId: string) => {
-    await storage.deleteCareTask(taskId);
+    await api.deleteCareTask(taskId);
     setCareTasks(prev => prev.filter(t => t.id !== taskId));
   }, []);
 
   const updateUser = useCallback(async (updates: Partial<User>) => {
-    await storage.updateUser(updates);
-    setUser(prev => prev ? { ...prev, ...updates } : null);
+    const updatedUser = await api.updateUser(updates);
+    setUser(updatedUser);
   }, []);
 
   const initializeWithSampleData = useCallback(async () => {
@@ -499,15 +496,16 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       },
     ];
 
-    await storage.saveRooms(sampleRooms);
-    await storage.savePlants(samplePlants);
-    await storage.saveCareTasks(sampleTasks);
-    await storage.saveCareHistory(sampleHistory);
+    // Save sample data to Supabase
+    const savedRooms = await Promise.all(sampleRooms.map(room => api.addRoom(room)));
+    const savedPlants = await Promise.all(samplePlants.map(plant => api.addPlant(plant)));
+    const savedTasks = await Promise.all(sampleTasks.map(task => api.addCareTask(task)));
+    const savedHistory = await Promise.all(sampleHistory.map(entry => api.addCareHistory(entry)));
 
-    setRooms(sampleRooms);
-    setPlants(samplePlants);
-    setCareTasks(sampleTasks);
-    setCareHistory(sampleHistory);
+    setRooms(savedRooms);
+    setPlants(savedPlants);
+    setCareTasks(savedTasks);
+    setCareHistory(savedHistory);
   }, []);
 
   const value: PlantsContextValue = {
