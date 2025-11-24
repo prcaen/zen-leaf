@@ -1,5 +1,5 @@
-import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
+import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
@@ -52,9 +52,6 @@ export default function SelectRoomScreen() {
 
   // Filter rooms by indoor/outdoor
   const filteredRooms = rooms.filter(room => {
-    if (room.id === 'no-room') {
-      return false;
-    }
     if (filterIndoor) {
       return room.settings?.isIndoor !== false; // Show indoor or undefined
     }

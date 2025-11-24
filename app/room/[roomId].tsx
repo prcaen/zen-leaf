@@ -10,6 +10,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../src/components/Button';
+import { ConfirmDialog } from '../../src/components/ConfirmDialog';
 import { SettingsSection } from '../../src/components/detail/SettingsSection';
 import { PlantCard } from '../../src/components/PlantCard';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
@@ -39,6 +41,8 @@ export default function RoomDetailScreen() {
     selectedPlants,
     togglePlantSelection,
     updateRoom,
+    deleteRoom,
+    updatePlant,
     user,
   } = usePlants();
 
@@ -50,6 +54,7 @@ export default function RoomDetailScreen() {
   const [showHumidityDialog, setShowHumidityDialog] = useState(false);
   const [showLightLevelDialog, setShowLightLevelDialog] = useState(false);
   const [showRoomDialog, setShowRoomDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const room = getRoomById(roomId);
   const plantsInRoom = plants.filter(p => p.roomId === roomId);
@@ -170,6 +175,15 @@ export default function RoomDetailScreen() {
         isIndoor: selectedId === 'indoor',
       },
     });
+  };
+
+  const handleDeletePress = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    await deleteRoom(roomId);
+    router.back();
   };
 
   const lightLevelOptions: SelectionOption[] = [
@@ -298,6 +312,13 @@ export default function RoomDetailScreen() {
           ]}
         />
 
+        {/* Delete Room Section */}
+        <Button
+          title="Delete Room"
+          onPress={handleDeletePress}
+          variant="destructive"
+        />
+
         {/* Bottom spacing */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -385,6 +406,24 @@ export default function RoomDetailScreen() {
         cancelText="Cancel"
         icon="create-outline"
         iconColor={theme.colors.primary}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        visible={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Room?"
+        message={
+          plantsInRoom.length > 0
+            ? `Are you sure you want to delete ${room.name}? The ${plantsInRoom.length} plant${plantsInRoom.length > 1 ? 's' : ''} in this room will be moved to "No Room". This action cannot be undone.`
+            : `Are you sure you want to delete ${room.name}? This action cannot be undone.`
+        }
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmColor={theme.colors.error}
+        icon="trash-outline"
+        iconColor={theme.colors.error}
       />
     </SafeAreaView>
   );

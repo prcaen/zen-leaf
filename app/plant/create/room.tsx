@@ -45,9 +45,6 @@ export default function SelectRoomScreen() {
 
   // Filter rooms by indoor/outdoor
   const filteredRooms = rooms.filter(room => {
-    if (room.id === 'no-room') {
-      return false;
-    }
     if (filterIndoor) {
       return room.settings?.isIndoor !== false; // Show indoor or undefined
     }
