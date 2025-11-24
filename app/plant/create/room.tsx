@@ -1,52 +1,45 @@
-import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useMemo, useState } from 'react';
+import * as Crypto from 'expo-crypto';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import {
-  Image,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../../../../src/components/Button';
-import { usePlants } from '../../../../src/state/PlantsContext';
-import { theme } from '../../../../src/theme';
-import { LightLevel, Plant } from '../../../../src/types';
-
-interface PlantData {
-  name: string;
-  wateringFrequencyDays: number;
-  lastWateredDate: null;
-  careInfo: {
-    growSpeed: string;
-    lightNeeded: LightLevel;
-    toxicity: string;
-    waterNeeded: string;
-  };
-  imageUrl?: string;
-}
+import { Button } from '../../../src/components/Button';
+import { tempPlantStorage } from '../../../src/lib/storage';
+import { usePlants } from '../../../src/state/PlantsContext';
+import { theme } from '../../../src/theme';
+import { LightLevel, Plant, PlantBasicInfo } from '../../../src/types';
 
 export default function SelectRoomScreen() {
-  const { plantData: plantDataParam } = useLocalSearchParams<{ plantData?: string }>();
   const router = useRouter();
   const { rooms, plants, addPlant } = usePlants();
   const [filterIndoor, setFilterIndoor] = useState(true);
+  const [plantData, setPlantData] = useState<PlantBasicInfo | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Parse plant data from route params
-  const plantData: PlantData | null = useMemo(() => {
-    if (!plantDataParam) return null;
-    try {
-      const decoded = decodeURIComponent(plantDataParam);
-      return JSON.parse(decoded) as PlantData;
-    } catch (error) {
-      console.error('Error parsing plant data:', error);
-      return null;
-    }
-  }, [plantDataParam]);
+  // Load plant data from storage
+  useEffect(() => {
+    const loadPlantData = async () => {
+      try {
+        const data = await tempPlantStorage.get();
+        setPlantData(data);
+      } catch (error) {
+        console.error('Error loading plant data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPlantData();
+  }, []);
 
   const plantLightNeeded = plantData?.careInfo?.lightNeeded;
 
@@ -114,6 +107,8 @@ export default function SelectRoomScreen() {
       };
 
       await addPlant(newPlant);
+      // Clear temporary plant data after successful creation
+      await tempPlantStorage.clear();
       router.replace(`/plant/${newPlant.id}`);
     } catch (error) {
       console.error('Error creating plant:', error);
@@ -122,9 +117,7 @@ export default function SelectRoomScreen() {
   };
 
   const handleCreateRoom = () => {
-    // Pass plant data back when returning from room creation
-    const plantDataJson = plantDataParam ? `&plantData=${plantDataParam}` : '';
-    router.push(`/room/create?returnTo=/plant/create/room${plantDataJson}`);
+    router.push('/room/create?returnTo=/plant/create/room');
   };
 
   const renderRoomImages = (roomId: string) => {
@@ -195,11 +188,15 @@ export default function SelectRoomScreen() {
         {/* Question */}
         <Text style={styles.question}>Where is the plant placed?</Text>
         
-        {!plantData && (
+        {loading ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Loading...</Text>
+          </View>
+        ) : !plantData ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>Plant data is missing. Please go back and try again.</Text>
           </View>
-        )}
+        ) : null}
 
         {/* Create Room Button */}
         <Button
@@ -307,6 +304,17 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.sageDark,
     marginBottom: theme.spacing.lg,
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
   },
   createRoomButton: {
     marginBottom: theme.spacing.md,

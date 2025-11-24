@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CareHistory, CareTask, Plant, Room, User } from '../types';
+import { CareHistory, CareTask, Plant, PlantBasicInfo, Room, User } from '../types';
 
 const PLANTS_KEY = '@zen_leaf_plants';
 const ROOMS_KEY = '@zen_leaf_rooms';
@@ -265,6 +265,40 @@ export const storage = {
       ]);
     } catch (error) {
       console.error('Error clearing storage:', error);
+    }
+  },
+};
+
+// Temporary plant data storage (for plant creation flow)
+const TEMP_PLANT_DATA_KEY = '@zen_leaf_temp_plant_data';
+
+export const tempPlantStorage = {
+  async save(basicInfo: PlantBasicInfo): Promise<void> {
+    try {
+      const serialized = serializeDates(basicInfo);
+      await AsyncStorage.setItem(TEMP_PLANT_DATA_KEY, JSON.stringify(serialized));
+    } catch (error) {
+      console.error('Error saving temp plant data:', error);
+    }
+  },
+
+  async get(): Promise<PlantBasicInfo | null> {
+    try {
+      const data = await AsyncStorage.getItem(TEMP_PLANT_DATA_KEY);
+      if (!data) return null;
+      const parsed = JSON.parse(data);
+      return deserializeDates<PlantBasicInfo>(parsed);
+    } catch (error) {
+      console.error('Error loading temp plant data:', error);
+      return null;
+    }
+  },
+
+  async clear(): Promise<void> {
+    try {
+      await AsyncStorage.removeItem(TEMP_PLANT_DATA_KEY);
+    } catch (error) {
+      console.error('Error clearing temp plant data:', error);
     }
   },
 };

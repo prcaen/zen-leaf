@@ -132,6 +132,15 @@ export interface PlantCareInfo {
   waterNeededDescription?: string;
 }
 
+// Plant Basic Info (for plant creation flow before room selection)
+export interface PlantBasicInfo {
+  name: string;
+  wateringFrequencyDays: number;
+  lastWateredDate: null;
+  careInfo: PlantCareInfo;
+  imageUrl?: string;
+}
+
 // Health Status
 export interface HealthStatus {
   overall: HealthOverall;

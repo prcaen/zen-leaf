@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as Crypto from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -16,9 +15,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlantCatalogItem } from '../../src/components/PlantCatalogItem';
 import { PlantCatalogItem as PlantCatalogItemType } from '../../src/data/plantCatalog';
 import { api } from '../../src/lib/api';
+import { tempPlantStorage } from '../../src/lib/storage';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { GrowSpeed, LightLevel, Plant, Toxicity, WaterNeeded } from '../../src/types';
+import { GrowSpeed, LightLevel, PlantBasicInfo, Toxicity, WaterNeeded } from '../../src/types';
 
 export default function CreatePlantScreen() {
   const router = useRouter();
@@ -50,8 +50,6 @@ export default function CreatePlantScreen() {
   );
 
   const handlePlantSelect = async (plant: PlantCatalogItemType) => {
-    const defaultRoomId = 'no-room';
-
     // Map difficulty to care info
     const getGrowSpeed = (difficulty: string): GrowSpeed => {
       switch (difficulty) {
@@ -87,13 +85,11 @@ export default function CreatePlantScreen() {
       return WaterNeeded.MODERATE;
     };
 
-    const newPlant: Plant = {
-      id: Crypto.randomUUID(),
+    // Prepare basic plant info (without saving yet)
+    const basicInfo: PlantBasicInfo = {
       name: plant.name,
-      roomId: defaultRoomId,
       wateringFrequencyDays: 7, // Default to weekly
       lastWateredDate: null,
-      createdAt: new Date(),
       careInfo: {
         growSpeed: getGrowSpeed(plant.difficulty),
         lightNeeded: plant.lightLevel,
@@ -103,8 +99,9 @@ export default function CreatePlantScreen() {
       imageUrl: plant.imageUrl,
     };
 
-    await addPlant(newPlant);
-    router.replace(`/plant/create/${newPlant.id}/room`);
+    // Save basic plant info to local storage
+    await tempPlantStorage.save(basicInfo);
+    router.push('/plant/create/room');
   };
 
   return (

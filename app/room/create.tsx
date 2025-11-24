@@ -1,14 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/Button';
@@ -16,10 +16,10 @@ import { SettingsSection } from '../../src/components/detail/SettingsSection';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
 import { SliderDialog } from '../../src/components/SliderDialog';
 import {
-  formatTemperature,
-  getDisplayTemperature,
-  getTemperatureUnit,
-  parseTemperature,
+    formatTemperature,
+    getDisplayTemperature,
+    getTemperatureUnit,
+    parseTemperature,
 } from '../../src/lib/number';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
@@ -27,6 +27,7 @@ import { LightLevel, Room, UnitSystem } from '../../src/types';
 
 export default function CreateRoomScreen() {
   const router = useRouter();
+  const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
   const { addRoom, user } = usePlants();
 
   // Form state
@@ -105,7 +106,13 @@ export default function CreateRoomScreen() {
     };
 
     await addRoom(room);
-    router.back();
+    
+    // If returnTo is provided, navigate there
+    if (returnTo) {
+      router.replace(returnTo as any);
+    } else {
+      router.back();
+    }
   };
 
   const canCreate = name.trim().length > 0;
