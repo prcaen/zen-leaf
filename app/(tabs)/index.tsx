@@ -27,16 +27,7 @@ export default function Index() {
     wateringTasks,
     waterPlant,
     loading,
-    plants,
-    initializeWithSampleData,
   } = usePlants();
-
-  // Initialize with sample data if no plants exist
-  useEffect(() => {
-    if (!loading && plants.length === 0) {
-      initializeWithSampleData();
-    }
-  }, [loading, plants.length]);
 
   // Filter tasks based on active tab
   const today = new Date();

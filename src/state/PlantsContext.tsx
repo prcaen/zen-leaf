@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { CareHistory, CareTask, GrowSpeed, LightLevel, Plant, Room, Toxicity, UnitSystem, User, WateringTask, WaterNeeded } from '../types';
+import { CareHistory, CareTask, Plant, Room, UnitSystem, User, WateringTask } from '../types';
 
 interface PlantsContextValue {
   plants: Plant[];
@@ -29,7 +29,6 @@ interface PlantsContextValue {
   deleteCareTask: (taskId: string) => Promise<void>;
   updateUser: (updates: Partial<User>) => Promise<void>;
   refreshData: () => Promise<void>;
-  initializeWithSampleData: () => Promise<void>;
 }
 
 const PlantsContext = createContext<PlantsContextValue | undefined>(undefined);
@@ -293,221 +292,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     setUser(updatedUser);
   }, []);
 
-  const initializeWithSampleData = useCallback(async () => {
-    // This will be called to populate initial data
-    const sampleRooms: Room[] = [
-      {
-        id: 'no-room', name: 'No Room', settings: {
-          temperature: undefined,
-          humidity: undefined,
-          isIndoor: undefined,
-          lightLevel: undefined,
-        }
-      },
-      {
-        id: 'room1', name: 'Kitchen', settings: {
-          temperature: 20,
-          humidity: 40,
-          isIndoor: true,
-          lightLevel: LightLevel.SUN,
-        }
-      },
-      {
-        id: 'room2', name: 'Living Room', settings: {
-          temperature: 20,
-          humidity: 60,
-          isIndoor: true,
-          lightLevel: LightLevel.PART_SUN,
-        }
-      },
-      {
-        id: 'room3', name: 'Bedroom', settings: {
-          temperature: 18,
-          humidity: 45,
-          isIndoor: true,
-          lightLevel: LightLevel.SHADE,
-        }
-      },
-    ];
-
-    const samplePlants: Plant[] = [
-      {
-        id: 'plant1',
-        name: 'Basil',
-        roomId: 'room1',
-        wateringFrequencyDays: 2,
-        lastWateredDate: null,
-        createdAt: new Date(),
-        settings: {
-          light: { distanceFromWindow: 30 },
-          pot: { size: 15, hasDrainage: true, material: 'terracotta', soil: 'all-purpose-potting-mix' },
-          plantType: { size: 25, variety: 'Sweet Basil', category: 'herb' },
-          positionInRoom: {
-            isNearAC: false,
-            isNearHeater: true,
-          },
-        },
-        careInfo: {
-          growSpeed: GrowSpeed.FAST,
-          lightNeeded: LightLevel.SUN,
-          toxicity: Toxicity.NON_TOXIC,
-          waterNeeded: WaterNeeded.HIGH,
-          growSpeedDescription: 'Basil grows quickly in the right conditions. You can start harvesting leaves in 3-4 weeks!',
-          lightNeededDescription: 'Basil loves sun! Give it 6-8 hours of direct sunlight daily for best growth and flavor.',
-          toxicityDescription: 'Basil is completely safe for both humans and pets. In fact, it\'s a delicious culinary herb!',
-          waterNeededDescription: 'Keep the soil consistently moist but not waterlogged. Water daily in hot weather.',
-        },
-      },
-      {
-        id: 'plant2',
-        name: 'Peace Lily',
-        roomId: 'room2',
-        wateringFrequencyDays: 3,
-        lastWateredDate: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
-        createdAt: new Date(),
-        settings: {
-          light: { distanceFromWindow: 150 },
-          pot: { size: 40, hasDrainage: true, material: 'ceramic', soil: 'all-purpose-garden-soil' },
-          plantType: { size: 60, category: 'tropical' },
-          positionInRoom: {
-            isNearAC: false,
-            isNearHeater: true,
-          },
-        },
-        careInfo: {
-          growSpeed: GrowSpeed.MODERATE,
-          lightNeeded: LightLevel.SHADE,
-          toxicity: Toxicity.TOXIC_PETS,
-          waterNeeded: WaterNeeded.MODERATE,
-          growSpeedDescription: 'Peace lilies grow at a steady pace, producing new leaves every few weeks and flowers periodically.',
-          lightNeededDescription: 'One of the best low-light plants! Thrives in shade and can even tolerate fluorescent lighting.',
-          toxicityDescription: 'Warning: Peace lilies contain calcium oxalates that are toxic to cats and dogs if ingested. Keep out of reach of pets.',
-          waterNeededDescription: 'Water when the top inch of soil is dry. The plant will droop slightly when it needs water, making it easy to know when to water.',
-        },
-      },
-      {
-        id: 'plant3',
-        name: 'Monstera',
-        roomId: 'room2',
-        wateringFrequencyDays: 7,
-        lastWateredDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000), // 8 days ago
-        createdAt: new Date(),
-        settings: {
-          light: { distanceFromWindow: 80 },
-          pot: { size: 70, hasDrainage: true, material: 'plastic', soil: 'all-purpose-potting-mix' },
-          plantType: { size: 120, category: 'tropical' },
-          positionInRoom: {
-            isNearAC: false,
-            isNearHeater: true,
-          },
-        },
-        careInfo: {
-          growSpeed: GrowSpeed.MODERATE,
-          lightNeeded: LightLevel.PART_SUN,
-          toxicity: Toxicity.TOXIC_PETS,
-          waterNeeded: WaterNeeded.MODERATE,
-          growSpeedDescription: 'Monsteras grow steadily, producing a new leaf every 4-6 weeks in optimal conditions. They can become quite large over time!',
-          lightNeededDescription: 'Bright, indirect light is perfect. Direct sunlight can burn the leaves, while too little light slows growth.',
-          toxicityDescription: 'Caution: Monstera leaves contain calcium oxalates and are toxic to pets and can cause irritation in humans. Keep away from curious pets and children.',
-          waterNeededDescription: 'Water when the top 2-3 inches of soil are dry. Monsteras prefer to dry out slightly between waterings.',
-        },
-      },
-    ];
-
-    // Sample care tasks
-    const now = new Date();
-    const sampleTasks: CareTask[] = [
-      {
-        id: 'task1',
-        plantId: 'plant1',
-        type: 'fertilize',
-        title: 'Fertilize',
-        description: 'Apply balanced liquid fertilizer',
-        frequencyDays: 14,
-        lastCompletedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-        nextDueDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-        createdAt: now,
-      },
-      {
-        id: 'task2',
-        plantId: 'plant2',
-        type: 'prune',
-        title: 'Prune dead leaves',
-        description: 'Remove brown or yellow leaves',
-        frequencyDays: 30,
-        lastCompletedDate: null,
-        nextDueDate: now,
-        createdAt: now,
-      },
-      {
-        id: 'task3',
-        plantId: 'plant3',
-        type: 'pest_check',
-        title: 'Check for pests',
-        description: 'Inspect leaves for spider mites',
-        frequencyDays: 7,
-        lastCompletedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        nextDueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-        createdAt: now,
-      },
-      {
-        id: 'task4',
-        plantId: 'plant3',
-        type: 'repot',
-        title: 'Repot plant',
-        description: 'Move to larger pot',
-        frequencyDays: 365,
-        lastCompletedDate: null,
-        nextDueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        isLocked: true,
-        createdAt: now,
-      },
-    ];
-
-    // Sample care history
-    const sampleHistory: CareHistory[] = [
-      {
-        id: 'history1',
-        plantId: 'plant2',
-        taskType: 'water',
-        title: 'Watered',
-        completedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
-      },
-      {
-        id: 'history2',
-        plantId: 'plant3',
-        taskType: 'water',
-        title: 'Watered',
-        completedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-      },
-      {
-        id: 'history3',
-        plantId: 'plant1',
-        taskType: 'fertilize',
-        title: 'Fertilized',
-        completedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-      },
-      {
-        id: 'history4',
-        plantId: 'plant3',
-        taskType: 'pest_check',
-        title: 'Checked for pests',
-        completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      },
-    ];
-
-    // Save sample data to Supabase
-    const savedRooms = await Promise.all(sampleRooms.map(room => api.addRoom(room)));
-    const savedPlants = await Promise.all(samplePlants.map(plant => api.addPlant(plant)));
-    const savedTasks = await Promise.all(sampleTasks.map(task => api.addCareTask(task)));
-    const savedHistory = await Promise.all(sampleHistory.map(entry => api.addCareHistory(entry)));
-
-    setRooms(savedRooms);
-    setPlants(savedPlants);
-    setCareTasks(savedTasks);
-    setCareHistory(savedHistory);
-  }, []);
-
   const value: PlantsContextValue = {
     plants,
     rooms,
@@ -535,7 +319,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     deleteCareTask,
     updateUser,
     refreshData,
-    initializeWithSampleData,
   };
 
   return <PlantsContext.Provider value={value}>{children}</PlantsContext.Provider>;
