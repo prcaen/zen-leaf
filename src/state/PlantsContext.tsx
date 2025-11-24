@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { CareHistory, CareTask, Plant, Room, UnitSystem, User, WateringTask } from '../types';
+import { CareHistory, CareTask, Plant, Room, User, WateringTask } from '../types';
 
 interface PlantsContextValue {
   plants: Plant[];
@@ -113,19 +113,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       setCareTasks(loadedTasks);
       setCareHistory(loadedHistory);
       
-      // Initialize default user if none exists
-      if (!loadedUser) {
-        const defaultUser: User = {
-          name: 'Plant Parent',
-          email: 'user@example.com',
-          locationName: 'Paris',
-          unitSystem: UnitSystem.METRIC,
-        };
-        await api.saveUser(defaultUser);
-        setUser(defaultUser);
-      } else {
-        setUser(loadedUser);
-      }
+      setUser(loadedUser);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {

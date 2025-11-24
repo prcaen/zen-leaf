@@ -87,31 +87,67 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
       >
         {activeTab === 'rooms' ? (
-          <View style={styles.roomsGrid}>
-            {rooms.map(room => {
-              const plantsInLocation = plants.filter(p => p.roomId === room.id);
-              return (
-                <SiteCard
-                  key={room.id}
-                  locationId={room.id}
-                  locationName={room.name}
-                  plantsInLocation={plantsInLocation}
-                  overdueCount={overdueTasksByLocation[room.id] || 0}
-                />
-              );
-            })}
-          </View>
+          rooms.length > 0 ? (
+            <View style={styles.roomsGrid}>
+              {rooms.map(room => {
+                const plantsInLocation = plants.filter(p => p.roomId === room.id);
+                return (
+                  <SiteCard
+                    key={room.id}
+                    locationId={room.id}
+                    locationName={room.name}
+                    plantsInLocation={plantsInLocation}
+                    overdueCount={overdueTasksByLocation[room.id] || 0}
+                  />
+                );
+              })}
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="home-outline" size={64} color={theme.colors.primaryLight} />
+              <Text style={styles.emptyTitle}>No Rooms Yet</Text>
+              <Text style={styles.emptyText}>
+                Create your first room to organize your plants
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyButton}
+                onPress={() => router.push('/room/create')}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add" size={20} color={theme.colors.white} />
+                <Text style={styles.emptyButtonText}>Create Room</Text>
+              </TouchableOpacity>
+            </View>
+          )
         ) : (
-          <View style={styles.plantsGrid}>
-            {plants.map(plant => (
-              <PlantGridItem
-                key={plant.id}
-                plantId={plant.id}
-                plantName={plant.name}
-                imageUrl={plant.imageUrl}
-              />
-            ))}
-          </View>
+          plants.length > 0 ? (
+            <View style={styles.plantsGrid}>
+              {plants.map(plant => (
+                <PlantGridItem
+                  key={plant.id}
+                  plantId={plant.id}
+                  plantName={plant.name}
+                  imageUrl={plant.imageUrl}
+                />
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="leaf-outline" size={64} color={theme.colors.primaryLight} />
+              <Text style={styles.emptyTitle}>No Plants Yet</Text>
+              <Text style={styles.emptyText}>
+                Add your first plant to start tracking its care
+              </Text>
+              <TouchableOpacity
+                style={styles.emptyButton}
+                onPress={() => router.push('/plant/create')}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="add" size={20} color={theme.colors.white} />
+                <Text style={styles.emptyButtonText}>Add Plant</Text>
+              </TouchableOpacity>
+            </View>
+          )
         )}
       </ScrollView>
 
@@ -236,6 +272,43 @@ const styles = StyleSheet.create({
   },
   tabBarContainer: {
     marginHorizontal: theme.spacing.lg,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme.spacing.xxl,
+    paddingHorizontal: theme.spacing.xl,
+    minHeight: 400,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: theme.colors.text,
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.sm,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.xl,
+    lineHeight: 24,
+  },
+  emptyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: theme.spacing.md,
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.lg,
+    ...theme.shadows.sm,
+  },
+  emptyButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.white,
   },
 });
 
