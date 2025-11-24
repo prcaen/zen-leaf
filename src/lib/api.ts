@@ -1,4 +1,5 @@
-import { CareHistory, CareTask, Plant, Room, User } from '../types';
+import { PlantCatalogItem } from '../data/plantCatalog';
+import { CareHistory, CareTask, LightLevel, Plant, Room, User } from '../types';
 import { supabase } from './supabase';
 
 // Helper to convert camelCase to snake_case for database columns
@@ -547,6 +548,50 @@ export const api = {
       return deserializeDates<User>(camelCase);
     } catch (error) {
       console.error('Error updating user:', error);
+      throw error;
+    }
+  },
+
+  // Plant Catalog (public, no authentication required)
+  async getPlantCatalog(): Promise<PlantCatalogItem[]> {
+    console.log('Getting plant catalog');
+    try {
+      const { data, error } = await supabase
+        .from('plant_catalog')
+        .select('*')
+        .order('name', { ascending: true });
+
+      console.log('Plant catalog data:', data);
+
+      if (error) throw error;
+
+      // Convert database format to TypeScript format
+      return data.map((item: any) => {
+        // Convert 'part_sun' from DB to 'part sun' for TypeScript enum
+        let lightLevelValue: string = item.light_level;
+        if (lightLevelValue === 'part_sun') {
+          lightLevelValue = 'part sun';
+        }
+        
+        // Map string to LightLevel enum
+        const lightLevelMap: Record<string, LightLevel> = {
+          'sun': LightLevel.SUN,
+          'part sun': LightLevel.PART_SUN,
+          'shade': LightLevel.SHADE,
+          'dark': LightLevel.DARK,
+        };
+        
+        return {
+          id: item.id,
+          name: item.name,
+          aliases: item.aliases || '',
+          difficulty: item.difficulty as 'Easy' | 'Moderate' | 'Advanced',
+          lightLevel: lightLevelMap[lightLevelValue] || LightLevel.PART_SUN,
+          imageUrl: item.image_url || undefined,
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching plant catalog:', error);
       throw error;
     }
   },

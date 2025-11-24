@@ -1,46 +1,44 @@
 # Supabase Setup Guide
 
-This guide will help you set up Supabase as the backend API for Zen Leaf.
+This guide will help you set up your Supabase project for the Zen-Leaf app.
 
 ## 1. Create a Supabase Project
 
-1. Go to [supabase.com](https://supabase.com) and sign up/login
-2. Create a new project
-3. Note your project URL and anon/public key from Settings > API
+1. Go to [supabase.com](https://supabase.com) and sign in
+2. Click "New Project"
+3. Fill in your project details:
+   - **Name**: zen-leaf (or your preferred name)
+   - **Database Password**: Choose a strong password (save it securely!)
+   - **Region**: Choose the region closest to your users
+4. Click "Create new project" and wait for it to be ready (2-3 minutes)
 
-## 2. Configure Environment Variables
+## 2. Get Your API Keys
 
-Create a `.env` file in the root of your project (or use `app.json` extra config):
+1. Go to **Settings** > **API** in your Supabase dashboard
+2. Copy the following values:
+   - **Project URL** (under "Project URL")
+   - **anon/public key** (under "Project API keys" > "anon public")
 
-```env
-EXPO_PUBLIC_SUPABASE_URL=your-project-url
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+3. Update your `app.json` file with these values:
+```json
+{
+  "expo": {
+    "extra": {
+      "supabaseUrl": "YOUR_PROJECT_URL",
+      "supabaseAnonKey": "YOUR_ANON_KEY",
+      "supabaseStorageBucketPlants": "plants",
+      "supabaseStorageBucketUsers": "users"
+    }
+  }
+}
 ```
 
-**Note:** For Expo, environment variables must be prefixed with `EXPO_PUBLIC_` to be accessible in the app.
+## 3. Database Schema Setup
 
-## 2.1. Configure Authentication
-
-1. Go to Supabase Dashboard > Authentication > URL Configuration
-2. Add your redirect URLs:
-   - For email confirmation: `zenleaf://auth/callback`
-   - For password reset: `zenleaf://reset-password`
-   - For development: 
-     - `exp://localhost:8081/--/auth/callback` (if using Expo Go)
-     - `exp://localhost:8081/--/reset-password` (if using Expo Go)
-3. Enable Email authentication in Authentication > Providers > Email
-4. Configure email templates if needed (Authentication > Email Templates)
-5. Make sure "Confirm email" is enabled in Authentication > Providers > Email settings
-
-## 3. Database Schema
-
-Run the following SQL in your Supabase SQL Editor to create the necessary tables:
+Run the following SQL in your Supabase SQL Editor (Dashboard > SQL Editor > New Query):
 
 ```sql
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Users table (extends Supabase auth.users)
+-- Users table
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -102,6 +100,18 @@ CREATE TABLE IF NOT EXISTS care_history (
   notes TEXT
 );
 
+-- Plant Catalog table (public catalog, not user-specific)
+CREATE TABLE IF NOT EXISTS plant_catalog (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  aliases TEXT DEFAULT '',
+  difficulty TEXT NOT NULL CHECK (difficulty IN ('Easy', 'Moderate', 'Advanced')),
+  light_level TEXT NOT NULL CHECK (light_level IN ('sun', 'part_sun', 'shade', 'dark')),
+  image_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_rooms_user_id ON rooms(user_id);
 CREATE INDEX IF NOT EXISTS idx_plants_user_id ON plants(user_id);
@@ -112,6 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_care_history_user_id ON care_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_care_history_plant_id ON care_history(plant_id);
 CREATE INDEX IF NOT EXISTS idx_care_tasks_next_due_date ON care_tasks(next_due_date);
 CREATE INDEX IF NOT EXISTS idx_care_history_completed_at ON care_history(completed_at);
+CREATE INDEX IF NOT EXISTS idx_plant_catalog_name ON plant_catalog(name);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -119,6 +130,7 @@ ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE plants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE care_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE care_history ENABLE ROW LEVEL SECURITY;
+-- Note: plant_catalog is public and does not need RLS (all users can read it)
 
 -- RLS Policies
 -- Users can only see and modify their own data
@@ -157,7 +169,7 @@ CREATE POLICY "Users can update own plants" ON plants
 CREATE POLICY "Users can delete own plants" ON plants
   FOR DELETE USING (auth.uid() = user_id);
 
--- Care Tasks: Users can only access their own tasks
+-- Care Tasks: Users can only access their own care tasks
 CREATE POLICY "Users can view own care_tasks" ON care_tasks
   FOR SELECT USING (auth.uid() = user_id);
 
@@ -170,7 +182,7 @@ CREATE POLICY "Users can update own care_tasks" ON care_tasks
 CREATE POLICY "Users can delete own care_tasks" ON care_tasks
   FOR DELETE USING (auth.uid() = user_id);
 
--- Care History: Users can only access their own history
+-- Care History: Users can only access their own care history
 CREATE POLICY "Users can view own care_history" ON care_history
   FOR SELECT USING (auth.uid() = user_id);
 
@@ -184,121 +196,198 @@ CREATE POLICY "Users can delete own care_history" ON care_history
   FOR DELETE USING (auth.uid() = user_id);
 ```
 
-## 4. Storage Bucket Setup
+## 4. Populate Plant Catalog
 
-To enable image uploads for plants, you need to create a storage bucket and configure Row Level Security policies.
+After creating the `plant_catalog` table, run this SQL to populate it with the initial plant data:
 
-### 4.1. Create Storage Bucket
+```sql
+-- Insert plant catalog data
+INSERT INTO plant_catalog (id, name, aliases, difficulty, light_level, image_url) VALUES
+('monstera', 'Monstera', 'Swiss Cheese Plant, Fruit Salad Plant, Hurricane plant', 'Easy', 'part_sun', NULL),
+('aloe-vera', 'Aloe Vera', 'Medicinal Aloe, Barbados Aloe, Bitter Aloe', 'Easy', 'sun', NULL),
+('moth-orchid', 'Moth orchid', '', 'Easy', 'shade', NULL),
+('chinese-money-sugar', 'Chinese money plant ''Sugar''', '', 'Easy', 'part_sun', NULL),
+('golden-pothos', 'Golden Pothos', '', 'Easy', 'shade', NULL),
+('spider-plant', 'Spider Plant', '', 'Easy', 'part_sun', NULL),
+('spineless-yucca', 'Spineless Yucca', '', 'Easy', 'sun', NULL),
+('dragon-tree', 'Dragon Tree', '', 'Easy', 'part_sun', NULL),
+('parlor-palm', 'Parlor Palm', '', 'Moderate', 'shade', NULL),
+('jade-plant', 'Jade Plant', '', 'Easy', 'sun', NULL),
+('ginseng-ficus', 'Ginseng Ficus ''Ginseng''', '', 'Advanced', 'part_sun', NULL),
+('zz-plant', 'Zz Plant', '', 'Easy', 'shade', NULL),
+('peace-lily', 'Peace Lily', '', 'Moderate', 'shade', NULL),
+('money-tree', 'Money Tree', '', 'Advanced', 'part_sun', NULL),
+('avocado', 'Avocado', '', 'Advanced', 'sun', NULL),
+('basil', 'Basil', '', 'Moderate', 'sun', 'https://hlcieyhydqncunaxffgt.supabase.co/storage/v1/object/public/main/basil.jpeg'),
+('silver-inch-plant', 'Silver Inch Plant', '', 'Moderate', 'part_sun', NULL),
+('monkey-mask', 'Monkey Mask', '', 'Advanced', 'part_sun', NULL),
+('areca-palm', 'Areca Palm', '', 'Easy', 'part_sun', NULL),
+('mother-in-law-tongue', 'Mother-in-law''s tongue ''Futura Superba''', '', 'Easy', 'part_sun', NULL),
+('flamingo-lily', 'Flamingo Lily', '', 'Moderate', 'shade', NULL),
+('peacock-plant', 'Peacock Plant', '', 'Moderate', 'shade', NULL),
+('echeveria', 'Echeveria - mixed varieties', '', 'Easy', 'sun', NULL),
+('prayer-plant', 'Prayer Plant', '', 'Moderate', 'shade', NULL),
+('moth-orchid-white', 'Moth Orchid ''Younghome White Apple''', '', 'Moderate', 'shade', NULL),
+('chinese-money', 'Chinese Money Plant', '', 'Moderate', 'part_sun', NULL),
+('polka-dot', 'Polka Dot Plant', '', 'Moderate', 'part_sun', NULL),
+('polka-dot-pink', 'Polka Dot Plant ''Pink Splash''', '', 'Moderate', 'part_sun', NULL),
+('weeping-fig', 'Weeping Fig', '', 'Moderate', 'part_sun', NULL),
+('haworthia', 'Haworthia - Mixed Varieties', '', 'Moderate', 'sun', NULL)
+ON CONFLICT (id) DO NOTHING;
+```
+
+## 5. Storage Bucket Setup
+
+To enable image uploads for plants, you need to create storage buckets and configure Row Level Security policies.
+
+### 5.1. Create Storage Buckets
 
 1. Go to Supabase Dashboard > Storage
 2. Click "New bucket"
-3. Name it `main`
-4. Make it **Public** (so images can be accessed via public URLs)
-5. Click "Create bucket"
+3. Create two buckets:
+   - **Name**: `plants` (for plant images)
+   - **Name**: `users` (for user profile images)
+4. Make both buckets **Public** (so images can be accessed via public URLs)
+5. Click "Create bucket" for each
 
-### 4.2. Configure Storage Policies
+### 5.2. Configure Storage Policies
 
-Run the following SQL in your Supabase SQL Editor to set up RLS policies for the storage bucket:
+Run the following SQL in your Supabase SQL Editor to set up RLS policies for the storage buckets:
 
 ```sql
 -- Enable RLS on storage.objects
 ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can upload files to their own folder
-CREATE POLICY "Users can upload own files"
+-- Policy: Users can upload files to their own folder in plants bucket
+CREATE POLICY "Users can upload own plant images"
 ON storage.objects
 FOR INSERT
 TO authenticated
 WITH CHECK (
-  bucket_id = 'main' AND
+  bucket_id = 'plants' AND
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
--- Policy: Users can view their own files
-CREATE POLICY "Users can view own files"
+-- Policy: Users can view their own plant images
+CREATE POLICY "Users can view own plant images"
 ON storage.objects
 FOR SELECT
 TO authenticated
 USING (
-  bucket_id = 'main' AND
+  bucket_id = 'plants' AND
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
--- Policy: Users can update their own files
-CREATE POLICY "Users can update own files"
+-- Policy: Users can update their own plant images
+CREATE POLICY "Users can update own plant images"
 ON storage.objects
 FOR UPDATE
 TO authenticated
 USING (
-  bucket_id = 'main' AND
+  bucket_id = 'plants' AND
   (storage.foldername(name))[1] = auth.uid()::text
 );
 
--- Policy: Users can delete their own files
-CREATE POLICY "Users can delete own files"
+-- Policy: Users can delete their own plant images
+CREATE POLICY "Users can delete own plant images"
 ON storage.objects
 FOR DELETE
 TO authenticated
 USING (
-  bucket_id = 'main' AND
+  bucket_id = 'plants' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy: Users can upload files to their own folder in users bucket
+CREATE POLICY "Users can upload own user images"
+ON storage.objects
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'users' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy: Users can view their own user images
+CREATE POLICY "Users can view own user images"
+ON storage.objects
+FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'users' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy: Users can update their own user images
+CREATE POLICY "Users can update own user images"
+ON storage.objects
+FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'users' AND
+  (storage.foldername(name))[1] = auth.uid()::text
+);
+
+-- Policy: Users can delete their own user images
+CREATE POLICY "Users can delete own user images"
+ON storage.objects
+FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'users' AND
   (storage.foldername(name))[1] = auth.uid()::text
 );
 ```
 
-**Note:** The file path structure is `{userId}/{plantId}/{filename}`, so the policies check that the first folder in the path matches the authenticated user's ID.
+## 6. Testing Your Setup
 
-### 4.3. Alternative: Public Read Access (Optional)
+1. **Test Authentication**: Try signing up and logging in through your app
+2. **Test Database**: Create a room and a plant to verify data is being saved
+3. **Test Storage**: Upload a plant image to verify storage is working
+4. **Test Plant Catalog**: Open the plant creation screen to verify the catalog loads
 
-If you want all images to be publicly readable (but only authenticated users can upload), you can add this policy:
+## 7. Troubleshooting
+
+### Common Issues
+
+1. **"new row violates row-level security policy"**
+   - Make sure you've run all the RLS policies from section 3
+   - Verify the user is authenticated before making requests
+
+2. **"Could not find the 'user_id' column"**
+   - Make sure you've run the complete schema setup from section 3
+   - Refresh your Supabase schema cache (Settings > API > Refresh schema)
+
+3. **Storage upload fails**
+   - Verify the storage bucket exists and is public
+   - Check that the RLS policies for storage are set up correctly
+   - Ensure the bucket name matches what's in your `app.json` config
+
+4. **Plant catalog not loading**
+   - Verify the `plant_catalog` table exists
+   - Check that you've populated it with data (section 4)
+   - Ensure the table doesn't have RLS enabled (it should be public)
+
+## 8. Updating Plant Catalog Data
+
+To update plant catalog data on the server:
+
+1. Go to Supabase Dashboard > Table Editor > `plant_catalog`
+2. You can add, edit, or delete plant entries directly
+3. Changes will be reflected in the app immediately (no app update needed)
+
+Alternatively, you can use SQL to update:
 
 ```sql
--- Policy: Anyone can view files in main bucket (public read)
-CREATE POLICY "Public can view main bucket files"
-ON storage.objects
-FOR SELECT
-TO public
-USING (bucket_id = 'main');
+-- Update an existing plant
+UPDATE plant_catalog 
+SET name = 'New Name', aliases = 'New Aliases', difficulty = 'Easy', light_level = 'sun'
+WHERE id = 'plant-id';
+
+-- Add a new plant
+INSERT INTO plant_catalog (id, name, aliases, difficulty, light_level, image_url)
+VALUES ('new-plant-id', 'New Plant', 'Aliases', 'Easy', 'sun', NULL);
+
+-- Delete a plant
+DELETE FROM plant_catalog WHERE id = 'plant-id';
 ```
-
-## 5. Update API Column Mappings
-
-The API service (`src/lib/api.ts`) expects snake_case column names. If your database uses different naming, you'll need to update the column mappings in the API file.
-
-## 6. Authentication (Optional)
-
-If you want to add user authentication:
-
-1. Enable authentication in Supabase Dashboard
-2. Update the API calls to include user context
-3. Add user_id columns to tables if you want multi-user support
-4. Update RLS policies to restrict data by user_id
-
-## 7. Testing
-
-After setup, test the connection:
-
-```typescript
-import { supabase } from './src/lib/supabase';
-
-// Test connection
-const { data, error } = await supabase.from('rooms').select('count');
-console.log('Supabase connection:', error ? 'Failed' : 'Success');
-```
-
-## 8. Migration from AsyncStorage
-
-To migrate existing data from AsyncStorage to Supabase:
-
-1. Export data from AsyncStorage
-2. Use the API service to import data to Supabase
-3. Update your context/provider to use the API service instead of storage
-
-## Troubleshooting
-
-- **Connection errors**: Verify your Supabase URL and anon key are correct
-- **RLS errors**: Check your Row Level Security policies for both database tables and storage buckets
-- **Storage RLS errors**: Make sure the storage bucket exists and RLS policies are set up correctly. The file path must start with the user's ID (e.g., `{userId}/{plantId}/filename.jpg`)
-- **Column errors**: Ensure column names match between TypeScript types and database schema
-- **Date serialization**: The API handles Date serialization automatically
-- **Image upload errors**: Verify the storage bucket is created and policies allow authenticated users to upload to their own folder
-
