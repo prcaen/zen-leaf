@@ -1,13 +1,4 @@
-import { LightLevel } from '../types';
-
-export interface PlantCatalogItem {
-  id: string;
-  name: string;
-  aliases: string;
-  difficulty: 'Easy' | 'Moderate' | 'Advanced';
-  lightLevel: LightLevel;
-  imageUrl?: string;
-}
+import { LightLevel, PlantCatalogItem } from '../types';
 
 export const commonHouseplants: PlantCatalogItem[] = [
   {

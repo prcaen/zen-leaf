@@ -1,4 +1,4 @@
-import { PlantCatalogItem } from '../data/plantCatalog';
+import { PlantCatalogItem } from '../types';
 import { CareHistory, CareTask, LightLevel, Plant, Room, UnitSystem, User, UserSettings, UserWithSettings } from '../types';
 import { supabase } from './supabase';
 

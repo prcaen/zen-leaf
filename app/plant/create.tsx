@@ -13,12 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlantCatalogItem } from '../../src/components/PlantCatalogItem';
-import { PlantCatalogItem as PlantCatalogItemType } from '../../src/data/plantCatalog';
 import { api } from '../../src/lib/api';
 import { tempPlantStorage } from '../../src/lib/storage';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { GrowSpeed, LightLevel, PlantBasicInfo, Toxicity, WaterNeeded } from '../../src/types';
+import { GrowSpeed, LightLevel, PlantBasicInfo, PlantCatalogItem as PlantCatalogItemType, Toxicity, WaterNeeded } from '../../src/types';
 
 export default function CreatePlantScreen() {
   const router = useRouter();

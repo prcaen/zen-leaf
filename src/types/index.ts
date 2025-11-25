@@ -154,3 +154,13 @@ export interface UserWithSettings extends User {
   settings: UserSettings;
 }
 
+// Plant Catalog
+export interface PlantCatalogItem {
+  id: string;
+  name: string;
+  aliases: string;
+  difficulty: 'Easy' | 'Moderate' | 'Advanced';
+  lightLevel: LightLevel;
+  imageUrl?: string;
+}
+
