@@ -16,7 +16,8 @@ import { Button } from '../../../src/components/Button';
 import { tempPlantStorage } from '../../../src/lib/storage';
 import { usePlants } from '../../../src/state/PlantsContext';
 import { theme } from '../../../src/theme';
-import { LightLevel, Plant, PlantBasicInfo } from '../../../src/types';
+import { api } from '../../../src/lib/api';
+import { LightLevel, Plant, PlantBasicInfo, PlantCatalogItem } from '../../../src/types';
 
 export default function SelectRoomScreen() {
   const router = useRouter();
@@ -41,7 +42,26 @@ export default function SelectRoomScreen() {
     loadPlantData();
   }, []);
 
-  const plantLightNeeded = plantData?.careInfo?.lightNeeded;
+  // We need to get the catalog item to access lightNeeded
+  // For now, we'll need to load it or pass it through
+  const [catalogItem, setCatalogItem] = useState<PlantCatalogItem | null>(null);
+  
+  useEffect(() => {
+    const loadCatalogItem = async () => {
+      if (plantData?.catalogItemId) {
+        try {
+          const catalog = await api.getPlantCatalog();
+          const item = catalog.find(c => c.id === plantData.catalogItemId);
+          setCatalogItem(item || null);
+        } catch (error) {
+          console.error('Error loading catalog item:', error);
+        }
+      }
+    };
+    loadCatalogItem();
+  }, [plantData?.catalogItemId]);
+  
+  const plantLightNeeded = catalogItem?.lightLevel;
 
   // Filter rooms by indoor/outdoor
   const filteredRooms = rooms.filter(room => {
@@ -96,10 +116,8 @@ export default function SelectRoomScreen() {
         id: Crypto.randomUUID(),
         name: plantData.name,
         roomId: roomId,
-        wateringFrequencyDays: plantData.wateringFrequencyDays,
-        lastWateredDate: plantData.lastWateredDate,
+        catalogItemId: plantData.catalogItemId,
         createdAt: new Date(),
-        careInfo: plantData.careInfo,
         imageUrl: plantData.imageUrl,
       };
 

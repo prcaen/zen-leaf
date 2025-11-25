@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActionDialog } from '../../src/components/ActionDialog';
@@ -32,9 +32,16 @@ export default function ProfileScreen() {
   // Count overdue tasks by location
   const overdueTasksByLocation = rooms.reduce((acc, room) => {
     const plantsInLocation = plants.filter(p => p.roomId === room.id);
-    const overdueCount = wateringTasks.filter(task => 
-      task.daysOverdue > 0 && plantsInLocation.some(p => p.id === task.plantId)
-    ).length;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const overdueCount = wateringTasks.filter(task => {
+      if (!plantsInLocation.some(p => p.id === task.plantId)) return false;
+      const dueDate = new Date(task.nextDueDate);
+      dueDate.setHours(0, 0, 0, 0);
+      return dueDate < today;
+    }).length;
+    
     acc[room.id] = overdueCount;
     return acc;
   }, {} as Record<string, number>);
@@ -69,7 +76,7 @@ export default function ProfileScreen() {
               <Ionicons name="person" size={48} color={theme.colors.primaryLight} />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.userName}>{user?.name}</Text>
+              <Text style={styles.userName}>{user?.displayName}</Text>
               <Text style={styles.userStats}>
                 {totalPlants} Plants • {totalRooms} Rooms
               </Text>

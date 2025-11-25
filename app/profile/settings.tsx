@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/Button';
@@ -43,7 +43,7 @@ export default function ProfileSettingsScreen() {
   }
 
   const handleUpdateName = async (name: string) => {
-    await updateUser({ name });
+    await updateUser({ displayName: name });
   };
 
   const handleUpdateLocation = async (locationName: string) => {
@@ -63,7 +63,7 @@ export default function ProfileSettingsScreen() {
     {
       icon: 'person-outline',
       label: 'Name',
-      value: user.name || 'Not set',
+      value: user.displayName || 'Not set',
       onPress: () => setShowNameDialog(true),
     },
     {
@@ -120,7 +120,7 @@ export default function ProfileSettingsScreen() {
         onClose={() => setShowNameDialog(false)}
         onConfirm={handleUpdateName}
         title="Name"
-        initialValue={user.name}
+        initialValue={user.displayName}
         placeholder="Enter your name"
         confirmText="Save"
         cancelText="Cancel"

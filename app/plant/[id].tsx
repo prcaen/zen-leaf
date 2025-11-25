@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/Button';
 import { ConfirmDialog } from '../../src/components/ConfirmDialog';
+import { DatePickerDialog } from '../../src/components/DatePickerDialog';
 import { ActionCard } from '../../src/components/detail/ActionCard';
 import { HistoryList } from '../../src/components/detail/HistoryList';
 import { PlantHeader } from '../../src/components/detail/PlantHeader';
@@ -22,6 +23,7 @@ import { InfoDialog } from '../../src/components/InfoDialog';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
 import { SliderDialog } from '../../src/components/SliderDialog';
 import { TextInputDialog } from '../../src/components/TextInputDialog';
+import { api } from '../../src/lib/api';
 import { pickImage, takePicture, uploadPlantImage } from '../../src/lib/imageUpload';
 import {
   formatSize,
@@ -30,9 +32,10 @@ import {
   getSizeUnit,
   parseSize
 } from '../../src/lib/number';
+import { formatPlantAge } from '../../src/lib/plant';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { GrowSpeed, LightLevel, Toxicity, UnitSystem, WaterNeeded } from '../../src/types';
+import { GrowSpeed, LightLevel, PlantCareInfo, PlantCatalogItem, Toxicity, UnitSystem, WaterNeeded } from '../../src/types';
 
 export default function PlantDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -53,6 +56,39 @@ export default function PlantDetail() {
   const room = plant ? getRoomById(plant.roomId) : null;
   const plantTasks = getCareTasks(id);
   const plantHistory = getCareHistory(id);
+  
+  // Load catalog item to get careInfo, variety, and category
+  const [catalogItem, setCatalogItem] = useState<PlantCatalogItem | null>(null);
+  
+  useEffect(() => {
+    const loadCatalogItem = async () => {
+      if (plant?.catalogItemId) {
+        try {
+          const catalog = await api.getPlantCatalog();
+          const item = catalog.find(c => c.id === plant.catalogItemId);
+          setCatalogItem(item || null);
+        } catch (error) {
+          console.error('Error loading catalog item:', error);
+        }
+      }
+    };
+    loadCatalogItem();
+  }, [plant?.catalogItemId]);
+  
+  // Derive careInfo, variety, and category from catalog item
+  const careInfo: PlantCareInfo | undefined = catalogItem ? {
+    growSpeed: catalogItem.growSpeed,
+    lightNeeded: catalogItem.lightLevel,
+    toxicity: catalogItem.toxicity,
+    waterNeeded: catalogItem.waterNeeded,
+    growSpeedDescription: catalogItem.growSpeedDescription,
+    lightNeededDescription: catalogItem.lightNeededDescription,
+    toxicityDescription: catalogItem.toxicityDescription,
+    waterNeededDescription: catalogItem.waterNeededDescription,
+  } : undefined;
+  
+  const variety = catalogItem?.variety;
+  const category = catalogItem?.category;
 
   const handleRoomSettingPress = (dialogType: string) => {
     if (plant?.roomId) {
@@ -175,7 +211,6 @@ export default function PlantDetail() {
   };
 
   const handleGrowSpeedPress = () => {
-    const careInfo = plant.careInfo;
     const speed = careInfo?.growSpeed || GrowSpeed.MODERATE;
     const descriptions = {
       [GrowSpeed.SLOW]: 'This plant grows slowly and may take months or even years to reach maturity. Perfect for those who want low-maintenance greenery.',
@@ -193,7 +228,6 @@ export default function PlantDetail() {
   };
 
   const handleLightNeededPress = () => {
-    const careInfo = plant.careInfo;
     const light = careInfo?.lightNeeded || LightLevel.PART_SUN;
     const descriptions = {
       [LightLevel.SUN]: 'This plant needs bright, direct sunlight for several hours a day. Best placed near south-facing windows.',
@@ -212,7 +246,6 @@ export default function PlantDetail() {
   };
 
   const handleToxicityPress = () => {
-    const careInfo = plant.careInfo;
     const toxicity = careInfo?.toxicity || Toxicity.NON_TOXIC;
     const descriptions = {
       [Toxicity.NON_TOXIC]: 'This plant is safe for both pets and humans. You can display it anywhere without worry!',
@@ -231,7 +264,6 @@ export default function PlantDetail() {
   };
 
   const handleWaterNeededPress = () => {
-    const careInfo = plant.careInfo;
     const water = careInfo?.waterNeeded || WaterNeeded.MODERATE;
     const descriptions = {
       [WaterNeeded.LOW]: 'This plant requires infrequent watering. Allow soil to dry out completely between waterings. Perfect for forgetful plant parents!',
@@ -423,37 +455,15 @@ export default function PlantDetail() {
     setShowAgeDialog(true);
   };
 
-  const handleChangeAge = async (age: number) => {
+  const handleChangeAge = async (date: Date) => {
     await updatePlant(id, {
-      age: age,
+      acquiredAt: date,
     });
   };
 
   // Calculate age display
   const getAgeDisplay = (): string => {
-    const age = plant.age;
-    if (age !== undefined) {
-      if (age === 0) return 'Less than a year';
-      if (age === 1) return '1 year';
-      if (age >= 50) return '50 years and more';
-      return `${age} years`;
-    }
-    
-    // Fallback to createdAt calculation
-    if (plant.createdAt) {
-      const createdDate = new Date(plant.createdAt);
-      const now = new Date();
-      const diffMs = now.getTime() - createdDate.getTime();
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      if (diffDays < 1) return 'Less than a day';
-      if (diffDays < 30) return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
-      const months = Math.floor(diffDays / 30.44);
-      if (months < 12) return `${months} month${months !== 1 ? 's' : ''}`;
-      const years = Math.floor(months / 12);
-      return `${years} year${years !== 1 ? 's' : ''}`;
-    }
-    
-    return 'Not set';
+    return formatPlantAge(plant.acquiredAt);
   };
 
   const roomSettings = (): SettingItemData[] => {
@@ -571,24 +581,24 @@ export default function PlantDetail() {
             <ActionCard
               icon="water-outline"
               title="Water Needed"
-              subtitle={plant.careInfo?.waterNeeded || 'Moderate'}
+              subtitle={careInfo?.waterNeeded || 'Moderate'}
               color={theme.colors.primaryLight}
               onPress={handleWaterNeededPress}
             />
             <ActionCard
               icon="leaf-outline"
               title="Growth Speed"
-              subtitle={plant.careInfo?.growSpeed || 'Moderate'}
+              subtitle={careInfo?.growSpeed || 'Moderate'}
               color={theme.colors.primaryLight}
               onPress={handleGrowSpeedPress}
             />
             <ActionCard
               icon="sunny-outline"
               title="Light Needed"
-              subtitle={plant.careInfo?.lightNeeded 
-                ? plant.careInfo.lightNeeded === LightLevel.PART_SUN 
+              subtitle={careInfo?.lightNeeded 
+                ? careInfo.lightNeeded === LightLevel.PART_SUN 
                   ? 'Part Sun' 
-                  : plant.careInfo.lightNeeded.charAt(0).toUpperCase() + plant.careInfo.lightNeeded.slice(1)
+                  : careInfo.lightNeeded.charAt(0).toUpperCase() + careInfo.lightNeeded.slice(1)
                 : 'Part Sun'}
               color={theme.colors.primaryLight}
               onPress={handleLightNeededPress}
@@ -597,8 +607,8 @@ export default function PlantDetail() {
               icon="warning-outline"
               title="Toxicity"
               subtitle={
-                plant.careInfo?.toxicity
-                  ? plant.careInfo.toxicity.replace('-', ' ')
+                careInfo?.toxicity
+                  ? careInfo.toxicity.replace('-', ' ')
                   : 'Non-toxic'
               }
               color={theme.colors.primaryLight}
@@ -629,7 +639,7 @@ export default function PlantDetail() {
               <Text style={styles.moreLink}>More history</Text>
             </TouchableOpacity>
           </View>
-          <HistoryList history={plantHistory} limit={3} />
+          <HistoryList history={plantHistory} careTasks={plantTasks} limit={3} />
         </View>
 
         {/* Settings */}
@@ -695,13 +705,13 @@ export default function PlantDetail() {
               {
                 icon: 'leaf-outline',
                 label: 'Type',
-                value: plant.category || 'Not set',
+                value: category || 'Not set',
                 onPress: () => console.log('Plant type'),
               },
               {
                 icon: 'information-circle-outline',
                 label: 'Variety',
-                value: plant.variety || 'Not set',
+                value: variety || 'Not set',
                 onPress: () => console.log('Variety'),
               },
               {
@@ -912,22 +922,17 @@ export default function PlantDetail() {
       />
 
       {/* Change Age Dialog */}
-      <SliderDialog
+      <DatePickerDialog
         visible={showAgeDialog}
         onClose={() => setShowAgeDialog(false)}
         onConfirm={handleChangeAge}
-        title="Plant Age"
-        description="How old is this plant?"
-        initialValue={plant.age ?? 0}
-        minValue={0}
-        maxValue={50}
-        step={1}
-        unit=" years"
-        minLabel="Less than a year"
-        maxLabel="50 years and more"
+        title="Acquired Date"
+        description="When did you acquire this plant?"
+        initialValue={plant.acquiredAt ? new Date(plant.acquiredAt) : null}
+        maximumDate={new Date()}
         confirmText="Save"
         cancelText="Cancel"
-        icon="time-outline"
+        icon="calendar-outline"
         iconColor={theme.colors.primary}
       />
     </SafeAreaView>

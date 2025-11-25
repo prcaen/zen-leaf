@@ -1,12 +1,13 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { usePlants } from '../state/PlantsContext';
 import { theme } from '../theme';
-import { WateringTask } from '../types';
+import { CareTask } from '../types';
 
 interface PlantCardProps {
-  task: WateringTask;
+  task: CareTask;
   isSelected: boolean;
   onToggleSelect: (plantId: string) => void;
 }
@@ -16,8 +17,27 @@ export const PlantCard: React.FC<PlantCardProps> = ({
   isSelected,
   onToggleSelect,
 }) => {
-  const { plant, room: location, daysOverdue } = task;
   const router = useRouter();
+  const { getPlantById, getRoomById } = usePlants();
+  
+  const plant = getPlantById(task.plantId);
+  const room = plant ? getRoomById(plant.roomId) : null;
+  
+  // Calculate days overdue
+  const daysOverdue = useMemo(() => {
+    if (!task.nextDueDate) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(task.nextDueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    const diffTime = today.getTime() - dueDate.getTime();
+    const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, days);
+  }, [task.nextDueDate]);
+  
+  if (!plant || !room) {
+    return null;
+  }
 
   const handleCardPress = () => {
     router.push(`/plant/${plant.id}`);
@@ -55,7 +75,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({
         {/* Plant Info */}
         <View style={styles.info}>
           <Text style={styles.name}>{plant.name}</Text>
-          <Text style={styles.location}>{location.name}</Text>
+          <Text style={styles.location}>{room.name}</Text>
         </View>
 
         {/* Checkbox */}

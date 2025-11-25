@@ -89,13 +89,13 @@ export default function RoomDetailScreen() {
   today.setHours(0, 0, 0, 0);
 
   const todayTasks = roomTasks.filter(task => {
-    const nextDate = new Date(task.nextWateringDate);
+    const nextDate = new Date(task.nextDueDate);
     nextDate.setHours(0, 0, 0, 0);
     return nextDate <= today;
   });
 
   const soonTasks = roomTasks.filter(task => {
-    const nextDate = new Date(task.nextWateringDate);
+    const nextDate = new Date(task.nextDueDate);
     nextDate.setHours(0, 0, 0, 0);
     return nextDate > today;
   });

@@ -34,13 +34,13 @@ export default function Index() {
   today.setHours(0, 0, 0, 0);
   
   const todayTasks = wateringTasks.filter(task => {
-    const nextDate = new Date(task.nextWateringDate);
+    const nextDate = new Date(task.nextDueDate);
     nextDate.setHours(0, 0, 0, 0);
     return nextDate <= today;
   });
 
   const soonTasks = wateringTasks.filter(task => {
-    const nextDate = new Date(task.nextWateringDate);
+    const nextDate = new Date(task.nextDueDate);
     nextDate.setHours(0, 0, 0, 0);
     return nextDate > today;
   });
@@ -82,7 +82,7 @@ export default function Index() {
           {displayedTasks.length > 0 ? (
             displayedTasks.map(task => (
               <PlantCard
-                key={task.plantId}
+                key={task.id}
                 task={task}
                 isSelected={false}
                 onToggleSelect={() => waterPlant(task.plantId)}

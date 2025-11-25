@@ -1,5 +1,4 @@
-import { PlantCatalogItem } from '../types';
-import { CareHistory, CareTask, LightLevel, Plant, Room, UnitSystem, User, UserSettings, UserWithSettings } from '../types';
+import { CareHistory, CareTask, Difficulty, GrowSpeed, LightLevel, Plant, PlantCatalogItem, Room, Toxicity, UnitSystem, User, UserSettings, UserWithSettings, WaterNeeded } from '../types';
 import { supabase } from './supabase';
 
 // Helper to convert camelCase to snake_case for database columns
@@ -400,22 +399,16 @@ export const api = {
   },
 
   // Care History
-  async getCareHistory(plantId?: string): Promise<CareHistory[]> {
+  async getCareHistory(): Promise<CareHistory[]> {
     try {
       const userId = await getUserId();
       if (!userId) return [];
 
-      let query = supabase
+      const { data, error } = await supabase
         .from('care_history')
         .select('*')
         .eq('user_id', userId)
         .order('completed_at', { ascending: false });
-
-      if (plantId) {
-        query = query.eq('plant_id', plantId);
-      }
-
-      const { data, error } = await query;
 
       if (error) throw error;
       return (data || []).map(item => {
@@ -474,12 +467,10 @@ export const api = {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return null;
 
-      console.log('authUser', authUser);
-
       // Get user data from auth
       const user: User = {
         id: authUser.id,
-        name: authUser.user_metadata?.display_name,
+        displayName: authUser.user_metadata?.display_name,
         email: authUser.email ?? '',
       };
 
@@ -630,7 +621,7 @@ export const api = {
 
       return {
         id: data.user.id,
-        name: data.user.user_metadata?.display_name,
+        displayName: data.user.user_metadata?.display_name,
         email: data.user.email ?? '',
       };
     } catch (error) {
@@ -665,13 +656,51 @@ export const api = {
           'dark': LightLevel.DARK,
         };
         
+        // Map string to Difficulty enum
+        const difficultyMap: Record<string, Difficulty> = {
+          'easy': Difficulty.EASY,
+          'moderate': Difficulty.MODERATE,
+          'advanced': Difficulty.ADVANCED,
+        };
+        
+        // Map string to GrowSpeed enum
+        const growSpeedMap: Record<string, GrowSpeed> = {
+          'slow': GrowSpeed.SLOW,
+          'moderate': GrowSpeed.MODERATE,
+          'fast': GrowSpeed.FAST,
+        };
+        
+        // Map string to Toxicity enum
+        const toxicityMap: Record<string, Toxicity> = {
+          'non-toxic': Toxicity.NON_TOXIC,
+          'toxic-pets': Toxicity.TOXIC_PETS,
+          'toxic-humans': Toxicity.TOXIC_HUMANS,
+          'toxic-all': Toxicity.TOXIC_ALL,
+        };
+        
+        // Map string to WaterNeeded enum
+        const waterNeededMap: Record<string, WaterNeeded> = {
+          'low': WaterNeeded.LOW,
+          'moderate': WaterNeeded.MODERATE,
+          'high': WaterNeeded.HIGH,
+        };
+        
         return {
           id: item.id,
           name: item.name,
           aliases: item.aliases || '',
-          difficulty: item.difficulty as 'Easy' | 'Moderate' | 'Advanced',
+          difficulty: difficultyMap[item.difficulty] || Difficulty.MODERATE,
           lightLevel: lightLevelMap[lightLevelValue] || LightLevel.PART_SUN,
           imageUrl: item.image_url || undefined,
+          growSpeed: item.grow_speed ? growSpeedMap[item.grow_speed] : GrowSpeed.MODERATE,
+          toxicity: item.toxicity ? toxicityMap[item.toxicity] : Toxicity.NON_TOXIC,
+          waterNeeded: item.water_needed ? waterNeededMap[item.water_needed] : WaterNeeded.MODERATE,
+          growSpeedDescription: item.grow_speed_description || undefined,
+          lightNeededDescription: item.light_needed_description || undefined,
+          toxicityDescription: item.toxicity_description || undefined,
+          waterNeededDescription: item.water_needed_description || undefined,
+          variety: item.variety || undefined,
+          category: item.category || undefined,
         };
       });
     } catch (error) {

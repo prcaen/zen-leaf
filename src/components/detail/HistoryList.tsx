@@ -1,16 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { CareHistory } from '../../types';
+import { getCareTaskTitle } from '../../lib/careTask';
+import { CareHistory, CareTask } from '../../types';
 import { theme } from '../../theme';
 
 interface HistoryListProps {
   history: CareHistory[];
+  careTasks: CareTask[]; // Required to look up taskType from taskId
   limit?: number;
 }
 
-export const HistoryList: React.FC<HistoryListProps> = ({ history, limit }) => {
+export const HistoryList: React.FC<HistoryListProps> = ({ history, careTasks, limit }) => {
   const displayHistory = limit ? history.slice(0, limit) : history;
+  
+  // Create a map of taskId to CareTask for quick lookup
+  const taskMap = new Map(careTasks.map(t => [t.id, t]));
 
   const formatDate = (date: Date) => {
     const now = new Date();
@@ -40,7 +45,11 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, limit }) => {
             <Ionicons name="checkmark-circle" size={24} color={theme.colors.primary} />
           </View>
           <View style={styles.historyInfo}>
-            <Text style={styles.historyTitle}>{entry.title}</Text>
+            <Text style={styles.historyTitle}>
+              {taskMap.get(entry.taskId) 
+                ? getCareTaskTitle(taskMap.get(entry.taskId)!.type)
+                : 'Unknown Task'}
+            </Text>
             <Text style={styles.historyDate}>{formatDate(entry.completedAt)}</Text>
           </View>
         </View>

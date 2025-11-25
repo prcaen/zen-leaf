@@ -1,14 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/Button';
@@ -16,10 +17,10 @@ import { SettingsSection } from '../../src/components/detail/SettingsSection';
 import { SelectionDialog, SelectionOption } from '../../src/components/SelectionDialog';
 import { SliderDialog } from '../../src/components/SliderDialog';
 import {
-    formatTemperature,
-    getDisplayTemperature,
-    getTemperatureUnit,
-    parseTemperature,
+  formatTemperature,
+  getDisplayTemperature,
+  getTemperatureUnit,
+  parseTemperature,
 } from '../../src/lib/number';
 import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
@@ -95,12 +96,12 @@ export default function CreateRoomScreen() {
     }
 
     const room: Room = {
-      id: `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: Crypto.randomUUID(),
       name: name.trim(),
-      ...(temperature !== undefined && { temperature }),
-      ...(humidity !== undefined && { humidity }),
-      ...(lightLevel !== undefined && { lightLevel }),
-      ...(isIndoor !== undefined && { isIndoor }),
+      temperature: temperature,
+      humidity: humidity,
+      lightLevel: lightLevel,
+      isIndoor: isIndoor,
     };
 
     await addRoom(room);

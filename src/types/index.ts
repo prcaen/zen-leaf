@@ -1,3 +1,62 @@
+export interface CareHistory {
+  id: string;
+  taskId: string;
+  completedAt: Date;
+}
+
+export interface CareTask {
+  id: string;
+  plantId: string;
+  type: CareTaskType;
+  frequencyDays: number;
+  nextDueDate: Date;
+  isLocked?: boolean;
+  createdAt: Date;
+}
+
+export interface Plant {
+  id: string;
+  name: string;
+  roomId: string;
+  catalogItemId?: string; // Reference to PlantCatalogItem
+  imageUrl?: string;
+  createdAt: Date;
+  distanceFromWindow?: number; // in centimeters
+  potSize?: number; // Pot size in cm (diameter)
+  hasDrainage?: boolean;
+  potMaterial?: string; // e.g., "ceramic", "plastic", "terracotta"
+  soil?: string; // e.g., "all-purpose-potting-mix"
+  plantSize?: number; // Plant height in cm
+  acquiredAt?: Date; // Date when plant was acquired - age is calculated from this date
+  isNearAC?: boolean;
+  isNearHeater?: boolean;
+}
+
+// Plant Basic Info (for plant creation flow before room selection)
+export interface PlantBasicInfo {
+  name: string;
+  catalogItemId: string; // Reference to PlantCatalogItem
+  imageUrl?: string;
+}
+
+export interface PlantCatalogItem {
+  id: string;
+  name: string;
+  aliases: string;
+  difficulty: Difficulty;
+  lightLevel: LightLevel;
+  imageUrl?: string;
+  growSpeed: GrowSpeed;
+  toxicity: Toxicity;
+  waterNeeded: WaterNeeded;
+  growSpeedDescription?: string;
+  lightNeededDescription?: string;
+  toxicityDescription?: string;
+  waterNeededDescription?: string;
+  variety?: string;
+  category?: string; // e.g., "succulent", "fern", "tropical"
+}
+
 export interface Room {
   id: string;
   name: string;
@@ -7,78 +66,54 @@ export interface Room {
   lightLevel?: LightLevel;
 }
 
-export interface Plant {
+// User data from Supabase Auth
+export interface User {
   id: string;
-  name: string;
-  roomId: string;
-  imageUrl?: string;
-  wateringFrequencyDays: number;
-  lastWateredDate: Date | null;
-  createdAt: Date;
-  notes?: string;
-  distanceFromWindow?: number; // in centimeters (from light settings)
-  potSize?: number; // Pot size in cm (diameter) (from pot settings)
-  hasDrainage?: boolean; // (from pot settings)
-  potMaterial?: string; // e.g., "ceramic", "plastic", "terracotta" (from pot settings)
-  soil?: string; // e.g., "all-purpose-potting-mix" (from pot settings)
-  plantSize?: number; // Plant height in cm (from plantType settings)
-  variety?: string; // (from plantType settings)
-  category?: string; // e.g., "succulent", "fern", "tropical" (from plantType settings)
-  age?: number; // Plant age in years (0 = less than a year, 50 = 50+ years) (from plantType settings)
-  isNearAC?: boolean; // (from positionInRoom settings)
-  isNearHeater?: boolean; // (from positionInRoom settings)
-  careInfo?: PlantCareInfo;
+  displayName: string;
+  email: string;
 }
 
-export interface WateringTask {
-  plantId: string;
-  plant: Plant;
-  room: Room;
-  daysOverdue: number;
-  nextWateringDate: Date;
+export interface UserSettings {
+  locationName: string;
+  unitSystem: UnitSystem;
 }
 
+// Combined data
 export interface PlantWithRoom extends Plant {
   room: Room;
 }
 
-// Care Task Types
-export type CareTaskType = 'water' | 'fertilize' | 'repot' | 'prune' | 'pest_check' | 'other';
-
-export interface CareTask {
-  id: string;
-  plantId: string;
-  type: CareTaskType;
-  title: string;
-  description?: string;
-  frequencyDays: number;
-  lastCompletedDate: Date | null;
-  nextDueDate: Date;
-  isLocked?: boolean;
-  createdAt: Date;
+export interface UserWithSettings extends User {
+  settings: UserSettings;
 }
 
-export interface CareHistory {
-  id: string;
-  plantId: string;
-  taskType: CareTaskType;
-  title: string;
-  completedAt: Date;
-  notes?: string;
+// Enums
+export enum CareTaskType {
+  WATER = 'water',
+  FERTILIZE = 'fertilize',
+  REPOT = 'repot',
+  PRUNE = 'prune',
+  PEST_CHECK = 'pest_check',
+  OTHER = 'other',
 }
 
-// Plant Settings
-export enum LightLevel {
-  SUN = 'sun',
-  PART_SUN = 'part sun',
-  SHADE = 'shade',
-  DARK = 'dark',
+export enum Difficulty {
+  EASY = 'easy',
+  MODERATE = 'moderate',
+  ADVANCED = 'advanced',
 }
 
 export enum GrowSpeed {
   SLOW = 'slow',
   MODERATE = 'moderate',
   FAST = 'fast',
+}
+
+export enum LightLevel {
+  SUN = 'sun',
+  PART_SUN = 'part sun',
+  SHADE = 'shade',
+  DARK = 'dark',
 }
 
 export enum Toxicity {
@@ -88,79 +123,13 @@ export enum Toxicity {
   TOXIC_ALL = 'toxic-all',
 }
 
-export enum WaterNeeded {
-  LOW = 'low',
-  MODERATE = 'moderate',
-  HIGH = 'high',
-}
-
-export enum HealthOverall {
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  FAIR = 'fair',
-  POOR = 'poor',
-}
-
-// Plant Care Info
-export interface PlantCareInfo {
-  growSpeed: GrowSpeed;
-  lightNeeded: LightLevel;
-  toxicity: Toxicity;
-  waterNeeded: WaterNeeded;
-  growSpeedDescription?: string;
-  lightNeededDescription?: string;
-  toxicityDescription?: string;
-  waterNeededDescription?: string;
-}
-
-// Plant Basic Info (for plant creation flow before room selection)
-export interface PlantBasicInfo {
-  name: string;
-  wateringFrequencyDays: number;
-  lastWateredDate: null;
-  careInfo: PlantCareInfo;
-  imageUrl?: string;
-}
-
-// Health Status
-export interface HealthStatus {
-  overall: HealthOverall;
-  issues?: string[];
-  lastChecked: Date;
-  notes?: string;
-}
-
-// User
 export enum UnitSystem {
   METRIC = 'metric',
   IMPERIAL = 'imperial',
 }
 
-// User data from Supabase Auth
-export interface User {
-  id: string;
-  name: string;
-  email: string;
+export enum WaterNeeded {
+  LOW = 'low',
+  MODERATE = 'moderate',
+  HIGH = 'high',
 }
-
-// User settings stored in user_settings table
-export interface UserSettings {
-  locationName: string; // city
-  unitSystem: UnitSystem;
-}
-
-// Combined user data for convenience
-export interface UserWithSettings extends User {
-  settings: UserSettings;
-}
-
-// Plant Catalog
-export interface PlantCatalogItem {
-  id: string;
-  name: string;
-  aliases: string;
-  difficulty: 'Easy' | 'Moderate' | 'Advanced';
-  lightLevel: LightLevel;
-  imageUrl?: string;
-}
-

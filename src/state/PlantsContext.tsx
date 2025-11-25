@@ -1,6 +1,8 @@
+import * as Crypto from 'expo-crypto';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { CareHistory, CareTask, Plant, Room, User, UserSettings, WateringTask } from '../types';
+import { computeWateringFrequencyDays } from '../lib/plant';
+import { CareHistory, CareTask, CareTaskType, Plant, Room, User, UserSettings } from '../types';
 
 // Flattened user type for backward compatibility
 type FlattenedUser = User & UserSettings;
@@ -10,7 +12,7 @@ interface PlantsContextValue {
   rooms: Room[];
   user: FlattenedUser | null;
   loading: boolean;
-  wateringTasks: WateringTask[];
+  wateringTasks: CareTask[]; // CareTasks with type=CareTaskType.WATER
   selectedPlants: Set<string>;
   careTasks: CareTask[];
   careHistory: CareHistory[];
@@ -57,44 +59,10 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [selectedPlants, setSelectedPlants] = useState<Set<string>>(new Set());
 
-  // Calculate watering tasks
-  const wateringTasks = React.useMemo((): WateringTask[] => {
-    const tasks: WateringTask[] = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    plants.forEach(plant => {
-      const room = rooms.find(r => r.id === plant.roomId);
-      if (!room) return;
-
-      let nextWateringDate: Date;
-      let daysOverdue = 0;
-
-      if (plant.lastWateredDate) {
-        const lastWatered = plant.lastWateredDate;
-        nextWateringDate = new Date(lastWatered);
-        nextWateringDate.setDate(lastWatered.getDate() + plant.wateringFrequencyDays);
-
-        const diffTime = today.getTime() - nextWateringDate.getTime();
-        daysOverdue = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-      } else {
-        // Never watered, needs water now
-        nextWateringDate = today;
-        daysOverdue = 0;
-      }
-
-      tasks.push({
-        plantId: plant.id,
-        plant,
-        room: room,
-        daysOverdue: Math.max(0, daysOverdue),
-        nextWateringDate: nextWateringDate,
-      });
-    });
-
-    // Sort by days overdue (descending)
-    return tasks.sort((a, b) => b.daysOverdue - a.daysOverdue);
-  }, [plants, rooms]);
+  // Get watering tasks (CareTasks with type=CareTaskType.WATER)
+  const wateringTasks = React.useMemo((): CareTask[] => {
+    return careTasks.filter(task => task.type === CareTaskType.WATER);
+  }, [careTasks]);
 
   // Load data on mount
   useEffect(() => {
@@ -149,57 +117,130 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   }, []);
 
   const waterPlant = useCallback(async (plantId: string) => {
-    const now = new Date();
-    const updatedPlant = await api.updatePlant(plantId, { lastWateredDate: now });
-    setPlants(prev =>
-      prev.map(p => (p.id === plantId ? updatedPlant : p))
-    );
+    // Find the water CareTask for this plant
+    const waterTask = careTasks.find(t => t.plantId === plantId && t.type === CareTaskType.WATER);
+    if (waterTask) {
+      // Complete the CareTask
+      await completeCareTask(waterTask.id, plantId);
+    }
+    
     setSelectedPlants(prev => {
       const newSet = new Set(prev);
       newSet.delete(plantId);
       return newSet;
     });
-
-    // Add to history
-    const historyEntry: CareHistory = {
-      id: `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      plantId,
-      taskType: 'water',
-      title: 'Watered',
-      completedAt: now,
-    };
-    const savedHistory = await api.addCareHistory(historyEntry);
-    setCareHistory(prev => [savedHistory, ...prev]);
-  }, []);
+  }, [careTasks, completeCareTask]);
 
   const waterSelectedPlants = useCallback(async () => {
-    const now = new Date();
     const plantIds = Array.from(selectedPlants);
-
-    const updatedPlants = await Promise.all(
-      plantIds.map(id => api.updatePlant(id, { lastWateredDate: now }))
-    );
-
-    setPlants(prev =>
-      prev.map(p => {
-        const updated = updatedPlants.find(up => up.id === p.id);
-        return updated || p;
+    
+    // Complete CareTasks for all selected plants
+    await Promise.all(
+      plantIds.map(async (plantId) => {
+        const waterTask = careTasks.find(t => t.plantId === plantId && t.type === CareTaskType.WATER);
+        if (waterTask) {
+          await completeCareTask(waterTask.id, plantId);
+        }
       })
     );
+    
     setSelectedPlants(new Set());
-  }, [selectedPlants]);
+  }, [selectedPlants, careTasks, completeCareTask]);
 
   const addPlant = useCallback(async (plant: Plant) => {
     const savedPlant = await api.addPlant(plant);
     setPlants(prev => [...prev, savedPlant]);
-  }, []);
+    
+    // Create a water CareTask for the new plant
+    try {
+      // Get catalog item to compute frequency
+      const catalog = await api.getPlantCatalog();
+      const catalogItem = plant.catalogItemId 
+        ? catalog.find(c => c.id === plant.catalogItemId)
+        : undefined;
+      
+      // Compute watering frequency
+      const frequencyDays = computeWateringFrequencyDays(savedPlant, catalogItem);
+      
+      // Create water CareTask
+      const now = new Date();
+      const nextDueDate = new Date();
+      nextDueDate.setDate(nextDueDate.getDate() + frequencyDays);
+      
+      const waterTask: CareTask = {
+        id: Crypto.randomUUID(),
+        plantId: savedPlant.id,
+        type: CareTaskType.WATER,
+        frequencyDays: frequencyDays,
+        nextDueDate: nextDueDate,
+        createdAt: now,
+      };
+      
+      await addCareTask(waterTask);
+    } catch (error) {
+      console.error('Error creating water CareTask for new plant:', error);
+      // Don't fail plant creation if CareTask creation fails
+    }
+  }, [addCareTask]);
 
   const updatePlant = useCallback(async (plantId: string, updates: Partial<Plant>) => {
     const updatedPlant = await api.updatePlant(plantId, updates);
     setPlants(prev =>
       prev.map(p => (p.id === plantId ? updatedPlant : p))
     );
-  }, []);
+    
+    // If plant properties that affect watering frequency changed, update the water CareTask
+    const frequencyAffectingProps = [
+      'distanceFromWindow', 'potSize', 'hasDrainage', 'potMaterial', 
+      'soil', 'plantSize', 'age', 'isNearAC', 'isNearHeater', 'catalogItemId'
+    ];
+    
+    const shouldUpdateFrequency = Object.keys(updates).some(key => 
+      frequencyAffectingProps.includes(key)
+    );
+    
+    if (shouldUpdateFrequency) {
+      try {
+        // Find existing water CareTask
+        const waterTask = careTasks.find(t => t.plantId === plantId && t.type === CareTaskType.WATER);
+        if (waterTask) {
+          // Get catalog item to compute frequency
+          const catalog = await api.getPlantCatalog();
+          const catalogItem = updatedPlant.catalogItemId 
+            ? catalog.find(c => c.id === updatedPlant.catalogItemId)
+            : undefined;
+          
+          // Compute new watering frequency
+          const newFrequencyDays = computeWateringFrequencyDays(updatedPlant, catalogItem);
+          
+          // Update CareTask frequency and recalculate nextDueDate
+          // Find the most recent completion from history
+          const waterHistory = careHistory
+            .filter(h => h.taskId === waterTask.id)
+            .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
+          
+          let nextDueDate: Date;
+          if (waterHistory.length > 0) {
+            // If task was completed before, calculate from last completion
+            nextDueDate = new Date(waterHistory[0].completedAt);
+            nextDueDate.setDate(nextDueDate.getDate() + newFrequencyDays);
+          } else {
+            // If never completed, set due date based on current date
+            nextDueDate = new Date();
+            nextDueDate.setDate(nextDueDate.getDate() + newFrequencyDays);
+          }
+          
+          await updateCareTask(waterTask.id, {
+            frequencyDays: newFrequencyDays,
+            nextDueDate: nextDueDate,
+          });
+        }
+      } catch (error) {
+        console.error('Error updating water CareTask frequency:', error);
+        // Don't fail plant update if CareTask update fails
+      }
+    }
+  }, [careTasks, careHistory, updateCareTask]);
 
   const deletePlant = useCallback(async (plantId: string) => {
     await api.deletePlant(plantId);
@@ -236,9 +277,18 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   }, [careTasks]);
 
   const getCareHistory = useCallback((plantId?: string, limit?: number) => {
-    let history = plantId ? careHistory.filter(h => h.plantId === plantId) : careHistory;
+    let history = careHistory;
+    
+    // If plantId is provided, filter by looking up plantId from CareTask
+    if (plantId) {
+      const plantTaskIds = new Set(
+        careTasks.filter(t => t.plantId === plantId).map(t => t.id)
+      );
+      history = history.filter(h => plantTaskIds.has(h.taskId));
+    }
+    
     return limit ? history.slice(0, limit) : history;
-  }, [careHistory]);
+  }, [careHistory, careTasks]);
 
   const addCareTask = useCallback(async (task: CareTask) => {
     const savedTask = await api.addCareTask(task);
@@ -262,7 +312,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
 
     // Update task
     const updatedTask = await api.updateCareTask(taskId, {
-      lastCompletedDate: now,
       nextDueDate: nextDueDate,
     });
     setCareTasks(prev =>
@@ -272,9 +321,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     // Add to history
     const historyEntry: CareHistory = {
       id: `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      plantId,
-      taskType: task.type,
-      title: task.title,
+      taskId: taskId,
       completedAt: now,
     };
     const savedHistory = await api.addCareHistory(historyEntry);
@@ -290,7 +337,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     if (!user) return;
 
     // Separate auth updates (name, email) from settings updates
-    const { name, email, locationName, unitSystem, ...rest } = updates;
+    const { displayName: name, email, locationName, unitSystem, ...rest } = updates;
     
     // Update name via auth if provided
     if (name !== undefined) {

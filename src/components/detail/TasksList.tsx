@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CareTask } from '../../types';
+import { getCareTaskDescription, getCareTaskTitle } from '../../lib/careTask';
+import { CareTask, CareTaskType } from '../../types';
 import { theme } from '../../theme';
 
 interface TasksListProps {
@@ -10,17 +11,17 @@ interface TasksListProps {
 }
 
 export const TasksList: React.FC<TasksListProps> = ({ tasks, onTaskPress }) => {
-  const getTaskIcon = (type: string): keyof typeof Ionicons.glyphMap => {
+  const getTaskIcon = (type: CareTaskType): keyof typeof Ionicons.glyphMap => {
     switch (type) {
-      case 'water':
+      case CareTaskType.WATER:
         return 'water-outline';
-      case 'fertilize':
+      case CareTaskType.FERTILIZE:
         return 'flask-outline';
-      case 'repot':
+      case CareTaskType.REPOT:
         return 'arrow-up-circle-outline';
-      case 'prune':
+      case CareTaskType.PRUNE:
         return 'cut-outline';
-      case 'pest_check':
+      case CareTaskType.PEST_CHECK:
         return 'bug-outline';
       default:
         return 'ellipse-outline';
@@ -49,9 +50,9 @@ export const TasksList: React.FC<TasksListProps> = ({ tasks, onTaskPress }) => {
             <Ionicons name={getTaskIcon(task.type)} size={24} color={theme.colors.primary} />
           </View>
           <View style={styles.taskInfo}>
-            <Text style={styles.taskTitle}>{task.title}</Text>
-            {task.description && (
-              <Text style={styles.taskDescription}>{task.description}</Text>
+            <Text style={styles.taskTitle}>{getCareTaskTitle(task.type)}</Text>
+            {getCareTaskDescription(task.type) && (
+              <Text style={styles.taskDescription}>{getCareTaskDescription(task.type)}</Text>
             )}
           </View>
           {task.isLocked ? (

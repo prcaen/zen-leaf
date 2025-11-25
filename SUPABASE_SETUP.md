@@ -45,7 +45,7 @@ Run the following SQL in your Supabase SQL Editor (Dashboard > SQL Editor > New 
 -- This table only stores user preferences/settings (location, unit system)
 CREATE TABLE IF NOT EXISTS user_settings (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  location_name TEXT NOT NULL DEFAULT 'Paris',
+  location_name TEXT,
   unit_system TEXT NOT NULL DEFAULT 'metric' CHECK (unit_system IN ('metric', 'imperial')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
 
 -- Rooms table
 CREATE TABLE IF NOT EXISTS rooms (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   humidity INTEGER, -- percentage
@@ -66,39 +66,33 @@ CREATE TABLE IF NOT EXISTS rooms (
 
 -- Plants table
 CREATE TABLE IF NOT EXISTS plants (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
   room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE SET NULL,
+  catalog_item_id UUID REFERENCES plant_catalog(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
   image_url TEXT,
-  watering_frequency_days INTEGER NOT NULL DEFAULT 7,
-  last_watered_date TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   notes TEXT,
-  distance_from_window INTEGER, -- in centimeters (from light settings)
-  pot_size INTEGER, -- Pot size in cm (diameter) (from pot settings)
-  has_drainage BOOLEAN, -- (from pot settings)
-  pot_material TEXT, -- e.g., "ceramic", "plastic", "terracotta" (from pot settings)
-  soil TEXT, -- e.g., "all-purpose-potting-mix" (from pot settings)
-  plant_size INTEGER, -- Plant height in cm (from plantType settings)
-  variety TEXT, -- (from plantType settings)
-  category TEXT, -- e.g., "succulent", "fern", "tropical" (from plantType settings)
-  age INTEGER, -- Plant age in years (0 = less than a year, 50 = 50+ years) (from plantType settings)
-  is_near_ac BOOLEAN, -- (from positionInRoom settings)
-  is_near_heater BOOLEAN, -- (from positionInRoom settings)
-  care_info JSONB
+  distance_from_window INTEGER, -- in centimeters
+  pot_size INTEGER, -- Pot size in cm (diameter)
+  has_drainage BOOLEAN,
+  pot_material TEXT, -- e.g., "ceramic", "plastic", "terracotta"
+  soil TEXT, -- e.g., "all-purpose-potting-mix"
+  plant_size INTEGER, -- Plant height in cm
+  acquired_date TIMESTAMPTZ, -- Date when plant was acquired - age is calculated from this date
+  is_near_ac BOOLEAN,
+  is_near_heater BOOLEAN,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
 );
 
 -- Care Tasks table
 CREATE TABLE IF NOT EXISTS care_tasks (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  plant_id TEXT NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
+  plant_id UUID NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
   type TEXT NOT NULL CHECK (type IN ('water', 'fertilize', 'repot', 'prune', 'pest_check', 'other')),
-  title TEXT NOT NULL,
-  description TEXT,
   frequency_days INTEGER NOT NULL,
-  last_completed_date TIMESTAMPTZ,
   next_due_date TIMESTAMPTZ NOT NULL,
   is_locked BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -106,23 +100,30 @@ CREATE TABLE IF NOT EXISTS care_tasks (
 
 -- Care History table
 CREATE TABLE IF NOT EXISTS care_history (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  plant_id TEXT NOT NULL REFERENCES plants(id) ON DELETE CASCADE,
-  task_type TEXT NOT NULL CHECK (task_type IN ('water', 'fertilize', 'repot', 'prune', 'pest_check', 'other')),
-  title TEXT NOT NULL,
+  task_id UUID NOT NULL REFERENCES care_tasks(id) ON DELETE CASCADE,
   completed_at TIMESTAMPTZ NOT NULL,
   notes TEXT
 );
 
 -- Plant Catalog table (public catalog, not user-specific)
 CREATE TABLE IF NOT EXISTS plant_catalog (
-  id TEXT PRIMARY KEY,
+  id UUID PRIMARY KEY,
   name TEXT NOT NULL,
   aliases TEXT DEFAULT '',
   difficulty TEXT NOT NULL CHECK (difficulty IN ('Easy', 'Moderate', 'Advanced')),
   light_level TEXT NOT NULL CHECK (light_level IN ('sun', 'part_sun', 'shade', 'dark')),
   image_url TEXT,
+  grow_speed TEXT CHECK (grow_speed IN ('slow', 'moderate', 'fast')),
+  toxicity TEXT CHECK (toxicity IN ('non-toxic', 'toxic-pets', 'toxic-humans', 'toxic-all')),
+  water_needed TEXT CHECK (water_needed IN ('low', 'moderate', 'high')),
+  grow_speed_description TEXT,
+  light_needed_description TEXT,
+  toxicity_description TEXT,
+  water_needed_description TEXT,
+  variety TEXT,
+  category TEXT, -- e.g., "succulent", "fern", "tropical"
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -135,7 +136,7 @@ CREATE INDEX IF NOT EXISTS idx_plants_room_id ON plants(room_id);
 CREATE INDEX IF NOT EXISTS idx_care_tasks_user_id ON care_tasks(user_id);
 CREATE INDEX IF NOT EXISTS idx_care_tasks_plant_id ON care_tasks(plant_id);
 CREATE INDEX IF NOT EXISTS idx_care_history_user_id ON care_history(user_id);
-CREATE INDEX IF NOT EXISTS idx_care_history_plant_id ON care_history(plant_id);
+CREATE INDEX IF NOT EXISTS idx_care_history_task_id ON care_history(task_id);
 CREATE INDEX IF NOT EXISTS idx_care_tasks_next_due_date ON care_tasks(next_due_date);
 CREATE INDEX IF NOT EXISTS idx_care_history_completed_at ON care_history(completed_at);
 CREATE INDEX IF NOT EXISTS idx_plant_catalog_name ON plant_catalog(name);

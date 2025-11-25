@@ -15,13 +15,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { PlantCatalogItem } from '../../src/components/PlantCatalogItem';
 import { api } from '../../src/lib/api';
 import { tempPlantStorage } from '../../src/lib/storage';
-import { usePlants } from '../../src/state/PlantsContext';
 import { theme } from '../../src/theme';
-import { GrowSpeed, LightLevel, PlantBasicInfo, PlantCatalogItem as PlantCatalogItemType, Toxicity, WaterNeeded } from '../../src/types';
+import { PlantBasicInfo, PlantCatalogItem as PlantCatalogItemType } from '../../src/types';
 
 export default function CreatePlantScreen() {
   const router = useRouter();
-  const { addPlant, rooms } = usePlants();
   const [searchQuery, setSearchQuery] = useState('');
   const [catalogPlants, setCatalogPlants] = useState<PlantCatalogItemType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,52 +47,10 @@ export default function CreatePlantScreen() {
   );
 
   const handlePlantSelect = async (plant: PlantCatalogItemType) => {
-    // Map difficulty to care info
-    const getGrowSpeed = (difficulty: string): GrowSpeed => {
-      switch (difficulty) {
-        case 'Easy':
-          return GrowSpeed.FAST;
-        case 'Moderate':
-          return GrowSpeed.MODERATE;
-        case 'Advanced':
-          return GrowSpeed.SLOW;
-        default:
-          return GrowSpeed.MODERATE;
-      }
-    };
-
-    const getToxicity = (difficulty: string): Toxicity => {
-      switch (difficulty) {
-        case 'Easy':
-          return Toxicity.NON_TOXIC;
-        case 'Moderate':
-          return Toxicity.TOXIC_PETS;
-        case 'Advanced':
-          return Toxicity.TOXIC_HUMANS;
-        default:
-          return Toxicity.NON_TOXIC;
-      }
-    };
-
-    const getWaterNeeded = (lightLevel: LightLevel): WaterNeeded => {
-      // Plants that need more sun typically need more water
-      if (lightLevel === LightLevel.SUN) {
-        return WaterNeeded.HIGH;
-      }
-      return WaterNeeded.MODERATE;
-    };
-
     // Prepare basic plant info (without saving yet)
     const basicInfo: PlantBasicInfo = {
       name: plant.name,
-      wateringFrequencyDays: 7, // Default to weekly
-      lastWateredDate: null,
-      careInfo: {
-        growSpeed: getGrowSpeed(plant.difficulty),
-        lightNeeded: plant.lightLevel,
-        toxicity: getToxicity(plant.difficulty),
-        waterNeeded: getWaterNeeded(plant.lightLevel),
-      },
+      catalogItemId: plant.id,
       imageUrl: plant.imageUrl,
     };
 
