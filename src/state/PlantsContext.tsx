@@ -1,11 +1,14 @@
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { CareHistory, CareTask, Plant, Room, User, WateringTask } from '../types';
+import { CareHistory, CareTask, Plant, Room, User, UserSettings, WateringTask } from '../types';
+
+// Flattened user type for backward compatibility
+type FlattenedUser = User & UserSettings;
 
 interface PlantsContextValue {
   plants: Plant[];
   rooms: Room[];
-  user: User | null;
+  user: FlattenedUser | null;
   loading: boolean;
   wateringTasks: WateringTask[];
   selectedPlants: Set<string>;
@@ -27,7 +30,7 @@ interface PlantsContextValue {
   updateCareTask: (taskId: string, updates: Partial<CareTask>) => Promise<void>;
   completeCareTask: (taskId: string, plantId: string) => Promise<void>;
   deleteCareTask: (taskId: string) => Promise<void>;
-  updateUser: (updates: Partial<User>) => Promise<void>;
+  updateUser: (updates: Partial<FlattenedUser>) => Promise<void>;
   refreshData: () => Promise<void>;
 }
 
@@ -48,7 +51,7 @@ interface PlantsProviderProps {
 export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FlattenedUser | null>(null);
   const [careTasks, setCareTasks] = useState<CareTask[]>([]);
   const [careHistory, setCareHistory] = useState<CareHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,7 +116,15 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       setCareTasks(loadedTasks);
       setCareHistory(loadedHistory);
       
-      setUser(loadedUser);
+      // Flatten user with settings for backward compatibility
+      if (loadedUser) {
+        setUser({
+          ...loadedUser,
+          ...loadedUser.settings,
+        });
+      } else {
+        setUser(null);
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -275,10 +286,39 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     setCareTasks(prev => prev.filter(t => t.id !== taskId));
   }, []);
 
-  const updateUser = useCallback(async (updates: Partial<User>) => {
-    const updatedUser = await api.updateUser(updates);
-    setUser(updatedUser);
-  }, []);
+  const updateUser = useCallback(async (updates: Partial<FlattenedUser>) => {
+    if (!user) return;
+
+    // Separate auth updates (name, email) from settings updates
+    const { name, email, locationName, unitSystem, ...rest } = updates;
+    
+    // Update name via auth if provided
+    if (name !== undefined) {
+      await api.updateUserName(name);
+    }
+
+    // Update settings if provided
+    const settingsUpdates: Partial<UserSettings> = {};
+    if (locationName !== undefined) {
+      settingsUpdates.locationName = locationName;
+    }
+    if (unitSystem !== undefined) {
+      settingsUpdates.unitSystem = unitSystem;
+    }
+
+    if (Object.keys(settingsUpdates).length > 0) {
+      await api.updateUserSettings(settingsUpdates);
+    }
+
+    // Reload user data to get updated values
+    const updatedUser = await api.getUser();
+    if (updatedUser) {
+      setUser({
+        ...updatedUser,
+        ...updatedUser.settings,
+      });
+    }
+  }, [user]);
 
   const value: PlantsContextValue = {
     plants,

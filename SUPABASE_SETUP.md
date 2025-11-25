@@ -35,16 +35,18 @@ This guide will help you set up your Supabase project for the Zen-Leaf app.
 
 ## 3. Database Schema Setup
 
+**Important**: This app uses Supabase Auth for user authentication. User data (name and email) comes from `auth.users` (managed by Supabase Auth), while user preferences (location and unit system) are stored in the `user_settings` table.
+
 Run the following SQL in your Supabase SQL Editor (Dashboard > SQL Editor > New Query):
 
 ```sql
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  location_name TEXT NOT NULL,
-  unit_system TEXT NOT NULL CHECK (unit_system IN ('metric', 'imperial')),
+-- User Settings table
+-- Note: User name and email are stored in auth.users (Supabase Auth)
+-- This table only stores user preferences/settings (location, unit system)
+CREATE TABLE IF NOT EXISTS user_settings (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  location_name TEXT NOT NULL DEFAULT 'Paris',
+  unit_system TEXT NOT NULL DEFAULT 'metric' CHECK (unit_system IN ('metric', 'imperial')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -113,6 +115,7 @@ CREATE TABLE IF NOT EXISTS plant_catalog (
 );
 
 -- Create indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_user_settings_user_id ON user_settings(user_id);
 CREATE INDEX IF NOT EXISTS idx_rooms_user_id ON rooms(user_id);
 CREATE INDEX IF NOT EXISTS idx_plants_user_id ON plants(user_id);
 CREATE INDEX IF NOT EXISTS idx_plants_room_id ON plants(room_id);
@@ -125,7 +128,7 @@ CREATE INDEX IF NOT EXISTS idx_care_history_completed_at ON care_history(complet
 CREATE INDEX IF NOT EXISTS idx_plant_catalog_name ON plant_catalog(name);
 
 -- Enable Row Level Security (RLS)
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rooms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE plants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE care_tasks ENABLE ROW LEVEL SECURITY;
@@ -133,15 +136,16 @@ ALTER TABLE care_history ENABLE ROW LEVEL SECURITY;
 -- Note: plant_catalog is public and does not need RLS (all users can read it)
 
 -- RLS Policies
--- Users can only see and modify their own data
-CREATE POLICY "Users can view own data" ON users
-  FOR SELECT USING (auth.uid() = id);
+-- User Settings: Users can only see and modify their own settings
+-- Note: User name and email are managed through Supabase Auth (auth.users)
+CREATE POLICY "Users can view own settings" ON user_settings
+  FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own data" ON users
-  FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY "Users can update own settings" ON user_settings
+  FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own data" ON users
-  FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users can insert own settings" ON user_settings
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Rooms: Users can only access their own rooms
 CREATE POLICY "Users can view own rooms" ON rooms
@@ -354,9 +358,11 @@ USING (
    - Make sure you've run all the RLS policies from section 3
    - Verify the user is authenticated before making requests
 
-2. **"Could not find the 'user_id' column"**
+2. **"Could not find the 'user_id' column" or "relation 'user_settings' does not exist"**
    - Make sure you've run the complete schema setup from section 3
+   - Verify the `user_settings` table was created (not the old `users` table)
    - Refresh your Supabase schema cache (Settings > API > Refresh schema)
+   - Note: User name and email come from Supabase Auth (`auth.users`), not from a database table
 
 3. **Storage upload fails**
    - Verify the storage bucket exists and is public

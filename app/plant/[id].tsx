@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../src/components/Button';
 import { ConfirmDialog } from '../../src/components/ConfirmDialog';
 import { ActionCard } from '../../src/components/detail/ActionCard';
 import { HistoryList } from '../../src/components/detail/HistoryList';
@@ -614,9 +615,6 @@ export default function PlantDetail() {
             {plant.name}
           </Text>
         </Animated.View>
-        <TouchableOpacity style={styles.headerButton} onPress={handleDeletePress}>
-          <Ionicons name="trash-outline" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -795,6 +793,13 @@ export default function PlantDetail() {
           <SettingsSection
             title="Room"
             items={roomSettings()}
+          />
+
+          {/* Delete Plant Button */}
+          <Button
+            title="Delete Plant"
+            onPress={handleDeletePress}
+            variant="destructive"
           />
         </View>
       </ScrollView>

@@ -160,10 +160,21 @@ export enum UnitSystem {
   IMPERIAL = 'imperial',
 }
 
+// User data from Supabase Auth
 export interface User {
+  id: string;
   name: string;
   email: string;
+}
+
+// User settings stored in user_settings table
+export interface UserSettings {
   locationName: string; // city
   unitSystem: UnitSystem;
+}
+
+// Combined user data for convenience
+export interface UserWithSettings extends User {
+  settings: UserSettings;
 }
 

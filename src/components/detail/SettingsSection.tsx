@@ -9,7 +9,7 @@ export interface SettingItemData {
   label: string;
   value?: string;
   lowerCaseValue?: boolean;
-  onPress: () => void;
+  onPress?: () => void;
 }
 
 interface SettingsSectionProps {
@@ -22,26 +22,32 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ title, items }
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
       <View style={styles.itemsContainer}>
-        {items.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.item}
-            onPress={item.onPress}
-            activeOpacity={0.7}
-          >
-            <View style={styles.itemIcon}>
-              <Ionicons name={item.icon} size={20} color={theme.colors.text} />
-              {(!item.value || item.value === 'Not set') && (
-                <View style={styles.pastille} />
-              )}
-            </View>
-            <View style={styles.itemContent}>
-              <Text style={styles.itemLabel}>{item.label}</Text>
-              {item.value && <Text style={styles.itemValue}>{item.lowerCaseValue ? item.value.toLowerCase() : capitalizeFirstLetter(item.value)}</Text>}
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={theme.colors.textLight} />
-          </TouchableOpacity>
-        ))}
+        {items.map((item, index) => {
+          const ItemWrapper = item.onPress ? TouchableOpacity : View;
+          const itemProps = item.onPress
+            ? { onPress: item.onPress, activeOpacity: 0.7 }
+            : {};
+
+          return (
+            <ItemWrapper
+              key={index}
+              style={styles.item}
+              {...itemProps}
+            >
+              <View style={styles.itemIcon}>
+                <Ionicons name={item.icon} size={20} color={theme.colors.text} />
+                {(!item.value || item.value === 'Not set') && (
+                  <View style={styles.pastille} />
+                )}
+              </View>
+              <View style={styles.itemContent}>
+                <Text style={styles.itemLabel}>{item.label}</Text>
+                {item.value && <Text style={styles.itemValue}>{item.lowerCaseValue ? item.value.toLowerCase() : capitalizeFirstLetter(item.value)}</Text>}
+              </View>
+              {item.onPress && <Ionicons name="chevron-forward" size={20} color={theme.colors.textLight} />}
+            </ItemWrapper>
+          );
+        })}
       </View>
     </View>
   );

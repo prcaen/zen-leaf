@@ -25,7 +25,6 @@ export default function ProfileSettingsScreen() {
   const { user, updateUser } = usePlants();
   const { signOut } = useAuth();
   const [showNameDialog, setShowNameDialog] = useState(false);
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
   const [showLocationDialog, setShowLocationDialog] = useState(false);
   const [showUnitSystemDialog, setShowUnitSystemDialog] = useState(false);
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);
@@ -45,10 +44,6 @@ export default function ProfileSettingsScreen() {
 
   const handleUpdateName = async (name: string) => {
     await updateUser({ name });
-  };
-
-  const handleUpdateEmail = async (email: string) => {
-    await updateUser({ email });
   };
 
   const handleUpdateLocation = async (locationName: string) => {
@@ -76,7 +71,6 @@ export default function ProfileSettingsScreen() {
       label: 'Email',
       value: user.email || 'Not set',
       lowerCaseValue: true,
-      onPress: () => setShowEmailDialog(true),
     },
     {
       icon: 'location-outline',
@@ -131,20 +125,6 @@ export default function ProfileSettingsScreen() {
         confirmText="Save"
         cancelText="Cancel"
         icon="person-outline"
-        iconColor={theme.colors.primary}
-      />
-
-      {/* Email Dialog */}
-      <TextInputDialog
-        visible={showEmailDialog}
-        onClose={() => setShowEmailDialog(false)}
-        onConfirm={handleUpdateEmail}
-        title="Email"
-        initialValue={user.email}
-        placeholder="Enter your email"
-        confirmText="Save"
-        cancelText="Cancel"
-        icon="mail-outline"
         iconColor={theme.colors.primary}
       />
 

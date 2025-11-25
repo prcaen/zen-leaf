@@ -1,5 +1,5 @@
 import { PlantCatalogItem } from '../data/plantCatalog';
-import { CareHistory, CareTask, LightLevel, Plant, Room, User } from '../types';
+import { CareHistory, CareTask, LightLevel, Plant, Room, UnitSystem, User, UserSettings, UserWithSettings } from '../types';
 import { supabase } from './supabase';
 
 // Helper to convert camelCase to snake_case for database columns
@@ -479,20 +479,72 @@ export const api = {
     }
   },
 
-  // User
-  async getUser(): Promise<User | null> {
+  // User - Get user data from auth and settings from user_settings table
+  async getUser(): Promise<UserWithSettings | null> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return null;
+
+      console.log('authUser', authUser);
+
+      // Get user data from auth
+      const user: User = {
+        id: authUser.id,
+        name: authUser.user_metadata?.display_name,
+        email: authUser.email ?? '',
+      };
+
+      // Get user settings from user_settings table
+      const { data: settingsData, error: settingsError } = await supabase
+        .from('user_settings')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .single();
+
+      let settings: UserSettings;
+      if (settingsError) {
+        // Settings might not exist yet, create defaults
+        if (settingsError.code === 'PGRST116') {
+          settings = {
+            locationName: 'Paris',
+            unitSystem: UnitSystem.METRIC,
+          };
+          // Create default settings
+          await this.saveUserSettings(settings);
+        } else {
+          throw settingsError;
+        }
+      } else {
+        const camelCase = snakeToCamel(settingsData);
+        settings = {
+          locationName: camelCase.locationName || 'Paris',
+          unitSystem: camelCase.unitSystem || UnitSystem.METRIC,
+        };
+      }
+
+      return {
+        ...user,
+        settings,
+      };
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
+  },
+
+  // Get user settings only
+  async getUserSettings(): Promise<UserSettings | null> {
+    try {
+      const userId = await getUserId();
+      if (!userId) return null;
 
       const { data, error } = await supabase
-        .from('users')
+        .from('user_settings')
         .select('*')
-        .eq('id', user.id)
+        .eq('user_id', userId)
         .single();
 
       if (error) {
-        // User might not exist in users table yet
         if (error.code === 'PGRST116') {
           return null;
         }
@@ -500,68 +552,111 @@ export const api = {
       }
 
       const camelCase = snakeToCamel(data);
-      return deserializeDates<User>(camelCase);
+      return {
+        locationName: camelCase.locationName || 'Paris',
+        unitSystem: camelCase.unitSystem || UnitSystem.METRIC,
+      };
     } catch (error) {
-      console.error('Error fetching user:', error);
+      console.error('Error fetching user settings:', error);
       return null;
     }
   },
 
-  async saveUser(userData: User): Promise<User> {
+  // Save user settings
+  async saveUserSettings(settings: UserSettings): Promise<UserSettings> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
 
-      const serialized = serializeDates(userData);
+      const serialized = serializeDates(settings);
       const snakeCase = camelToSnake(serialized);
       const { data, error } = await supabase
-        .from('users')
-        .upsert({ id: user.id, ...snakeCase })
+        .from('user_settings')
+        .upsert({ user_id: userId, ...snakeCase })
         .select()
         .single();
 
       if (error) throw error;
       const camelCase = snakeToCamel(data);
-      return deserializeDates<User>(camelCase);
+      return {
+        locationName: camelCase.locationName,
+        unitSystem: camelCase.unitSystem,
+      };
     } catch (error) {
-      console.error('Error saving user:', error);
+      console.error('Error saving user settings:', error);
       throw error;
     }
   },
 
-  async updateUser(updates: Partial<User>): Promise<User> {
+  // Update user settings
+  async updateUserSettings(updates: Partial<UserSettings>): Promise<UserSettings> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const userId = await getUserId();
+      if (!userId) throw new Error('User not authenticated');
 
       const serialized = serializeDates(updates);
       const snakeCase = camelToSnake(serialized);
       const { data, error } = await supabase
-        .from('users')
+        .from('user_settings')
         .update(snakeCase)
-        .eq('id', user.id)
+        .eq('user_id', userId)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If settings don't exist, create them
+        if (error.code === 'PGRST116') {
+          const defaultSettings: UserSettings = {
+            locationName: 'Paris',
+            unitSystem: UnitSystem.METRIC,
+            ...updates,
+          };
+          return await this.saveUserSettings(defaultSettings);
+        }
+        throw error;
+      }
+
       const camelCase = snakeToCamel(data);
-      return deserializeDates<User>(camelCase);
+      return {
+        locationName: camelCase.locationName,
+        unitSystem: camelCase.unitSystem,
+      };
     } catch (error) {
-      console.error('Error updating user:', error);
+      console.error('Error updating user settings:', error);
+      throw error;
+    }
+  },
+
+  // Update user name (via auth metadata)
+  async updateUserName(name: string): Promise<User> {
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase.auth.updateUser({
+        data: { name, display_name: name },
+      });
+
+      if (error) throw error;
+
+      return {
+        id: data.user.id,
+        name: data.user.user_metadata?.display_name,
+        email: data.user.email ?? '',
+      };
+    } catch (error) {
+      console.error('Error updating user name:', error);
       throw error;
     }
   },
 
   // Plant Catalog (public, no authentication required)
   async getPlantCatalog(): Promise<PlantCatalogItem[]> {
-    console.log('Getting plant catalog');
     try {
       const { data, error } = await supabase
         .from('plant_catalog')
         .select('*')
         .order('name', { ascending: true });
-
-      console.log('Plant catalog data:', data);
 
       if (error) throw error;
 
