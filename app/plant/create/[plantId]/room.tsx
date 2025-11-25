@@ -15,18 +15,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../../src/components/Button';
 import { usePlants } from '../../../../src/state/PlantsContext';
 import { theme } from '../../../../src/theme';
-import { LightLevel, Plant } from '../../../../src/types';
+import { LightLevel, Plant, PlantCareInfo } from '../../../../src/types';
 
 interface PlantData {
   name: string;
   wateringFrequencyDays: number;
   lastWateredDate: null;
-  careInfo: {
-    growSpeed: string;
-    lightNeeded: LightLevel;
-    toxicity: string;
-    waterNeeded: string;
-  };
+  careInfo: PlantCareInfo;
   imageUrl?: string;
 }
 
@@ -427,6 +422,17 @@ const styles = StyleSheet.create({
   },
   bottomSpacer: {
     height: theme.spacing.xl,
+  },
+  errorContainer: {
+    backgroundColor: '#FEE2E2',
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 
