@@ -48,18 +48,18 @@ export default function SelectRoomScreen() {
   // Filter rooms by indoor/outdoor
   const filteredRooms = rooms.filter(room => {
     if (filterIndoor) {
-      return room.settings?.isIndoor !== false; // Show indoor or undefined
+      return room.isIndoor !== false; // Show indoor or undefined
     }
-    return room.settings?.isIndoor === false; // Show only outdoor
+    return room.isIndoor === false; // Show only outdoor
   });
 
   // Check if room is recommended based on light level compatibility
   const isRoomRecommended = (room: typeof rooms[0]): boolean => {
-    if (!plantLightNeeded || !room.settings?.lightLevel) {
+    if (!plantLightNeeded || !room.lightLevel) {
       return false;
     }
 
-    const roomLight = room.settings.lightLevel;
+    const roomLight = room.lightLevel;
     
     // Simple compatibility logic:
     // - Sun plants work best in Sun or Part Sun rooms

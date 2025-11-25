@@ -121,17 +121,13 @@ export default function RoomDetailScreen() {
   };
 
   const handleChangeTemperature = async (temperature: number) => {
-    const currentSettings = room?.settings || {};
     const unitSystem = user?.unitSystem || UnitSystem.METRIC;
 
     // Convert from display value to metric for storage
     const temperatureInCelsius = parseTemperature(temperature, unitSystem);
 
     await updateRoom(roomId, {
-      settings: {
-        ...currentSettings,
-        temperature: temperatureInCelsius,
-      },
+      temperature: temperatureInCelsius,
     });
   };
 
@@ -140,12 +136,8 @@ export default function RoomDetailScreen() {
   };
 
   const handleChangeHumidity = async (humidity: number) => {
-    const currentSettings = room?.settings || {};
     await updateRoom(roomId, {
-      settings: {
-        ...currentSettings,
-        humidity,
-      },
+      humidity,
     });
   };
 
@@ -154,12 +146,8 @@ export default function RoomDetailScreen() {
   };
 
   const handleChangeLightLevel = async (newLevel: string) => {
-    const currentSettings = room?.settings || {};
     await updateRoom(roomId, {
-      settings: {
-        ...currentSettings,
-        lightLevel: newLevel as LightLevel,
-      },
+      lightLevel: newLevel as LightLevel,
     });
   };
 
@@ -168,12 +156,8 @@ export default function RoomDetailScreen() {
   };
 
   const handleChangeRoom = async (selectedId: string) => {
-    const currentSettings = room?.settings || {};
     await updateRoom(roomId, {
-      settings: {
-        ...currentSettings,
-        isIndoor: selectedId === 'indoor',
-      },
+      isIndoor: selectedId === 'indoor',
     });
   };
 
@@ -277,24 +261,24 @@ export default function RoomDetailScreen() {
             {
               icon: 'thermometer-outline',
               label: 'Temperature',
-              value: room.settings?.temperature
-                ? formatTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
+              value: room.temperature
+                ? formatTemperature(room.temperature, user?.unitSystem || UnitSystem.METRIC)
                 : 'Not set',
               onPress: handleTemperaturePress,
             },
             {
               icon: 'water-outline',
               label: 'Humidity',
-              value: room.settings?.humidity
-                ? `${room.settings.humidity}%`
+              value: room.humidity
+                ? `${room.humidity}%`
                 : 'Not set',
               onPress: handleHumidityPress,
             },
             {
               icon: 'sunny-outline',
               label: 'Light level',
-              value: room.settings?.lightLevel
-                ? lightLevelOptions.find(opt => opt.id === room.settings?.lightLevel)?.label || room.settings.lightLevel
+              value: room.lightLevel
+                ? lightLevelOptions.find(opt => opt.id === room.lightLevel)?.label || room.lightLevel
                 : 'Not set',
               onPress: handleLightLevelPress,
             },
@@ -302,9 +286,9 @@ export default function RoomDetailScreen() {
               icon: 'location-outline',
               label: 'Location',
               value:
-                room.settings?.isIndoor === true
+                room.isIndoor === true
                   ? 'Indoor'
-                  : room.settings?.isIndoor === false
+                  : room.isIndoor === false
                     ? 'Outdoor'
                     : 'Not set',
               onPress: handleRoomPress,
@@ -329,8 +313,8 @@ export default function RoomDetailScreen() {
         onClose={() => setShowTemperatureDialog(false)}
         onConfirm={handleChangeTemperature}
         title="Temperature"
-        initialValue={room.settings?.temperature
-          ? getDisplayTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
+        initialValue={room.temperature
+          ? getDisplayTemperature(room.temperature, user?.unitSystem || UnitSystem.METRIC)
           : (user?.unitSystem === UnitSystem.IMPERIAL ? 68 : 20)}
         minValue={user?.unitSystem === UnitSystem.IMPERIAL ? 32 : 0}
         maxValue={user?.unitSystem === UnitSystem.IMPERIAL ? 104 : 40}
@@ -348,7 +332,7 @@ export default function RoomDetailScreen() {
         onClose={() => setShowHumidityDialog(false)}
         onConfirm={handleChangeHumidity}
         title="Humidity"
-        initialValue={room.settings?.humidity || 50}
+        initialValue={room.humidity || 50}
         minValue={0}
         maxValue={100}
         step={5}
@@ -367,7 +351,7 @@ export default function RoomDetailScreen() {
         title="Light Level"
         description="Select the light level available in this room."
         options={lightLevelOptions}
-        initialSelectedId={room.settings?.lightLevel || LightLevel.PART_SUN}
+        initialSelectedId={room.lightLevel || LightLevel.PART_SUN}
         confirmText="Save"
         cancelText="Cancel"
         icon="sunny-outline"
@@ -382,9 +366,9 @@ export default function RoomDetailScreen() {
         title="Location"
         options={roomOptions}
         initialSelectedId={
-          room.settings?.isIndoor === true
+          room.isIndoor === true
             ? 'indoor'
-            : room.settings?.isIndoor === false
+            : room.isIndoor === false
               ? 'outdoor'
               : 'indoor'
         }

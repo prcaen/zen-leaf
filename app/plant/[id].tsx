@@ -473,8 +473,8 @@ export default function PlantDetail() {
     settings.push({
       icon: 'thermometer-outline',
       label: 'Temperature',
-      value: room?.settings?.temperature
-        ? formatTemperature(room.settings.temperature, user?.unitSystem || UnitSystem.METRIC)
+      value: room?.temperature
+        ? formatTemperature(room.temperature, user?.unitSystem || UnitSystem.METRIC)
         : 'Not set',
       onPress: () => handleRoomSettingPress('temperature'),
     });
@@ -482,8 +482,8 @@ export default function PlantDetail() {
     settings.push({
       icon: 'water-outline',
       label: 'Humidity',
-      value: room?.settings?.humidity
-        ? `${room.settings.humidity}%`
+      value: room?.humidity
+        ? `${room.humidity}%`
         : 'Not set',
       onPress: () => handleRoomSettingPress('humidity'),
     });
@@ -491,15 +491,15 @@ export default function PlantDetail() {
     settings.push({
       icon: 'location-outline',
       label: 'Location',
-      value: room?.settings?.isIndoor === true
+      value: room?.isIndoor === true
         ? 'Indoor'
-        : room?.settings?.isIndoor === false
+        : room?.isIndoor === false
         ? 'Outdoor'
         : 'Not set',
       onPress: () => handleRoomSettingPress('location'),
     });
 
-    if (room?.settings?.isIndoor === true) {
+    if (room?.isIndoor === true) {
       settings.push({
         icon: 'snow-outline',
         label: 'Near A/C',
@@ -642,7 +642,7 @@ export default function PlantDetail() {
               {
                 icon: 'sunny-outline',
                 label: 'Light level',
-                value: room?.settings?.lightLevel ? room.settings.lightLevel : 'Not set',
+                value: room?.lightLevel ? room.lightLevel : 'Not set',
                 onPress: () => handleRoomSettingPress('lightLevel'),
               },
               {

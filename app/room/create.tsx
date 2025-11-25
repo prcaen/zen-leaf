@@ -97,12 +97,10 @@ export default function CreateRoomScreen() {
     const room: Room = {
       id: `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       name: name.trim(),
-      settings: {
-        ...(temperature !== undefined && { temperature }),
-        ...(humidity !== undefined && { humidity }),
-        ...(lightLevel !== undefined && { lightLevel }),
-        ...(isIndoor !== undefined && { isIndoor }),
-      },
+      ...(temperature !== undefined && { temperature }),
+      ...(humidity !== undefined && { humidity }),
+      ...(lightLevel !== undefined && { lightLevel }),
+      ...(isIndoor !== undefined && { isIndoor }),
     };
 
     await addRoom(room);

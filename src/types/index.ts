@@ -1,7 +1,10 @@
 export interface Room {
   id: string;
   name: string;
-  settings?: RoomSettings;
+  humidity?: number; // percentage
+  isIndoor?: boolean; // indoor or outdoor
+  temperature?: number; // in Celsius
+  lightLevel?: LightLevel;
 }
 
 export interface Plant {
@@ -96,13 +99,6 @@ export enum HealthOverall {
   GOOD = 'good',
   FAIR = 'fair',
   POOR = 'poor',
-}
-
-export interface RoomSettings {
-  humidity?: number; // percentage
-  isIndoor?: boolean; // indoor or outdoor
-  temperature?: number; // in Celsius
-  lightLevel?: LightLevel;
 }
 
 // Plant Care Info

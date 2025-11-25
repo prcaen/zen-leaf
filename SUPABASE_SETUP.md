@@ -56,7 +56,10 @@ CREATE TABLE IF NOT EXISTS rooms (
   id TEXT PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  settings JSONB,
+  humidity INTEGER, -- percentage
+  is_indoor BOOLEAN, -- indoor or outdoor
+  temperature INTEGER, -- in Celsius
+  light_level TEXT CHECK (light_level IN ('sun', 'part sun', 'shade', 'dark')),
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -66,13 +69,12 @@ CREATE TABLE IF NOT EXISTS plants (
   id TEXT PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
-  room_id TEXT NOT NULL REFERENCES rooms(id) ON DELETE SET NULL,
+  room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE SET NULL,
   image_url TEXT,
   watering_frequency_days INTEGER NOT NULL DEFAULT 7,
   last_watered_date TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   notes TEXT,
-  -- Flattened settings (previously in settings JSONB)
   distance_from_window INTEGER, -- in centimeters (from light settings)
   pot_size INTEGER, -- Pot size in cm (diameter) (from pot settings)
   has_drainage BOOLEAN, -- (from pot settings)

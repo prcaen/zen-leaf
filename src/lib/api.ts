@@ -240,20 +240,9 @@ export const api = {
       const serialized = serializeDates(room);
       const snakeCase = camelToSnake(serialized);
       
-      // Explicitly construct the insert object to ensure user_id is included
-      const insertData: any = {
-        id: snakeCase.id,
-        name: snakeCase.name,
-        user_id: userId,
-      };
-      
-      if (snakeCase.settings) {
-        insertData.settings = snakeCase.settings;
-      }
-      
       const { data, error } = await supabase
         .from('rooms')
-        .insert(insertData)
+        .insert({ ...snakeCase, user_id: userId })
         .select()
         .single();
 
