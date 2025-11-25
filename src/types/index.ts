@@ -13,7 +13,17 @@ export interface Plant {
   lastWateredDate: Date | null;
   createdAt: Date;
   notes?: string;
-  settings?: PlantSettings;
+  distanceFromWindow?: number; // in centimeters (from light settings)
+  potSize?: number; // Pot size in cm (diameter) (from pot settings)
+  hasDrainage?: boolean; // (from pot settings)
+  potMaterial?: string; // e.g., "ceramic", "plastic", "terracotta" (from pot settings)
+  soil?: string; // e.g., "all-purpose-potting-mix" (from pot settings)
+  plantSize?: number; // Plant height in cm (from plantType settings)
+  variety?: string; // (from plantType settings)
+  category?: string; // e.g., "succulent", "fern", "tropical" (from plantType settings)
+  age?: number; // Plant age in years (0 = less than a year, 50 = 50+ years) (from plantType settings)
+  isNearAC?: boolean; // (from positionInRoom settings)
+  isNearHeater?: boolean; // (from positionInRoom settings)
   careInfo?: PlantCareInfo;
 }
 
@@ -88,36 +98,11 @@ export enum HealthOverall {
   POOR = 'poor',
 }
 
-export interface LightSettings {
-  distanceFromWindow?: number; // in centimeters
-}
-
-export interface PotSettings {
-  size?: number; // Pot size in cm (diameter)
-  hasDrainage?: boolean;
-  material?: string; // e.g., "ceramic", "plastic", "terracotta"
-  soil?: string; // e.g., "soil"
-}
-
-export interface PlantTypeSettings {
-  size?: number; // Plant height in cm
-  variety?: string;
-  category?: string; // e.g., "succulent", "fern", "tropical"
-  age?: number; // Plant age in years (0 = less than a year, 50 = 50+ years)
-}
-
 export interface RoomSettings {
   humidity?: number; // percentage
   isIndoor?: boolean; // indoor or outdoor
   temperature?: number; // in Celsius
   lightLevel?: LightLevel;
-}
-
-export interface PlantSettings {
-  light?: LightSettings;
-  pot?: PotSettings;
-  plantType?: PlantTypeSettings;
-  positionInRoom?: PositionInRoom;
 }
 
 // Plant Care Info
@@ -147,11 +132,6 @@ export interface HealthStatus {
   issues?: string[];
   lastChecked: Date;
   notes?: string;
-}
-
-export interface PositionInRoom {
-  isNearAC?: boolean;
-  isNearHeater?: boolean;
 }
 
 // User

@@ -72,7 +72,18 @@ CREATE TABLE IF NOT EXISTS plants (
   last_watered_date TIMESTAMPTZ,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   notes TEXT,
-  settings JSONB,
+  -- Flattened settings (previously in settings JSONB)
+  distance_from_window INTEGER, -- in centimeters (from light settings)
+  pot_size INTEGER, -- Pot size in cm (diameter) (from pot settings)
+  has_drainage BOOLEAN, -- (from pot settings)
+  pot_material TEXT, -- e.g., "ceramic", "plastic", "terracotta" (from pot settings)
+  soil TEXT, -- e.g., "all-purpose-potting-mix" (from pot settings)
+  plant_size INTEGER, -- Plant height in cm (from plantType settings)
+  variety TEXT, -- (from plantType settings)
+  category TEXT, -- e.g., "succulent", "fern", "tropical" (from plantType settings)
+  age INTEGER, -- Plant age in years (0 = less than a year, 50 = 50+ years) (from plantType settings)
+  is_near_ac BOOLEAN, -- (from positionInRoom settings)
+  is_near_heater BOOLEAN, -- (from positionInRoom settings)
   care_info JSONB
 );
 

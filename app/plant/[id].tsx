@@ -311,21 +311,13 @@ export default function PlantDetail() {
   };
 
   const handleChangeDistance = async (newDistance: number) => {
-    const currentSettings = plant.settings || {};
-    const currentLight = currentSettings.light;
     const unitSystem = user?.unitSystem || UnitSystem.METRIC;
     
     // Convert from display value to metric for storage
     const distanceInCm = parseSize(newDistance, unitSystem);
     
     await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        light: {
-          ...currentLight,
-          distanceFromWindow: distanceInCm,
-        },
-      },
+      distanceFromWindow: distanceInCm,
     });
   };
 
@@ -334,21 +326,13 @@ export default function PlantDetail() {
   };
 
   const handleChangePotSize = async (newSize: number) => {
-    const currentSettings = plant.settings || {};
-    const currentPot = currentSettings.pot || { size: 30, hasDrainage: true };
     const unitSystem = user?.unitSystem || UnitSystem.METRIC;
     
     // Convert from display value to metric for storage
     const sizeInCm = parseSize(newSize, unitSystem);
     
     await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        pot: {
-          ...currentPot,
-          size: sizeInCm,
-        },
-      },
+      potSize: sizeInCm,
     });
   };
 
@@ -363,17 +347,8 @@ export default function PlantDetail() {
   };
 
   const handleChangeDrainage = async (hasDrainage: string) => {
-    const currentSettings = plant.settings || {};
-    const currentPot = currentSettings.pot || { size: 30, hasDrainage: true };
-    
     await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        pot: {
-          ...currentPot,
-          hasDrainage: hasDrainage === 'yes',
-        },
-      },
+      hasDrainage: hasDrainage === 'yes',
     });
   };
 
@@ -394,17 +369,8 @@ export default function PlantDetail() {
   };
 
   const handleChangeAC = async (isNearAC: string) => {
-    const currentSettings = plant.settings || {};
-    const currentPosition = currentSettings.positionInRoom || {};
-    
     await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        positionInRoom: {
-          ...currentPosition,
-          isNearAC: isNearAC === 'yes',
-        },
-      },
+      isNearAC: isNearAC === 'yes',
     });
   };
 
@@ -418,17 +384,8 @@ export default function PlantDetail() {
   };
 
   const handleChangeHeater = async (isNearHeater: string) => {
-    const currentSettings = plant.settings || {};
-    const currentPosition = currentSettings.positionInRoom || {};
-    
     await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        positionInRoom: {
-          ...currentPosition,
-          isNearHeater: isNearHeater === 'yes',
-        },
-      },
+      isNearHeater: isNearHeater === 'yes',
     });
   };
 
@@ -442,17 +399,8 @@ export default function PlantDetail() {
   };
 
   const handleChangeSoil = async (soilType: string) => {
-    const currentSettings = plant.settings || {};
-    const currentPot = currentSettings.pot || { size: 30, hasDrainage: true };
-    
     await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        pot: {
-          ...currentPot,
-          soil: soilType,
-        },
-      },
+      soil: soilType,
     });
   };
 
@@ -461,21 +409,13 @@ export default function PlantDetail() {
   };
 
   const handleChangePlantSize = async (newSize: number) => {
-    const currentSettings = plant.settings || {};
-    const currentPlantType = currentSettings.plantType || {};
     const unitSystem = user?.unitSystem || UnitSystem.METRIC;
     
     // Convert from display value to metric for storage
     const sizeInCm = parseSize(newSize, unitSystem);
     
     await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        plantType: {
-          ...currentPlantType,
-          size: sizeInCm,
-        },
-      },
+      plantSize: sizeInCm,
     });
   };
 
@@ -484,23 +424,14 @@ export default function PlantDetail() {
   };
 
   const handleChangeAge = async (age: number) => {
-    const currentSettings = plant.settings || {};
-    const currentPlantType = currentSettings.plantType || {};
-    
     await updatePlant(id, {
-      settings: {
-        ...currentSettings,
-        plantType: {
-          ...currentPlantType,
-          age: age,
-        },
-      },
+      age: age,
     });
   };
 
   // Calculate age display
   const getAgeDisplay = (): string => {
-    const age = plant.settings?.plantType?.age;
+    const age = plant.age;
     if (age !== undefined) {
       if (age === 0) return 'Less than a year';
       if (age === 1) return '1 year';
@@ -572,9 +503,9 @@ export default function PlantDetail() {
       settings.push({
         icon: 'snow-outline',
         label: 'Near A/C',
-        value: plant?.settings?.positionInRoom?.isNearAC === true
+        value: plant?.isNearAC === true
           ? 'Yes'
-          : plant?.settings?.positionInRoom?.isNearAC === false
+          : plant?.isNearAC === false
           ? 'No'
           : 'Not set',
         onPress: handleACPress,
@@ -583,9 +514,9 @@ export default function PlantDetail() {
       settings.push({
         icon: 'flame-outline',
         label: 'Near Heater',
-        value: plant?.settings?.positionInRoom?.isNearHeater === true
+        value: plant?.isNearHeater === true
           ? 'Yes'
-          : plant?.settings?.positionInRoom?.isNearHeater === false
+          : plant?.isNearHeater === false
           ? 'No'
           : 'Not set',
         onPress: handleHeaterPress,
@@ -717,8 +648,8 @@ export default function PlantDetail() {
               {
                 icon: 'swap-horizontal-outline',
                 label: 'Distance from window',
-                value: plant.settings?.light?.distanceFromWindow
-                  ? formatSize(plant.settings.light.distanceFromWindow, user?.unitSystem || UnitSystem.METRIC)
+                value: plant.distanceFromWindow
+                  ? formatSize(plant.distanceFromWindow, user?.unitSystem || UnitSystem.METRIC)
                   : 'Not set',
                 onPress: handleDistancePress,
               },
@@ -731,8 +662,8 @@ export default function PlantDetail() {
               {
                 icon: 'resize-outline',
                 label: 'Size',
-                value: plant.settings?.pot?.size 
-                  ? `${formatSize(plant.settings.pot.size, user?.unitSystem || UnitSystem.METRIC)} (${getPotSizeLabel(plant.settings.pot.size)})` 
+                value: plant.potSize 
+                  ? `${formatSize(plant.potSize, user?.unitSystem || UnitSystem.METRIC)} (${getPotSizeLabel(plant.potSize)})` 
                   : 'Not set',
                 onPress: handlePotSizePress,
               },
@@ -740,9 +671,9 @@ export default function PlantDetail() {
                 icon: 'water-outline',
                 label: 'Drainage',
                 value:
-                  plant.settings?.pot?.hasDrainage == null
+                  plant.hasDrainage == null
                     ? 'Not set'
-                    : plant.settings.pot.hasDrainage
+                    : plant.hasDrainage
                       ? 'Yes'
                       : 'No',
                 onPress: handleDrainagePress,
@@ -750,8 +681,8 @@ export default function PlantDetail() {
               {
                 icon: 'flower-outline',
                 label: 'Soil',
-                value: plant.settings?.pot?.soil 
-                  ? soilOptions.find(s => s.id === plant.settings?.pot?.soil)?.label || 'Not set'
+                value: plant.soil 
+                  ? soilOptions.find(s => s.id === plant.soil)?.label || 'Not set'
                   : 'Not set',
                 onPress: handleSoilPress,
               },
@@ -764,20 +695,20 @@ export default function PlantDetail() {
               {
                 icon: 'leaf-outline',
                 label: 'Type',
-                value: plant.settings?.plantType?.category || 'Not set',
+                value: plant.category || 'Not set',
                 onPress: () => console.log('Plant type'),
               },
               {
                 icon: 'information-circle-outline',
                 label: 'Variety',
-                value: plant.settings?.plantType?.variety || 'Not set',
+                value: plant.variety || 'Not set',
                 onPress: () => console.log('Variety'),
               },
               {
                 icon: 'expand-outline',
                 label: 'Size',
-                value: plant.settings?.plantType?.size 
-                  ? formatSize(plant.settings.plantType.size, user?.unitSystem || UnitSystem.METRIC)
+                value: plant.plantSize 
+                  ? formatSize(plant.plantSize, user?.unitSystem || UnitSystem.METRIC)
                   : 'Not set',
                 onPress: handlePlantSizePress,
               },
@@ -865,8 +796,8 @@ export default function PlantDetail() {
         onClose={() => setShowDistanceDialog(false)}
         onConfirm={handleChangeDistance}
         title="Distance from Window"
-        initialValue={plant.settings?.light?.distanceFromWindow 
-          ? getDisplaySize(plant.settings.light.distanceFromWindow, user?.unitSystem || UnitSystem.METRIC)
+        initialValue={plant.distanceFromWindow 
+          ? getDisplaySize(plant.distanceFromWindow, user?.unitSystem || UnitSystem.METRIC)
           : (user?.unitSystem === UnitSystem.IMPERIAL ? 39.4 : 100)}
         minValue={user?.unitSystem === UnitSystem.IMPERIAL ? 0 : 0}
         maxValue={user?.unitSystem === UnitSystem.IMPERIAL ? 118 : 300}
@@ -886,8 +817,8 @@ export default function PlantDetail() {
         onClose={() => setShowPotSizeDialog(false)}
         onConfirm={handleChangePotSize}
         title="Pot Size"
-        initialValue={plant.settings?.pot?.size 
-          ? getDisplaySize(plant.settings.pot.size, user?.unitSystem || UnitSystem.METRIC)
+        initialValue={plant.potSize 
+          ? getDisplaySize(plant.potSize, user?.unitSystem || UnitSystem.METRIC)
           : (user?.unitSystem === UnitSystem.IMPERIAL ? 11.8 : 30)}
         minValue={user?.unitSystem === UnitSystem.IMPERIAL ? 2 : 5}
         maxValue={user?.unitSystem === UnitSystem.IMPERIAL ? 39.4 : 100}
@@ -907,7 +838,7 @@ export default function PlantDetail() {
         title="Pot Drainage"
         description="Good drainage in a pot prevents root rot by allowing excess water to escape, ensuring healthy plant growth."
         options={drainageOptions}
-        initialSelectedId={plant.settings?.pot?.hasDrainage ? 'yes' : 'no'}
+        initialSelectedId={plant.hasDrainage ? 'yes' : 'no'}
         confirmText="Save"
         cancelText="Cancel"
         icon="water-outline"
@@ -921,7 +852,7 @@ export default function PlantDetail() {
         onConfirm={handleChangeSoil}
         title="Soil Type"
         options={soilOptions}
-        initialSelectedId={plant.settings?.pot?.soil || 'all-purpose-potting-mix'}
+        initialSelectedId={plant.soil || 'all-purpose-potting-mix'}
         confirmText="Save"
         cancelText="Cancel"
         icon="flower-outline"
@@ -935,8 +866,8 @@ export default function PlantDetail() {
         onConfirm={handleChangePlantSize}
         title="Plant Size"
         description="No need for an exact measurement, an approximate height is fine."
-        initialValue={plant.settings?.plantType?.size 
-          ? getDisplaySize(plant.settings.plantType.size, user?.unitSystem || UnitSystem.METRIC)
+        initialValue={plant.plantSize 
+          ? getDisplaySize(plant.plantSize, user?.unitSystem || UnitSystem.METRIC)
           : (user?.unitSystem === UnitSystem.IMPERIAL ? 11.8 : 30)}
         minValue={0}
         maxValue={user?.unitSystem === UnitSystem.IMPERIAL ? 118 : 300}
@@ -958,7 +889,7 @@ export default function PlantDetail() {
         title="Near A/C"
         description="Plants near air conditioning units may need more frequent watering due to dry air."
         options={acOptions}
-        initialSelectedId={plant.settings?.positionInRoom?.isNearAC === true ? 'yes' : 'no'}
+        initialSelectedId={plant.isNearAC === true ? 'yes' : 'no'}
         confirmText="Save"
         cancelText="Cancel"
         icon="snow-outline"
@@ -973,7 +904,7 @@ export default function PlantDetail() {
         title="Near Heater"
         description="Plants near heaters may need more frequent watering due to increased heat and dry air."
         options={heaterOptions}
-        initialSelectedId={plant.settings?.positionInRoom?.isNearHeater === true ? 'yes' : 'no'}
+        initialSelectedId={plant.isNearHeater === true ? 'yes' : 'no'}
         confirmText="Save"
         cancelText="Cancel"
         icon="flame-outline"
@@ -987,7 +918,7 @@ export default function PlantDetail() {
         onConfirm={handleChangeAge}
         title="Plant Age"
         description="How old is this plant?"
-        initialValue={plant.settings?.plantType?.age ?? 0}
+        initialValue={plant.age ?? 0}
         minValue={0}
         maxValue={50}
         step={1}
