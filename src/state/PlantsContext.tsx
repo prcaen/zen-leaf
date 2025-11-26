@@ -116,6 +116,44 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     });
   }, []);
 
+  const addCareTask = useCallback(async (task: CareTask) => {
+    const savedTask = await api.addCareTask(task);
+    setCareTasks(prev => [...prev, savedTask]);
+  }, []);
+
+  const updateCareTask = useCallback(async (taskId: string, updates: Partial<CareTask>) => {
+    const updatedTask = await api.updateCareTask(taskId, updates);
+    setCareTasks(prev =>
+      prev.map(t => (t.id === taskId ? updatedTask : t))
+    );
+  }, []);
+
+  const completeCareTask = useCallback(async (taskId: string, plantId: string) => {
+    const task = careTasks.find(t => t.id === taskId);
+    if (!task) return;
+
+    const now = new Date();
+    const nextDueDate = new Date();
+    nextDueDate.setDate(nextDueDate.getDate() + task.frequencyDays);
+
+    // Update task
+    const updatedTask = await api.updateCareTask(taskId, {
+      nextDueDate: nextDueDate,
+    });
+    setCareTasks(prev =>
+      prev.map(t => (t.id === taskId ? updatedTask : t))
+    );
+
+    // Add to history
+    const historyEntry: CareHistory = {
+      id: `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      taskId: taskId,
+      completedAt: now,
+    };
+    const savedHistory = await api.addCareHistory(historyEntry);
+    setCareHistory(prev => [savedHistory, ...prev]);
+  }, [careTasks]);
+
   const waterPlant = useCallback(async (plantId: string) => {
     // Find the water CareTask for this plant
     const waterTask = careTasks.find(t => t.plantId === plantId && t.type === CareTaskType.WATER);
@@ -289,44 +327,6 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     
     return limit ? history.slice(0, limit) : history;
   }, [careHistory, careTasks]);
-
-  const addCareTask = useCallback(async (task: CareTask) => {
-    const savedTask = await api.addCareTask(task);
-    setCareTasks(prev => [...prev, savedTask]);
-  }, []);
-
-  const updateCareTask = useCallback(async (taskId: string, updates: Partial<CareTask>) => {
-    const updatedTask = await api.updateCareTask(taskId, updates);
-    setCareTasks(prev =>
-      prev.map(t => (t.id === taskId ? updatedTask : t))
-    );
-  }, []);
-
-  const completeCareTask = useCallback(async (taskId: string, plantId: string) => {
-    const task = careTasks.find(t => t.id === taskId);
-    if (!task) return;
-
-    const now = new Date();
-    const nextDueDate = new Date();
-    nextDueDate.setDate(nextDueDate.getDate() + task.frequencyDays);
-
-    // Update task
-    const updatedTask = await api.updateCareTask(taskId, {
-      nextDueDate: nextDueDate,
-    });
-    setCareTasks(prev =>
-      prev.map(t => (t.id === taskId ? updatedTask : t))
-    );
-
-    // Add to history
-    const historyEntry: CareHistory = {
-      id: `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      taskId: taskId,
-      completedAt: now,
-    };
-    const savedHistory = await api.addCareHistory(historyEntry);
-    setCareHistory(prev => [savedHistory, ...prev]);
-  }, [careTasks]);
 
   const deleteCareTask = useCallback(async (taskId: string) => {
     await api.deleteCareTask(taskId);
