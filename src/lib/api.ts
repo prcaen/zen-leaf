@@ -1,5 +1,10 @@
+import Constants from 'expo-constants';
 import { CareHistory, CareTask, Difficulty, GrowSpeed, LightLevel, Plant, PlantCatalogItem, Room, Toxicity, UnitSystem, User, UserSettings, UserWithSettings, WaterNeeded } from '../types';
 import { supabase } from './supabase';
+
+// Get Supabase URL and anon key for edge function calls
+const getSupabaseUrl = () => Constants.expoConfig?.extra?.supabaseUrl || process.env.EXPO_PUBLIC_SUPABASE_URL || '';
+const getSupabaseAnonKey = () => Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
 
 // Helper to convert camelCase to snake_case for database columns
 function toSnakeCase(str: string): string {
@@ -238,7 +243,7 @@ export const api = {
 
       const serialized = serializeDates(room);
       const snakeCase = camelToSnake(serialized);
-      
+
       const { data, error } = await supabase
         .from('rooms')
         .insert({ ...snakeCase, user_id: userId })
@@ -254,7 +259,7 @@ export const api = {
         });
         throw error;
       }
-      
+
       const camelCase = snakeToCamel(data);
       return deserializeDates<Room>(camelCase);
     } catch (error) {
@@ -647,7 +652,7 @@ export const api = {
         if (lightLevelValue === 'part_sun') {
           lightLevelValue = 'part sun';
         }
-        
+
         // Map string to LightLevel enum
         const lightLevelMap: Record<string, LightLevel> = {
           'sun': LightLevel.SUN,
@@ -655,21 +660,21 @@ export const api = {
           'shade': LightLevel.SHADE,
           'dark': LightLevel.DARK,
         };
-        
+
         // Map string to Difficulty enum
         const difficultyMap: Record<string, Difficulty> = {
           'easy': Difficulty.EASY,
           'moderate': Difficulty.MODERATE,
           'advanced': Difficulty.ADVANCED,
         };
-        
+
         // Map string to GrowSpeed enum
         const growSpeedMap: Record<string, GrowSpeed> = {
           'slow': GrowSpeed.SLOW,
           'moderate': GrowSpeed.MODERATE,
           'fast': GrowSpeed.FAST,
         };
-        
+
         // Map string to Toxicity enum
         const toxicityMap: Record<string, Toxicity> = {
           'non-toxic': Toxicity.NON_TOXIC,
@@ -677,14 +682,14 @@ export const api = {
           'toxic-humans': Toxicity.TOXIC_HUMANS,
           'toxic-all': Toxicity.TOXIC_ALL,
         };
-        
+
         // Map string to WaterNeeded enum
         const waterNeededMap: Record<string, WaterNeeded> = {
           'low': WaterNeeded.LOW,
           'moderate': WaterNeeded.MODERATE,
           'high': WaterNeeded.HIGH,
         };
-        
+
         return {
           id: item.id,
           name: item.name,
@@ -705,6 +710,21 @@ export const api = {
       });
     } catch (error) {
       console.error('Error fetching plant catalog:', error);
+      throw error;
+    }
+  },
+
+  // Edge Functions
+  async getWateringFrequency(plantId: string): Promise<{ watering_frequency_days: number; next_watering_date: string }> {
+    try {
+      const { data, error } = await supabase.functions.invoke(`plant-watering-frequency?plant_id=${encodeURIComponent(plantId)}`, {
+        method: 'GET',
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error calling plant-watering-frequency edge function:', error);
       throw error;
     }
   },

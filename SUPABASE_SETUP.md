@@ -79,8 +79,8 @@ CREATE TABLE IF NOT EXISTS plants (
   pot_material TEXT, -- e.g., "ceramic", "plastic", "terracotta"
   soil TEXT, -- e.g., "all-purpose-potting-mix"
   plant_size INTEGER, -- Plant height in cm
-  acquired_date TIMESTAMPTZ, -- Date when plant was acquired - age is calculated from this date
-  is_near_ac BOOLEAN,
+  acquired_at TIMESTAMPTZ, -- Date when plant was acquired - age is calculated from this date
+  is_near_a_c BOOLEAN,
   is_near_heater BOOLEAN,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW(),

@@ -1,7 +1,6 @@
 import * as Crypto from 'expo-crypto';
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useState } from 'react';
 import { api } from '../lib/api';
-import { computeWateringFrequencyDays } from '../lib/plant';
 import { CareHistory, CareTask, CareTaskType, Plant, Room, User, UserSettings } from '../types';
 
 // Flattened user type for backward compatibility
@@ -169,48 +168,23 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     });
   }, [careTasks, completeCareTask]);
 
-  const waterSelectedPlants = useCallback(async () => {
-    const plantIds = Array.from(selectedPlants);
-    
-    // Complete CareTasks for all selected plants
-    await Promise.all(
-      plantIds.map(async (plantId) => {
-        const waterTask = careTasks.find(t => t.plantId === plantId && t.type === CareTaskType.WATER);
-        if (waterTask) {
-          await completeCareTask(waterTask.id, plantId);
-        }
-      })
-    );
-    
-    setSelectedPlants(new Set());
-  }, [selectedPlants, careTasks, completeCareTask]);
-
   const addPlant = useCallback(async (plant: Plant) => {
     const savedPlant = await api.addPlant(plant);
     setPlants(prev => [...prev, savedPlant]);
     
     // Create a water CareTask for the new plant
     try {
-      // Get catalog item to compute frequency
-      const catalog = await api.getPlantCatalog();
-      const catalogItem = plant.catalogItemId 
-        ? catalog.find(c => c.id === plant.catalogItemId)
-        : undefined;
-      
-      // Compute watering frequency
-      const frequencyDays = computeWateringFrequencyDays(savedPlant, catalogItem);
+      // Get watering frequency from edge function
+      const { watering_frequency_days, next_watering_date } = await api.getWateringFrequency(savedPlant.id);
       
       // Create water CareTask
       const now = new Date();
-      const nextDueDate = new Date();
-      nextDueDate.setDate(nextDueDate.getDate() + frequencyDays);
-      
       const waterTask: CareTask = {
         id: Crypto.randomUUID(),
         plantId: savedPlant.id,
         type: CareTaskType.WATER,
-        frequencyDays: frequencyDays,
-        nextDueDate: nextDueDate,
+        frequencyDays: Math.round(watering_frequency_days),
+        nextDueDate: new Date(next_watering_date),
         createdAt: now,
       };
       
@@ -242,16 +216,10 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         // Find existing water CareTask
         const waterTask = careTasks.find(t => t.plantId === plantId && t.type === CareTaskType.WATER);
         if (waterTask) {
-          // Get catalog item to compute frequency
-          const catalog = await api.getPlantCatalog();
-          const catalogItem = updatedPlant.catalogItemId 
-            ? catalog.find(c => c.id === updatedPlant.catalogItemId)
-            : undefined;
+          // Get watering frequency from edge function
+          const { watering_frequency_days, next_watering_date } = await api.getWateringFrequency(plantId);
           
-          // Compute new watering frequency
-          const newFrequencyDays = computeWateringFrequencyDays(updatedPlant, catalogItem);
-          
-          // Update CareTask frequency and recalculate nextDueDate
+          // Update CareTask frequency and nextDueDate
           // Find the most recent completion from history
           const waterHistory = careHistory
             .filter(h => h.taskId === waterTask.id)
@@ -261,15 +229,14 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
           if (waterHistory.length > 0) {
             // If task was completed before, calculate from last completion
             nextDueDate = new Date(waterHistory[0].completedAt);
-            nextDueDate.setDate(nextDueDate.getDate() + newFrequencyDays);
+            nextDueDate.setDate(nextDueDate.getDate() + Math.round(watering_frequency_days));
           } else {
-            // If never completed, set due date based on current date
-            nextDueDate = new Date();
-            nextDueDate.setDate(nextDueDate.getDate() + newFrequencyDays);
+            // If never completed, use the next_watering_date from the edge function
+            nextDueDate = new Date(next_watering_date);
           }
           
           await updateCareTask(waterTask.id, {
-            frequencyDays: newFrequencyDays,
+            frequencyDays: Math.round(watering_frequency_days),
             nextDueDate: nextDueDate,
           });
         }
