@@ -145,7 +145,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
 
     // Add to history
     const historyEntry: CareHistory = {
-      id: `history_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: Crypto.randomUUID(),
       taskId: taskId,
       completedAt: now,
     };
