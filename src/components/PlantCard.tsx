@@ -35,6 +35,21 @@ export const PlantCard: React.FC<PlantCardProps> = ({
     return Math.max(0, days);
   }, [task.nextDueDate]);
 
+  // Check if task is "soon" (not overdue, date is in the future)
+  const isSoon = useMemo(() => {
+    if (!task.nextDueDate) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dueDate = new Date(task.nextDueDate);
+    dueDate.setHours(0, 0, 0, 0);
+    return dueDate > today;
+  }, [task.nextDueDate]);
+
+  // Format date for display
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
   if (!plant || !room) {
     return null;
   }
@@ -76,6 +91,9 @@ export const PlantCard: React.FC<PlantCardProps> = ({
         <View style={styles.info}>
           <Text style={styles.name}>{plant.name}</Text>
           <Text style={styles.location}>{room.name}</Text>
+          {isSoon && task.nextDueDate && (
+            <Text style={styles.date}>{formatDate(new Date(task.nextDueDate))}</Text>
+          )}
         </View>
 
         {/* Checkbox */}
@@ -151,6 +169,11 @@ const styles = StyleSheet.create({
   location: {
     fontSize: 14,
     color: theme.colors.textSecondary,
+  },
+  date: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
   },
   bellButton: {
     padding: theme.spacing.sm,
