@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { isDueToday } from '../lib/careTask';
+import { formatRelativeTime } from '../lib/date';
 import { usePlants } from '../state/PlantsContext';
 import { theme } from '../theme';
 import { CareTask } from '../types';
@@ -23,6 +25,9 @@ export const PlantCard: React.FC<PlantCardProps> = ({
   const plant = getPlantById(task.plantId);
   const room = plant ? getRoomById(plant.roomId) : null;
 
+  // Check if task is due today or overdue
+  const taskIsDueToday = useMemo(() => isDueToday(task), [task]);
+
   // Calculate days overdue
   const daysOverdue = useMemo(() => {
     if (!task.nextDueDate) return 0;
@@ -35,20 +40,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({
     return Math.max(0, days);
   }, [task.nextDueDate]);
 
-  // Check if task is "soon" (not overdue, date is in the future)
-  const isSoon = useMemo(() => {
-    if (!task.nextDueDate) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dueDate = new Date(task.nextDueDate);
-    dueDate.setHours(0, 0, 0, 0);
-    return dueDate > today;
-  }, [task.nextDueDate]);
 
-  // Format date for display
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
 
   if (!plant || !room) {
     return null;
@@ -91,8 +83,8 @@ export const PlantCard: React.FC<PlantCardProps> = ({
         <View style={styles.info}>
           <Text style={styles.name}>{plant.name}</Text>
           <Text style={styles.location}>{room.name}</Text>
-          {isSoon && task.nextDueDate && (
-            <Text style={styles.date}>{formatDate(new Date(task.nextDueDate))}</Text>
+          {!taskIsDueToday && task.nextDueDate && (
+            <Text style={styles.date}>{formatRelativeTime(new Date(task.nextDueDate))}</Text>
           )}
         </View>
 

@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { getCareTaskDescription, getCareTaskTitle } from '../../lib/careTask';
-import { CareTask, CareTaskType } from '../../types';
+import { getCareTaskDescription, getCareTaskTitle, isDueToday } from '../../lib/careTask';
 import { theme } from '../../theme';
+import { CareTask, CareTaskType } from '../../types';
 
 interface TasksListProps {
   tasks: CareTask[];
@@ -57,9 +57,9 @@ export const TasksList: React.FC<TasksListProps> = ({ tasks, onTaskPress }) => {
           </View>
           {task.isLocked ? (
             <Ionicons name="lock-closed" size={20} color={theme.colors.textLight} />
-          ) : (
+          ) : isDueToday(task) ? (
             <Ionicons name="chevron-forward" size={20} color={theme.colors.textLight} />
-          )}
+          ) : null}
         </TouchableOpacity>
       ))}
     </View>

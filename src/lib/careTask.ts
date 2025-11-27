@@ -1,4 +1,4 @@
-import { CareTaskType } from '../types';
+import { CareTask, CareTaskType } from '../types';
 
 export interface CareTaskTypeInfo {
   title: string;
@@ -57,5 +57,19 @@ export function getCareTaskTitle(type: CareTaskType): string {
  */
 export function getCareTaskDescription(type: CareTaskType): string | undefined {
   return getCareTaskTypeInfo(type).description;
+}
+
+/**
+ * Check if a care task is due today or overdue
+ * @param task - The care task to check
+ * @returns True if the task is due today or overdue, false otherwise
+ */
+export function isDueToday(task: CareTask): boolean {
+  if (!task.nextDueDate) return false;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = new Date(task.nextDueDate);
+  dueDate.setHours(0, 0, 0, 0);
+  return dueDate <= today;
 }
 
