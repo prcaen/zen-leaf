@@ -54,7 +54,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
       return (
         <View style={styles.twoImagesGrid}>
           {plantImages.map((plant, index) => (
-            <View key={plant.id} style={styles.halfImage}>
+            <View key={plant.id} style={index === 0 ? styles.halfImage : styles.halfImageLast}>
               {plant.imageUrl ? (
                 <Image source={{ uri: plant.imageUrl }} style={styles.image} />
               ) : (
@@ -74,6 +74,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
         {plantImages.map((plant, index) => {
           const isThree = plantImages.length === 3;
           const isLargeImage = isThree && index === 0;
+          const isLastInRow = (isThree && index === 0) || (!isThree && index % 2 === 1) || (isThree && index > 0 && index % 2 === 0);
 
           return (
             <View
@@ -82,6 +83,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
                 styles.gridItem,
                 isLargeImage && styles.gridItemLarge,
                 isThree && index > 0 && styles.gridItemSmall,
+                !isLastInRow && { marginRight: 1 },
               ]}
             >
               {plant.imageUrl ? (
@@ -140,28 +142,33 @@ const styles = StyleSheet.create({
   twoImagesGrid: {
     flex: 1,
     flexDirection: 'row',
-    gap: 2,
   },
   halfImage: {
+    flex: 1,
+    marginRight: 1,
+  },
+  halfImageLast: {
     flex: 1,
   },
   gridContainer: {
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 2,
   },
   gridItem: {
-    width: 'calc(50% - 1px)',
+    width: '49.5%',
     height: 99,
+    marginBottom: 1,
   },
   gridItemLarge: {
     width: '100%',
     height: 99,
+    marginBottom: 1,
   },
   gridItemSmall: {
-    width: 'calc(50% - 1px)',
+    width: '49.5%',
     height: 99,
+    marginBottom: 1,
   },
   image: {
     width: '100%',

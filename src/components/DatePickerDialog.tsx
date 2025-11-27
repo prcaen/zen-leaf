@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     maxWidth: 400,
     maxHeight: '80%',
     padding: theme.spacing.lg,
-    ...theme.shadows.lg,
+    ...theme.shadows.md,
   },
   header: {
     alignItems: 'center',

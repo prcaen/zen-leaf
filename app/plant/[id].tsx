@@ -75,18 +75,6 @@ export default function PlantDetail() {
     loadCatalogItem();
   }, [plant?.catalogItemId]);
 
-  // Derive careInfo, variety, and category from catalog item
-  const careInfo: PlantCareInfo | undefined = catalogItem ? {
-    growSpeed: catalogItem.growSpeed,
-    lightNeeded: catalogItem.lightLevel,
-    toxicity: catalogItem.toxicity,
-    waterNeeded: catalogItem.waterNeeded,
-    growSpeedDescription: catalogItem.growSpeedDescription,
-    lightNeededDescription: catalogItem.lightNeededDescription,
-    toxicityDescription: catalogItem.toxicityDescription,
-    waterNeededDescription: catalogItem.waterNeededDescription,
-  } : undefined;
-
   const variety = catalogItem?.variety;
   const category = catalogItem?.category;
 
@@ -205,13 +193,8 @@ export default function PlantDetail() {
     await completeCareTask(taskId, id);
   };
 
-  const handleDeletePlant = () => {
-    // TODO: Delete plant
-    console.log('Delete plant');
-  };
-
   const handleGrowSpeedPress = () => {
-    const speed = careInfo?.growSpeed || GrowSpeed.MODERATE;
+    const speed = catalogItem?.growSpeed || GrowSpeed.MODERATE;
     const descriptions = {
       [GrowSpeed.SLOW]: 'This plant grows slowly and may take months or even years to reach maturity. Perfect for those who want low-maintenance greenery.',
       [GrowSpeed.MODERATE]: 'This plant has a moderate growth rate, showing visible progress over weeks to months. Ideal for most indoor gardeners.',
@@ -222,13 +205,13 @@ export default function PlantDetail() {
       title: 'Growth Speed',
       icon: 'speedometer-outline',
       iconColor: theme.colors.primaryLight,
-      content: careInfo?.growSpeedDescription || descriptions[speed],
+      content: catalogItem?.growSpeedDescription || descriptions[speed],
       value: speed,
     });
   };
 
   const handleLightNeededPress = () => {
-    const light = careInfo?.lightNeeded || LightLevel.PART_SUN;
+    const light = catalogItem?.lightLevel || LightLevel.PART_SUN;
     const descriptions = {
       [LightLevel.SUN]: 'This plant needs bright, direct sunlight for several hours a day. Best placed near south-facing windows.',
       [LightLevel.PART_SUN]: 'This plant prefers bright, indirect light. Place near a window with filtered sunlight or in a well-lit room.',
@@ -240,13 +223,13 @@ export default function PlantDetail() {
       title: 'Light Requirements',
       icon: 'sunny-outline',
       iconColor: theme.colors.primaryLight,
-      content: careInfo?.lightNeededDescription || descriptions[light],
+      content: catalogItem?.lightNeededDescription || descriptions[light],
       value: light,
     });
   };
 
   const handleToxicityPress = () => {
-    const toxicity = careInfo?.toxicity || Toxicity.NON_TOXIC;
+    const toxicity = catalogItem?.toxicity || Toxicity.NON_TOXIC;
     const descriptions = {
       [Toxicity.NON_TOXIC]: 'This plant is safe for both pets and humans. You can display it anywhere without worry!',
       [Toxicity.TOXIC_PETS]: 'This plant can be harmful to pets if ingested. Keep it out of reach of cats and dogs.',
@@ -258,13 +241,13 @@ export default function PlantDetail() {
       title: 'Toxicity Information',
       icon: 'warning-outline',
       iconColor: theme.colors.primaryLight,
-      content: careInfo?.toxicityDescription || descriptions[toxicity],
+      content: catalogItem?.toxicityDescription || descriptions[toxicity],
       value: toxicity.replace('-', ' '),
     });
   };
 
   const handleWaterNeededPress = () => {
-    const water = careInfo?.waterNeeded || WaterNeeded.MODERATE;
+    const water = catalogItem?.waterNeeded || WaterNeeded.MODERATE;
     const descriptions = {
       [WaterNeeded.LOW]: 'This plant requires infrequent watering. Allow soil to dry out completely between waterings. Perfect for forgetful plant parents!',
       [WaterNeeded.MODERATE]: 'This plant needs regular watering. Keep soil slightly moist but not waterlogged. Water when the top inch of soil is dry.',
@@ -275,7 +258,7 @@ export default function PlantDetail() {
       title: 'Water Requirements',
       icon: 'water-outline',
       iconColor: theme.colors.primaryLight,
-      content: careInfo?.waterNeededDescription || descriptions[water],
+      content: catalogItem?.waterNeededDescription || descriptions[water],
       value: water,
     });
   };
@@ -581,24 +564,24 @@ export default function PlantDetail() {
             <ActionCard
               icon="water-outline"
               title="Water Needed"
-              subtitle={careInfo?.waterNeeded || 'Moderate'}
+              subtitle={catalogItem?.waterNeeded || 'Moderate'}
               color={theme.colors.primaryLight}
               onPress={handleWaterNeededPress}
             />
             <ActionCard
               icon="leaf-outline"
               title="Growth Speed"
-              subtitle={careInfo?.growSpeed || 'Moderate'}
+              subtitle={catalogItem?.growSpeed || 'Moderate'}
               color={theme.colors.primaryLight}
               onPress={handleGrowSpeedPress}
             />
             <ActionCard
               icon="sunny-outline"
               title="Light Needed"
-              subtitle={careInfo?.lightNeeded
-                ? careInfo.lightNeeded === LightLevel.PART_SUN
+              subtitle={catalogItem?.lightLevel
+                ? catalogItem.lightLevel === LightLevel.PART_SUN
                   ? 'Part Sun'
-                  : careInfo.lightNeeded.charAt(0).toUpperCase() + careInfo.lightNeeded.slice(1)
+                  : catalogItem.lightLevel.charAt(0).toUpperCase() + catalogItem.lightLevel.slice(1)
                 : 'Part Sun'}
               color={theme.colors.primaryLight}
               onPress={handleLightNeededPress}
@@ -607,8 +590,8 @@ export default function PlantDetail() {
               icon="warning-outline"
               title="Toxicity"
               subtitle={
-                careInfo?.toxicity
-                  ? careInfo.toxicity.replace('-', ' ')
+                catalogItem?.toxicity
+                  ? catalogItem.toxicity.replace('-', ' ')
                   : 'Non-toxic'
               }
               color={theme.colors.primaryLight}
