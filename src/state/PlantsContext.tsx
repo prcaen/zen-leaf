@@ -82,7 +82,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       setRooms(loadedRooms);
       setCareTasks(loadedTasks);
       setCareHistory(loadedHistory);
-      
+
       // Flatten user with settings for backward compatibility
       if (loadedUser) {
         setUser({
@@ -160,7 +160,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       // Complete the CareTask
       await completeCareTask(waterTask.id, plantId);
     }
-    
+
     setSelectedPlants(prev => {
       const newSet = new Set(prev);
       newSet.delete(plantId);
@@ -171,12 +171,12 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
   const addPlant = useCallback(async (plant: Plant) => {
     const savedPlant = await api.addPlant(plant);
     setPlants(prev => [...prev, savedPlant]);
-    
+
     // Create a water CareTask for the new plant
     try {
       // Get watering frequency from edge function
       const { watering_frequency_days, next_watering_date } = await api.getWateringFrequency(savedPlant.id);
-      
+
       // Create water CareTask
       const now = new Date();
       const waterTask: CareTask = {
@@ -187,7 +187,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         nextDueDate: new Date(next_watering_date),
         createdAt: now,
       };
-      
+
       await addCareTask(waterTask);
     } catch (error) {
       console.error('Error creating water CareTask for new plant:', error);
@@ -200,17 +200,17 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
     setPlants(prev =>
       prev.map(p => (p.id === plantId ? updatedPlant : p))
     );
-    
+
     // If plant properties that affect watering frequency changed, update the water CareTask
     const frequencyAffectingProps = [
-      'distanceFromWindow', 'potSize', 'hasDrainage', 'potMaterial', 
+      'distanceFromWindow', 'potSize', 'hasDrainage', 'potMaterial',
       'soil', 'plantSize', 'age', 'isNearAC', 'isNearHeater', 'catalogItemId'
     ];
-    
-    const shouldUpdateFrequency = Object.keys(updates).some(key => 
+
+    const shouldUpdateFrequency = Object.keys(updates).some(key =>
       frequencyAffectingProps.includes(key)
     );
-    
+
     if (shouldUpdateFrequency) {
       try {
         // Find existing water CareTask
@@ -218,13 +218,13 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
         if (waterTask) {
           // Get watering frequency from edge function
           const { watering_frequency_days, next_watering_date } = await api.getWateringFrequency(plantId);
-          
+
           // Update CareTask frequency and nextDueDate
           // Find the most recent completion from history
           const waterHistory = careHistory
             .filter(h => h.taskId === waterTask.id)
             .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime());
-          
+
           let nextDueDate: Date;
           if (waterHistory.length > 0) {
             // If task was completed before, calculate from last completion
@@ -234,7 +234,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
             // If never completed, use the next_watering_date from the edge function
             nextDueDate = new Date(next_watering_date);
           }
-          
+
           await updateCareTask(waterTask.id, {
             frequencyDays: Math.round(watering_frequency_days),
             nextDueDate: nextDueDate,
@@ -283,7 +283,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
 
   const getCareHistory = useCallback((plantId?: string, limit?: number) => {
     let history = careHistory;
-    
+
     // If plantId is provided, filter by looking up plantId from CareTask
     if (plantId) {
       const plantTaskIds = new Set(
@@ -291,7 +291,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
       );
       history = history.filter(h => plantTaskIds.has(h.taskId));
     }
-    
+
     return limit ? history.slice(0, limit) : history;
   }, [careHistory, careTasks]);
 
@@ -305,7 +305,7 @@ export const PlantsProvider: React.FC<PlantsProviderProps> = ({ children }) => {
 
     // Separate auth updates (name, email) from settings updates
     const { displayName: name, email, locationName, unitSystem, ...rest } = updates;
-    
+
     // Update name via auth if provided
     if (name !== undefined) {
       await api.updateUserName(name);

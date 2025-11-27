@@ -129,7 +129,7 @@ export const storage = {
     }
   },
 
-    async addRoom(room: Room): Promise<void> {
+  async addRoom(room: Room): Promise<void> {
     const rooms = await this.getRooms();
     rooms.push(room);
     await this.saveRooms(rooms);

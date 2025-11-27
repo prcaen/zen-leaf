@@ -45,8 +45,8 @@ export const PlantHeader: React.FC<PlantHeaderProps> = ({
 
       <View style={styles.infoContainer}>
         <View style={styles.info}>
-          <TouchableOpacity 
-            onPress={onNamePress} 
+          <TouchableOpacity
+            onPress={onNamePress}
             disabled={!onNamePress}
             activeOpacity={0.7}
           >
@@ -54,8 +54,8 @@ export const PlantHeader: React.FC<PlantHeaderProps> = ({
               <Text style={styles.name}>{name}</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity 
-            onPress={onRoomPress} 
+          <TouchableOpacity
+            onPress={onRoomPress}
             disabled={!onRoomPress}
             activeOpacity={0.7}
           >

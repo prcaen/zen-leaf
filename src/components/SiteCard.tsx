@@ -74,10 +74,10 @@ export const SiteCard: React.FC<SiteCardProps> = ({
         {plantImages.map((plant, index) => {
           const isThree = plantImages.length === 3;
           const isLargeImage = isThree && index === 0;
-          
+
           return (
-            <View 
-              key={plant.id} 
+            <View
+              key={plant.id}
               style={[
                 styles.gridItem,
                 isLargeImage && styles.gridItemLarge,
@@ -103,7 +103,7 @@ export const SiteCard: React.FC<SiteCardProps> = ({
       <View style={styles.imageContainer}>
         {renderImageGrid()}
       </View>
-      
+
       <View style={styles.footer}>
         <Text style={styles.locationName}>{locationName}</Text>
         <Text style={styles.plantCount}>{plantsInLocation.length} plantes</Text>

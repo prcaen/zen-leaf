@@ -109,7 +109,7 @@ export async function uploadPlantImage(
     const { data, error } = await supabase.storage
       .from(PLANTS_BUCKET)
       .upload(fileName, byteArray, {
-        contentType : "image/*",
+        contentType: "image/*",
         upsert: false,
       });
 

@@ -54,10 +54,10 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-           <Image
-              source={require('../../assets/images/auth-hero.png')}
-              style={styles.heroImage}
-            />
+          <Image
+            source={require('../../assets/images/auth-hero.png')}
+            style={styles.heroImage}
+          />
           <View style={styles.header}>
             <Text style={styles.title}>Welcome back</Text>
             <Text style={styles.subtitle}>Sign in to continue</Text>

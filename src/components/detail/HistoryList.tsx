@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { getCareTaskTitle } from '../../lib/careTask';
-import { CareHistory, CareTask } from '../../types';
 import { theme } from '../../theme';
+import { CareHistory, CareTask } from '../../types';
 
 interface HistoryListProps {
   history: CareHistory[];
@@ -13,7 +13,7 @@ interface HistoryListProps {
 
 export const HistoryList: React.FC<HistoryListProps> = ({ history, careTasks, limit }) => {
   const displayHistory = limit ? history.slice(0, limit) : history;
-  
+
   // Create a map of taskId to CareTask for quick lookup
   const taskMap = new Map(careTasks.map(t => [t.id, t]));
 
@@ -25,7 +25,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, careTasks, li
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
-    
+
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
@@ -46,7 +46,7 @@ export const HistoryList: React.FC<HistoryListProps> = ({ history, careTasks, li
           </View>
           <View style={styles.historyInfo}>
             <Text style={styles.historyTitle}>
-              {taskMap.get(entry.taskId) 
+              {taskMap.get(entry.taskId)
                 ? getCareTaskTitle(taskMap.get(entry.taskId)!.type)
                 : 'Unknown Task'}
             </Text>

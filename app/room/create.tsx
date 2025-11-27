@@ -105,7 +105,7 @@ export default function CreateRoomScreen() {
     };
 
     await addRoom(room);
-    
+
     // If returnTo is provided, navigate there
     if (returnTo) {
       router.replace(returnTo as any);

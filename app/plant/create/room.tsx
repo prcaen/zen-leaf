@@ -3,20 +3,20 @@ import * as Crypto from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-    Image,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../src/components/Button';
+import { api } from '../../../src/lib/api';
 import { tempPlantStorage } from '../../../src/lib/storage';
 import { usePlants } from '../../../src/state/PlantsContext';
 import { theme } from '../../../src/theme';
-import { api } from '../../../src/lib/api';
 import { LightLevel, Plant, PlantBasicInfo, PlantCatalogItem } from '../../../src/types';
 
 export default function SelectRoomScreen() {
@@ -45,7 +45,7 @@ export default function SelectRoomScreen() {
   // We need to get the catalog item to access lightNeeded
   // For now, we'll need to load it or pass it through
   const [catalogItem, setCatalogItem] = useState<PlantCatalogItem | null>(null);
-  
+
   useEffect(() => {
     const loadCatalogItem = async () => {
       if (plantData?.catalogItemId) {
@@ -60,7 +60,7 @@ export default function SelectRoomScreen() {
     };
     loadCatalogItem();
   }, [plantData?.catalogItemId]);
-  
+
   const plantLightNeeded = catalogItem?.lightLevel;
 
   // Filter rooms by indoor/outdoor
@@ -78,7 +78,7 @@ export default function SelectRoomScreen() {
     }
 
     const roomLight = room.lightLevel;
-    
+
     // Simple compatibility logic:
     // - Sun plants work best in Sun or Part Sun rooms
     // - Part Sun plants work in Part Sun, Sun, or Shade rooms
@@ -137,7 +137,7 @@ export default function SelectRoomScreen() {
 
   const renderRoomImages = (roomId: string) => {
     const roomPlants = getRoomPlantImages(roomId);
-    
+
     if (roomPlants.length === 0) {
       return (
         <View style={styles.emptyImageContainer}>
@@ -170,7 +170,7 @@ export default function SelectRoomScreen() {
         {roomPlants.slice(0, 4).map((plant, index) => {
           const isThree = roomPlants.length === 3;
           const isLarge = isThree && index === 0;
-          
+
           return (
             <View
               key={plant.id}
@@ -193,7 +193,7 @@ export default function SelectRoomScreen() {
       <StatusBar barStyle="light-content" backgroundColor={theme.colors.sageDark} />
 
       {/* Header */}
-      <View style={styles.header}/>
+      <View style={styles.header} />
 
       <ScrollView
         style={styles.scrollView}
@@ -202,7 +202,7 @@ export default function SelectRoomScreen() {
       >
         {/* Question */}
         <Text style={styles.question}>Where is the plant placed?</Text>
-        
+
         {loading ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>Loading...</Text>
@@ -235,7 +235,7 @@ export default function SelectRoomScreen() {
         {/* Rooms List */}
         {filteredRooms.map((room) => {
           const isRecommended = isRoomRecommended(room);
-          
+
           return (
             <TouchableOpacity
               key={room.id}

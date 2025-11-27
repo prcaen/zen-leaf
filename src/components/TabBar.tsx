@@ -14,12 +14,12 @@ interface TabBarProps<T = string> {
   containerStyle?: ViewStyle;
 }
 
-export function TabBar<T = string>({ 
-  tabs, 
-  activeTab, 
+export function TabBar<T = string>({
+  tabs,
+  activeTab,
   onTabChange,
   containerStyle,
-}: TabBarProps<T>) {  
+}: TabBarProps<T>) {
   return (
     <View style={[
       styles.container,

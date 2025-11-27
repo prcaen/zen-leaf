@@ -19,10 +19,10 @@ export const PlantCard: React.FC<PlantCardProps> = ({
 }) => {
   const router = useRouter();
   const { getPlantById, getRoomById } = usePlants();
-  
+
   const plant = getPlantById(task.plantId);
   const room = plant ? getRoomById(plant.roomId) : null;
-  
+
   // Calculate days overdue
   const daysOverdue = useMemo(() => {
     if (!task.nextDueDate) return 0;
@@ -34,7 +34,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({
     const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     return Math.max(0, days);
   }, [task.nextDueDate]);
-  
+
   if (!plant || !room) {
     return null;
   }

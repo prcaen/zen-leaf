@@ -68,9 +68,9 @@ export default function SignupScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <Image
-              source={require('../../assets/images/auth-hero.png')}
-              style={styles.heroImage}
-            />
+            source={require('../../assets/images/auth-hero.png')}
+            style={styles.heroImage}
+          />
           <View style={styles.header}>
             <Text style={styles.title}>Create account</Text>
             <Text style={styles.subtitle}>Sign up to get started</Text>
@@ -103,73 +103,73 @@ export default function SignupScreen() {
             </View>
           ) : (
             <View style={styles.form}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email"
-                placeholderTextColor={theme.colors.textLight}
-                autoCapitalize="none"
-                autoCorrect={false}
-                keyboardType="email-address"
-                textContentType="emailAddress"
-                editable={!loading}
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter your email"
+                  placeholderTextColor={theme.colors.textLight}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  textContentType="emailAddress"
+                  editable={!loading}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  placeholderTextColor={theme.colors.textLight}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  textContentType="newPassword"
+                  editable={!loading}
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Confirm Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  placeholder="Confirm your password"
+                  placeholderTextColor={theme.colors.textLight}
+                  secureTextEntry
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  textContentType="newPassword"
+                  editable={!loading}
+                />
+              </View>
+
+              <Button
+                title="Sign Up"
+                onPress={handleSignup}
+                variant="common"
+                disabled={loading}
+                loading={loading}
+                style={styles.button}
               />
-            </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Enter your password"
-                placeholderTextColor={theme.colors.textLight}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="newPassword"
-                editable={!loading}
-              />
+              <View style={styles.loginContainer}>
+                <Text style={styles.loginText}>Already have an account? </Text>
+                <Text
+                  style={styles.loginLink}
+                  onPress={() => router.replace('/auth/login')}
+                >
+                  Sign in
+                </Text>
+              </View>
             </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm Password</Text>
-              <TextInput
-                style={styles.input}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholder="Confirm your password"
-                placeholderTextColor={theme.colors.textLight}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="newPassword"
-                editable={!loading}
-              />
-            </View>
-
-            <Button
-              title="Sign Up"
-              onPress={handleSignup}
-              variant="common"
-              disabled={loading}
-              loading={loading}
-              style={styles.button}
-            />
-
-            <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>Already have an account? </Text>
-              <Text
-                style={styles.loginLink}
-                onPress={() => router.replace('/auth/login')}
-              >
-                Sign in
-              </Text>
-            </View>
-          </View>
           )}
         </ScrollView>
       </KeyboardAvoidingView>

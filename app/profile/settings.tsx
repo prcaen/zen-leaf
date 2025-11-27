@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../src/components/Button';
@@ -107,11 +107,11 @@ export default function ProfileSettingsScreen() {
         <SettingsSection title="Profile" items={settings} />
 
         <Button
-            title="Sign Out"
-            onPress={handleSignOutPress}
-            variant="destructive"
-            style={styles.signOutButton}
-          />
+          title="Sign Out"
+          onPress={handleSignOutPress}
+          variant="destructive"
+          style={styles.signOutButton}
+        />
       </ScrollView>
 
       {/* Name Dialog */}

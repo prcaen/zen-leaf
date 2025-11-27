@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   ScrollView,
   StatusBar,
@@ -32,7 +32,7 @@ export default function Index() {
   // Filter tasks based on active tab
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const todayTasks = wateringTasks.filter(task => {
     const nextDate = new Date(task.nextDueDate);
     nextDate.setHours(0, 0, 0, 0);
@@ -65,7 +65,6 @@ export default function Index() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={theme.colors.sage} />
-      
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -104,8 +103,8 @@ export default function Index() {
 
       {/* Floating Action Button */}
       <View style={styles.fabContainer}>
-        <TouchableOpacity 
-          style={styles.fab} 
+        <TouchableOpacity
+          style={styles.fab}
           activeOpacity={0.8}
           onPress={() => setShowActionDialog(true)}
         >

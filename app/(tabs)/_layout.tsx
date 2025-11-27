@@ -3,13 +3,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-const TabIcon = ({ 
-  name, 
-  color, 
-  focused 
-}: { 
-  name: keyof typeof Ionicons.glyphMap; 
-  color: string; 
+const TabIcon = ({
+  name,
+  color,
+  focused
+}: {
+  name: keyof typeof Ionicons.glyphMap;
+  color: string;
   focused: boolean;
 }) => {
   if (focused) {
@@ -35,8 +35,8 @@ const tabStyles = StyleSheet.create({
 
 export default function TabLayout() {
   return (
-    <Tabs 
-      screenOptions={{ 
+    <Tabs
+      screenOptions={{
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.primaryLight,
         headerShown: false,
@@ -73,30 +73,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-/*
- *
- <View style={styles.bottomNav}>
- <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-   <View style={styles.navIconActive}>
-     <Ionicons name="home" size={24} color={theme.colors.primary} />
-   </View>
- </TouchableOpacity>
- 
- <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-   <Ionicons name="leaf-outline" size={24} color={theme.colors.textSecondary} />
- </TouchableOpacity>
- 
- <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-   <Ionicons name="search-outline" size={24} color={theme.colors.textSecondary} />
- </TouchableOpacity>
- 
- <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-   <Ionicons name="water-outline" size={24} color={theme.colors.textSecondary} />
- </TouchableOpacity>
- 
- <TouchableOpacity style={styles.navItem} activeOpacity={0.7}>
-   <Text style={styles.navText}>P</Text>
- </TouchableOpacity>
-</View>
- */

@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActionDialog } from '../../src/components/ActionDialog';
@@ -28,20 +28,20 @@ export default function ProfileScreen() {
   // Calculate statistics
   const totalPlants = plants.length;
   const totalRooms = rooms.length;
-  
+
   // Count overdue tasks by location
   const overdueTasksByLocation = rooms.reduce((acc, room) => {
     const plantsInLocation = plants.filter(p => p.roomId === room.id);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const overdueCount = wateringTasks.filter(task => {
       if (!plantsInLocation.some(p => p.id === task.plantId)) return false;
       const dueDate = new Date(task.nextDueDate);
       dueDate.setHours(0, 0, 0, 0);
       return dueDate < today;
     }).length;
-    
+
     acc[room.id] = overdueCount;
     return acc;
   }, {} as Record<string, number>);
@@ -84,7 +84,7 @@ export default function ProfileScreen() {
           </View>
         </View>
       </View>
-      
+
       <TabBar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} containerStyle={styles.tabBarContainer} />
 
       {/* Content */}
@@ -160,8 +160,8 @@ export default function ProfileScreen() {
 
       {/* Floating Action Button */}
       <View style={styles.fabContainer}>
-        <TouchableOpacity 
-          style={styles.fab} 
+        <TouchableOpacity
+          style={styles.fab}
           activeOpacity={0.8}
           onPress={() => setShowActionDialog(true)}
         >
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    },
+  },
   fabContainer: {
     position: 'absolute',
     right: theme.spacing.lg,
